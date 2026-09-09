@@ -415,3 +415,20 @@ export function UnavailableCreatorPageEditorStatusPage() {
     />
   );
 }
+
+export function UnavailableBotWorkspaceStatusPage() {
+  return (
+    <StatusPage
+      code="404"
+      eyebrow="Workspace unavailable"
+      title="This workspace is out of reach."
+      description="The bot may no longer exist, collaboration access may have been removed, or this account may not have permission to open its workspace."
+      icon={LockKeyhole}
+      primaryAction={{
+        label: "Return to the Forge",
+        href: "/",
+        icon: Home,
+      }}
+    />
+  );
+}

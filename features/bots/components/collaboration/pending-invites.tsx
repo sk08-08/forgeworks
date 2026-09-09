@@ -118,7 +118,7 @@ export function PendingInvites() {
           return (
             <div
               key={invite.id}
-              className="group relative flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl border border-border/70 bg-background/80 p-4 transition-all hover:border-primary/30 hover:shadow-md"
+              className="group relative flex flex-col gap-3 rounded-xl border border-border/70 bg-background/80 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md sm:flex-row sm:items-center"
             >
               {/* Bot image */}
               <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -196,7 +196,7 @@ export function PendingInvites() {
               <div className="flex items-center gap-2 shrink-0 sm:flex-col">
                 <Button
                   size="sm"
-                  className="cursor-pointer flex-1 sm:flex-none"
+                  className="flex-1 cursor-pointer transition-all duration-200 active:scale-[0.97] disabled:cursor-not-allowed sm:flex-none"
                   onClick={() => handleRespond(invite.id, true)}
                   disabled={respondingId === invite.id}
                 >
@@ -211,7 +211,7 @@ export function PendingInvites() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="cursor-pointer flex-1 sm:flex-none"
+                  className="flex-1 cursor-pointer transition-all duration-200 active:scale-[0.97] disabled:cursor-not-allowed sm:flex-none"
                   onClick={() => handleRespond(invite.id, false)}
                   disabled={respondingId === invite.id}
                 >

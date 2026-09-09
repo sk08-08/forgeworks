@@ -2,8 +2,16 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
-import type { BotFormData } from "@/features/bots/types/bot-types";
+import type {
+  BotFormData,
+  CollaboratorRole,
+} from "@/features/bots/types/bot-types";
+import {
+  canRoleEditField,
+  type BotCollaborationField,
+} from "@/features/bots/lib/collaboration-permissions";
 import { friendlySupabaseError } from "@/lib/error-utils";
+import { captureBotVersion } from "@/features/bots/actions/bot-history";
 import { v4 as uuidv4 } from "uuid";
 import {
   BOT_ASSETS_BUCKET,
@@ -77,21 +85,43 @@ export async function createBotAction(data: BotFormData) {
     };
   }
 
+  const historyResult = await captureBotVersion(
+    inserted.id,
+    "create",
+    [
+    "name",
+    "chat_name",
+    "short_description",
+    "personality",
+    "first_message",
+    "alternate_greetings",
+    "scenario",
+    "example_dialogues",
+    "tags",
+    "rating",
+    "image_url",
+    "hide_sensitive_fields",
+  ] as BotCollaborationField[],
+  );
+
+  if (!historyResult.success) {
+    console.error("Failed to capture initial bot version:", historyResult.error);
+  }
+
   return { success: true, bot: inserted };
 }
 
 export async function updateBotAction(id: string, data: Partial<BotFormData>) {
   const supabase = await createClient();
 
-  // Ensure authenticated (supabase auth or janitorforge_session)
   let userId: string | undefined;
   try {
     const { data: userData } = await supabase.auth.getUser();
     userId = userData?.user?.id || undefined;
-  } catch (e) {
-    // ignore error when checking supabase auth session
+  } catch {
     userId = undefined;
   }
+
   if (!userId) {
     const cookieStore = await cookies();
     const session = cookieStore.get("janitorforge_session")?.value;
@@ -99,23 +129,60 @@ export async function updateBotAction(id: string, data: Partial<BotFormData>) {
       try {
         const parsed = JSON.parse(session);
         userId = parsed?.userId;
-      } catch (e) {
-        // ignore malformed session cookie
+      } catch {
+        userId = undefined;
       }
     }
   }
+
   if (!userId) return { success: false, error: "Unauthenticated" };
 
   const { data: existingBot, error: existingError } = await supabase
     .from("bots")
-    .select("id, user_id, image_url")
+    .select("id, user_id, require_collab_approval")
     .eq("id", id)
+    .is("deleted_at", null)
     .single();
 
   if (existingError || !existingBot) {
     return { success: false, error: "Bot not found" };
   }
-  if (existingBot.user_id !== userId) {
+
+  const isOwner = existingBot.user_id === userId;
+  let collaboratorRole: CollaboratorRole | null = null;
+
+  if (!isOwner) {
+    const { data: collaborator } = await supabase
+      .from("bot_collaborators")
+      .select("role")
+      .eq("bot_id", id)
+      .eq("user_id", userId)
+      .eq("status", "accepted")
+      .maybeSingle();
+
+    collaboratorRole =
+      (collaborator?.role as CollaboratorRole | undefined) ?? null;
+
+    if (collaboratorRole !== "editor" && collaboratorRole !== "co_owner") {
+      return {
+        success: false,
+        error: "You don't have permission to update this bot",
+      };
+    }
+
+    if (
+      collaboratorRole === "editor" &&
+      existingBot.require_collab_approval === true
+    ) {
+      return {
+        success: false,
+        error: "This bot requires your changes to be submitted for review",
+      };
+    }
+  }
+
+  const workspaceRole = isOwner ? "owner" : collaboratorRole;
+  if (!workspaceRole) {
     return {
       success: false,
       error: "You don't have permission to update this bot",
@@ -123,24 +190,40 @@ export async function updateBotAction(id: string, data: Partial<BotFormData>) {
   }
 
   const payload: Record<string, unknown> = {};
-  if (data.name !== undefined) payload.name = data.name;
-  if ((data as any).chatName !== undefined)
-    payload.chat_name = (data as any).chatName;
+  const changedFields: BotCollaborationField[] = [];
+
+  const setField = (
+    field: BotCollaborationField,
+    value: unknown,
+  ) => {
+    if (!canRoleEditField(workspaceRole, field)) return;
+    payload[field] = value;
+    changedFields.push(field);
+  };
+
+  if (data.name !== undefined) setField("name", data.name);
+  if (data.chatName !== undefined) setField("chat_name", data.chatName || null);
   if (data.shortDescription !== undefined)
-    payload.short_description = data.shortDescription;
-  if (data.personality !== undefined) payload.personality = data.personality;
+    setField("short_description", data.shortDescription);
+  if (data.personality !== undefined)
+    setField("personality", data.personality);
   if (data.firstMessage !== undefined)
-    payload.first_message = data.firstMessage;
+    setField("first_message", data.firstMessage);
   if (data.alternateGreetings !== undefined)
-    payload.alternate_greetings = data.alternateGreetings;
-  if (data.scenario !== undefined) payload.scenario = data.scenario;
+    setField("alternate_greetings", data.alternateGreetings);
+  if (data.scenario !== undefined) setField("scenario", data.scenario);
   if (data.exampleDialogues !== undefined)
-    payload.example_dialogues = data.exampleDialogues;
-  if (data.tags !== undefined) payload.tags = data.tags;
-  if (data.rating !== undefined) payload.rating = data.rating;
-  if (data.imageUrl !== undefined) payload.image_url = data.imageUrl;
+    setField("example_dialogues", data.exampleDialogues);
+  if (data.tags !== undefined) setField("tags", data.tags);
+  if (data.rating !== undefined) setField("rating", data.rating);
+  if (data.imageUrl !== undefined)
+    setField("image_url", data.imageUrl || null);
   if (data.hideSensitiveFields !== undefined)
-    payload.hide_sensitive_fields = data.hideSensitiveFields;
+    setField("hide_sensitive_fields", data.hideSensitiveFields);
+
+  if (Object.keys(payload).length === 0) {
+    return { success: false, error: "No editable changes to save" };
+  }
 
   const { data: updated, error } = await supabase
     .from("bots")
@@ -148,6 +231,7 @@ export async function updateBotAction(id: string, data: Partial<BotFormData>) {
     .eq("id", id)
     .select("*")
     .single();
+
   if (error) {
     return {
       success: false,
@@ -155,19 +239,28 @@ export async function updateBotAction(id: string, data: Partial<BotFormData>) {
     };
   }
 
-  if (data.imageUrl !== undefined) {
-    const oldPath = extractStorageObjectPathFromPublicUrl(
-      existingBot.image_url,
-      BOT_ASSETS_BUCKET,
-    );
-    const newPath = extractStorageObjectPathFromPublicUrl(
-      String(data.imageUrl || ""),
-      BOT_ASSETS_BUCKET,
-    );
-    if (oldPath && oldPath !== newPath) {
-      await supabase.storage.from(BOT_ASSETS_BUCKET).remove([oldPath]);
-    }
+  // Bot images are immutable once referenced by version history.
+  // Do not delete the previous asset here: older snapshots may still need it.
+
+  const historyResult = await captureBotVersion(id, "edit", changedFields);
+
+  if (!historyResult.success) {
+    console.error("Failed to capture bot version:", historyResult.error);
   }
+
+  await supabase.from("bot_activity_log").insert({
+    bot_id: id,
+    user_id: userId,
+    action: "edited",
+    details: {
+      fields: changedFields,
+      source: isOwner ? "owner" : "collaboration_workspace",
+      version_id: historyResult.success ? historyResult.version.id : null,
+      version_number: historyResult.success
+        ? historyResult.version.version_number
+        : null,
+    },
+  });
 
   return { success: true, bot: updated };
 }
@@ -201,7 +294,7 @@ export async function deleteBotAction(id: string) {
   // Verify ownership before deleting
   const { data: bot, error: fetchError } = await supabase
     .from("bots")
-    .select("user_id, image_url")
+    .select("user_id")
     .eq("id", id)
     .single();
 
@@ -215,13 +308,8 @@ export async function deleteBotAction(id: string) {
     };
   }
 
-  const imagePath = extractStorageObjectPathFromPublicUrl(
-    (bot as any).image_url,
-    BOT_ASSETS_BUCKET,
-  );
-  if (imagePath) {
-    await supabase.storage.from(BOT_ASSETS_BUCKET).remove([imagePath]);
-  }
+  // Soft deletion keeps image assets intact so a restored bot/version can still
+  // reference historical artwork. Permanent cleanup can happen on hard delete.
 
   const { error } = await supabase
     .from("bots")
@@ -277,20 +365,15 @@ export async function uploadBotImageAction(formData: FormData) {
   }
   if (!userId) return { success: false, error: "Unauthenticated" };
 
-  const existingUrl = String(formData.get("existingUrl") || "").trim();
-  const existingPath = extractStorageObjectPathFromPublicUrl(
-    existingUrl,
-    BOT_ASSETS_BUCKET,
-  );
-  const targetPath =
-    existingPath && existingPath.startsWith(`${userId}/`)
-      ? existingPath
-      : `${userId}/${uuidv4()}`;
+  // Always create a new object instead of overwriting the current image path.
+  // Version snapshots keep historical image URLs, so replacing an object in
+  // place would silently mutate every older version that referenced that URL.
+  const targetPath = `${userId}/${uuidv4()}`;
 
   const { error: uploadError } = await supabase.storage
     .from(BOT_ASSETS_BUCKET)
     .upload(targetPath, file, {
-      upsert: true,
+      upsert: false,
       contentType: file.type,
       cacheControl: "3600",
     });
@@ -301,10 +384,6 @@ export async function uploadBotImageAction(formData: FormData) {
       error: friendlySupabaseError(uploadError, "Failed to upload image"),
       raw: uploadError,
     };
-  }
-
-  if (existingPath && existingPath !== targetPath) {
-    await supabase.storage.from(BOT_ASSETS_BUCKET).remove([existingPath]);
   }
 
   const publicUrl = getStoragePublicUrl(BOT_ASSETS_BUCKET, targetPath);
@@ -341,16 +420,8 @@ export async function removeBotImageAction(url: string) {
     return { success: false, error: "Forbidden" };
   }
 
-  const { error } = await supabase.storage
-    .from(BOT_ASSETS_BUCKET)
-    .remove([path]);
-  if (error) {
-    return {
-      success: false,
-      error: friendlySupabaseError(error, "Failed to remove image"),
-      raw: error,
-    };
-  }
-
-  return { success: true };
+  // Removing the image from a bot only clears the bot field. The underlying
+  // object may still be referenced by immutable version snapshots, so it is
+  // intentionally retained until a future unreferenced-asset cleanup pass.
+  return { success: true, retainedForHistory: true };
 }

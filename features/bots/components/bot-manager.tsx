@@ -23,6 +23,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -85,10 +86,8 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { searchBots } from "@/features/bots/actions/search";
-import { CollaboratorDialog } from "./collaboration/collaborator-dialog";
-import { CollaborationWorkspace } from "./collaboration/collaboration-workspace";
 import { PendingInvites } from "./collaboration/pending-invites";
-import { forkBot } from "@/features/bots/actions/collaboration";
+import { forkBot } from "@/features/bots/actions/bot-forks";
 import { BotTagBadge, BotTagCountBadge } from "./bot-tag-badge";
 import type { CollaborativeBot } from "@/features/bots/types/bot-types";
 import { roleConfig } from "@/features/bots/types/bot-types";
@@ -206,7 +205,6 @@ interface BotCardProps {
   onEdit: () => void;
   onDelete: () => void;
   onExport: () => void;
-  onCollaborators: () => void;
   onWorkspace: () => void;
   onFork: () => void;
 }
@@ -214,7 +212,6 @@ interface BotCardProps {
 interface CollaborativeBotCardProps {
   bot: CollaborativeBot;
   viewMode: ViewMode;
-  onCollaborators: () => void;
   onWorkspace: () => void;
   onExport?: () => void;
 }
@@ -222,7 +219,6 @@ interface CollaborativeBotCardProps {
 function CollaborativeBotCard({
   bot,
   viewMode,
-  onCollaborators,
   onWorkspace,
   onExport,
 }: CollaborativeBotCardProps) {
@@ -284,10 +280,6 @@ function CollaborativeBotCard({
               <DropdownMenuItem onClick={onWorkspace}>
                 <Zap className="mr-2 h-4 w-4" />
                 Open Workspace
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={onCollaborators}>
-                <UsersRound className="mr-2 h-4 w-4" />
-                View Collaborators
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -355,10 +347,6 @@ function CollaborativeBotCard({
                 <Zap className="mr-2 h-4 w-4" />
                 Open Workspace
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={onCollaborators}>
-                <UsersRound className="mr-2 h-4 w-4" />
-                View Collaborators
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -391,7 +379,6 @@ function BotCard({
   onEdit,
   onDelete,
   onExport,
-  onCollaborators,
   onWorkspace,
   onFork,
 }: BotCardProps) {
@@ -464,10 +451,6 @@ function BotCard({
                 <Zap className="mr-2 h-4 w-4 text-primary" />
                 Open Workspace
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={onCollaborators}>
-                <UsersRound className="mr-2 h-4 w-4 text-primary" />
-                Collaborators
-              </DropdownMenuItem>
               <DropdownMenuItem onClick={onFork}>
                 <GitFork className="mr-2 h-4 w-4 text-primary" />
                 Fork Bot
@@ -535,10 +518,6 @@ function BotCard({
               <DropdownMenuItem onClick={onWorkspace}>
                 <Zap className="mr-2 h-4 w-4 text-primary" />
                 Open Workspace
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={onCollaborators}>
-                <UsersRound className="mr-2 h-4 w-4 text-primary" />
-                Collaborators
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onFork}>
                 <GitFork className="mr-2 h-4 w-4 text-primary" />
@@ -618,11 +597,10 @@ export function BotManager() {
     setSelectedBotId,
     upsertBot,
     collaborativeBots,
-    workspaceBotId,
-    setWorkspaceBotId,
   } = useStore();
 
   // UI State
+  const router = useRouter();
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterRating, setFilterRating] = useState<FilterRating>("all");
@@ -804,30 +782,7 @@ export function BotManager() {
   const rangeEnd = Math.min((currentPage + 1) * PAGE_SIZE, ownedTotal);
   const [editingBot, setEditingBot] = useState<Bot | null>(null);
   const [deleteConfirmBot, setDeleteConfirmBot] = useState<Bot | null>(null);
-  const [collabDialogBot, setCollabDialogBot] = useState<
-    Bot | CollaborativeBot | null
-  >(null);
-  const [workspaceBot, setWorkspaceBot] = useState<
-    Bot | CollaborativeBot | null
-  >(null);
   const [forking, setForking] = useState(false);
-
-  // Restore workspace from localStorage on mount
-  useEffect(() => {
-    if (workspaceBotId && !workspaceBot && bots.length > 0) {
-      const foundOwned = bots.find((b) => b.id === workspaceBotId);
-      if (foundOwned) {
-        setWorkspaceBot(foundOwned);
-        return;
-      }
-      const foundCollab = collaborativeBots.find(
-        (b) => b.id === workspaceBotId,
-      );
-      if (foundCollab) {
-        setWorkspaceBot(foundCollab);
-      }
-    }
-  }, [workspaceBotId, bots, collaborativeBots, workspaceBot]);
 
   // Check if we should open editing from external navigation
   const externalEditBot = selectedBotId
@@ -932,28 +887,6 @@ export function BotManager() {
       toast.error("Failed to export character card");
     }
   };
-
-  // If workspace is open, show it instead of the bot manager
-  if (workspaceBot) {
-    return (
-      <CollaborationWorkspace
-        bot={workspaceBot}
-        userRole={
-          "collaborator_role" in workspaceBot
-            ? (workspaceBot as CollaborativeBot).collaborator_role
-            : "owner"
-        }
-        onBack={() => {
-          setWorkspaceBot(null);
-          setWorkspaceBotId(null);
-        }}
-        onBotUpdated={() => {
-          // Refresh the bot data when workspace saves
-          window.dispatchEvent(new Event("focus"));
-        }}
-      />
-    );
-  }
 
   return (
     <div id="bot-manager-top" className="p-4 sm:p-6 md:p-8 lg:p-10">
@@ -1152,10 +1085,8 @@ export function BotManager() {
               onEdit={() => setEditingBot(bot)}
               onDelete={() => setDeleteConfirmBot(bot)}
               onExport={() => handleExportBot(bot)}
-              onCollaborators={() => setCollabDialogBot(bot)}
               onWorkspace={() => {
-                setWorkspaceBot(bot);
-                setWorkspaceBotId(bot.id);
+                router.push(`/workspace/bots/${bot.id}`);
               }}
               onFork={async () => {
                 setForking(true);
@@ -1216,10 +1147,8 @@ export function BotManager() {
               key={`collab-${collabBot.id}`}
               bot={collabBot}
               viewMode={viewMode}
-              onCollaborators={() => setCollabDialogBot(collabBot)}
               onWorkspace={() => {
-                setWorkspaceBot(collabBot);
-                setWorkspaceBotId(collabBot.id);
+                router.push(`/workspace/bots/${collabBot.id}`);
               }}
               onExport={() => {
                 // Export using the bot data from collaborative bot
@@ -1455,23 +1384,6 @@ export function BotManager() {
             </PaginationContent>
           </Pagination>
         </div>
-      )}
-
-      {/* Collaborator Dialog */}
-      {collabDialogBot && (
-        <CollaboratorDialog
-          open={!!collabDialogBot}
-          onOpenChange={(open) => {
-            if (!open) setCollabDialogBot(null);
-          }}
-          botId={collabDialogBot.id}
-          botName={collabDialogBot.name}
-          currentUserRole={
-            "collaborator_role" in collabDialogBot
-              ? (collabDialogBot as CollaborativeBot).collaborator_role
-              : "owner"
-          }
-        />
       )}
     </div>
   );

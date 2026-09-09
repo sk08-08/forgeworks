@@ -106,10 +106,6 @@ interface StoreState {
   setSelectedBotId: (id: string | null) => void;
   selectedFormId: string | null;
   setSelectedFormId: (id: string | null) => void;
-
-  // Workspace persistence (survives page refresh)
-  workspaceBotId: string | null;
-  setWorkspaceBotId: (id: string | null) => void;
 }
 
 // ----------------------------------------------------------------------------
@@ -444,32 +440,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [selectedBotId, setSelectedBotId] = useState<string | null>(null);
   const [selectedFormId, setSelectedFormId] = useState<string | null>(null);
 
-  // Workspace persistence (survives page refresh)
-  const [workspaceBotId, setWorkspaceBotIdState] = useState<string | null>(
-    null,
-  );
-
-  const setWorkspaceBotId = useCallback((id: string | null) => {
-    setWorkspaceBotIdState(id);
-    if (typeof window !== "undefined") {
-      if (id) {
-        localStorage.setItem("workspaceBotId", id);
-      } else {
-        localStorage.removeItem("workspaceBotId");
-      }
-    }
-  }, []);
-
-  // Load saved workspaceBotId from localStorage on mount
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("workspaceBotId");
-      if (saved) {
-        setWorkspaceBotIdState(saved);
-      }
-    }
-  }, []);
-
   // Bot operations
   const addBot = useCallback((data: BotFormData): Bot => {
     const newBot: Bot = {
@@ -716,8 +686,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setSelectedBotId,
     selectedFormId,
     setSelectedFormId,
-    workspaceBotId,
-    setWorkspaceBotId,
   };
 
   return (

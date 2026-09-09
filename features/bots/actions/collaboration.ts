@@ -2,7 +2,136 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUserAccess } from "@/lib/access";
-import type { CollaboratorRole } from "@/features/bots/types/bot-types";
+import type {
+  Bot,
+  BotWorkspaceRole,
+  CollaboratorRole,
+} from "@/features/bots/types/bot-types";
+import {
+  canRoleManageCoOwners,
+  canRoleManageNormalMembers,
+  canRoleReviewChanges,
+  sanitizeBotChangeRequestChanges,
+  type BotCollaborationField,
+} from "@/features/bots/lib/collaboration-permissions";
+
+async function getBotWorkspaceRole(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  botId: string,
+  userId: string,
+): Promise<BotWorkspaceRole | null> {
+  const { data: bot } = await supabase
+    .from("bots")
+    .select("user_id")
+    .eq("id", botId)
+    .is("deleted_at", null)
+    .maybeSingle();
+
+  if (!bot) return null;
+  if (bot.user_id === userId) return "owner";
+
+  const { data: collaborator } = await supabase
+    .from("bot_collaborators")
+    .select("role")
+    .eq("bot_id", botId)
+    .eq("user_id", userId)
+    .eq("status", "accepted")
+    .maybeSingle();
+
+  return (collaborator?.role as CollaboratorRole | undefined) ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// Get one bot workspace for the current user
+// ---------------------------------------------------------------------------
+
+export async function getBotWorkspace(botId: string) {
+  const supabase = await createClient();
+  const access = await getCurrentUserAccess(supabase);
+
+  if (!access.user) {
+    return {
+      success: false as const,
+      error: "Not authenticated",
+    };
+  }
+
+  const role = await getBotWorkspaceRole(supabase, botId, access.user.id);
+
+  // Intentionally do not reveal whether the bot exists or merely isn't
+  // accessible to this account.
+  if (!role) {
+    return {
+      success: false as const,
+      error: "Workspace unavailable",
+    };
+  }
+
+  const { data, error } = await supabase
+    .from("active_bots")
+    .select(`
+      id,
+      user_id,
+      name,
+      chat_name,
+      short_description,
+      personality,
+      first_message,
+      alternate_greetings,
+      scenario,
+      example_dialogues,
+      tags,
+      rating,
+      image_url,
+      hide_sensitive_fields,
+      created_at,
+      updated_at
+    `)
+    .eq("id", botId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Failed to load bot workspace:", error);
+    return {
+      success: false as const,
+      error: "Workspace unavailable",
+    };
+  }
+
+  if (!data) {
+    return {
+      success: false as const,
+      error: "Workspace unavailable",
+    };
+  }
+
+  const bot: Bot = {
+    id: data.id,
+    ownerId: data.user_id || undefined,
+    name: data.name || "",
+    chatName: data.chat_name || undefined,
+    shortDescription: data.short_description || "",
+    personality: data.personality || "",
+    firstMessage: data.first_message || "",
+    alternateGreetings: Array.isArray(data.alternate_greetings)
+      ? data.alternate_greetings
+      : [],
+    scenario: data.scenario || "",
+    exampleDialogues: data.example_dialogues || "",
+    tags: Array.isArray(data.tags) ? data.tags : [],
+    rating: data.rating === "NSFW" ? "NSFW" : "SFW",
+    imageUrl: data.image_url || undefined,
+    hideSensitiveFields: data.hide_sensitive_fields === true,
+    createdAt: data.created_at ? new Date(data.created_at) : new Date(),
+    updatedAt: data.updated_at ? new Date(data.updated_at) : new Date(),
+  };
+
+  return {
+    success: true as const,
+    bot,
+    role,
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Invite collaborator to bot
@@ -12,6 +141,7 @@ export async function inviteCollaborator(
   botId: string,
   username: string,
   role: CollaboratorRole,
+  inviteMessage?: string,
 ) {
   const supabase = await createClient();
   const access = await getCurrentUserAccess(supabase);
@@ -19,22 +149,40 @@ export async function inviteCollaborator(
     return { success: false, error: "Not authenticated" };
   }
 
-  // Verify bot ownership
-  const { data: bot } = await supabase
-    .from("active_bots")
-    .select("id, user_id, name")
-    .eq("id", botId)
-    .single();
+  const currentRole = await getBotWorkspaceRole(
+    supabase,
+    botId,
+    access.user.id,
+  );
 
-  if (!bot || bot.user_id !== access.user.id) {
+  if (!currentRole || !canRoleManageNormalMembers(currentRole)) {
     return {
       success: false,
-      error: "You can only invite collaborators to your own bots",
+      error: "You do not have permission to invite collaborators",
     };
   }
 
-  // Find user by username
+  if (role === "co_owner" && !canRoleManageCoOwners(currentRole)) {
+    return {
+      success: false,
+      error: "Only the bot owner can invite a Co-owner",
+    };
+  }
+
   const cleanUsername = username.toLowerCase().trim();
+  const cleanMessage = inviteMessage?.trim() || null;
+
+  if (!cleanUsername) {
+    return { success: false, error: "Enter a username" };
+  }
+
+  if (cleanMessage && cleanMessage.length > 1000) {
+    return {
+      success: false,
+      error: "Invitation message cannot exceed 1000 characters",
+    };
+  }
+
   const { data: targetProfile } = await supabase
     .from("profiles")
     .select("id")
@@ -49,7 +197,6 @@ export async function inviteCollaborator(
     return { success: false, error: "You cannot invite yourself" };
   }
 
-  // Upsert collaborator record — the DB trigger will create the notification
   const { error } = await supabase.from("bot_collaborators").upsert(
     {
       bot_id: botId,
@@ -57,6 +204,8 @@ export async function inviteCollaborator(
       invited_by: access.user.id,
       role,
       status: "pending",
+      invite_message: cleanMessage,
+      responded_at: null,
     },
     { onConflict: "bot_id,user_id" },
   );
@@ -64,6 +213,17 @@ export async function inviteCollaborator(
   if (error) {
     return { success: false, error: error.message };
   }
+
+  await supabase.from("bot_activity_log").insert({
+    bot_id: botId,
+    user_id: access.user.id,
+    action: "collaborator_invited",
+    details: {
+      collaborator_user_id: targetProfile.id,
+      role,
+    },
+  });
+
   return { success: true, invitedUsername: cleanUsername };
 }
 
@@ -99,7 +259,10 @@ export async function respondToInvite(collaboratorId: string, accept: boolean) {
 
   const { error } = await supabase
     .from("bot_collaborators")
-    .update({ status: accept ? "accepted" : "declined" })
+    .update({
+      status: accept ? "accepted" : "declined",
+      responded_at: new Date().toISOString(),
+    })
     .eq("id", collaboratorId)
     .eq("user_id", access.user.id);
 
@@ -121,36 +284,52 @@ export async function removeCollaborator(collaboratorId: string) {
     return { success: false, error: "Not authenticated" };
   }
 
-  // Get the collaborator record to verify permissions
   const { data: collabRecord } = await supabase
     .from("bot_collaborators")
     .select("id, bot_id, user_id, role")
     .eq("id", collaboratorId)
-    .single();
+    .maybeSingle();
 
   if (!collabRecord) {
     return { success: false, error: "Collaborator not found" };
   }
 
-  // Check if the user is the bot owner OR the collaborator themselves
-  const { data: bot } = await supabase
-    .from("active_bots")
-    .select("user_id")
-    .eq("id", collabRecord.bot_id)
-    .single();
-
-  const isOwner = bot?.user_id === access.user.id;
   const isSelf = collabRecord.user_id === access.user.id;
+  const currentRole = await getBotWorkspaceRole(
+    supabase,
+    collabRecord.bot_id,
+    access.user.id,
+  );
 
-  if (!isOwner && !isSelf) {
-    return {
-      success: false,
-      error: "You don't have permission to remove this collaborator",
-    };
+  if (!isSelf) {
+    if (!currentRole || !canRoleManageNormalMembers(currentRole)) {
+      return {
+        success: false,
+        error: "You do not have permission to remove this collaborator",
+      };
+    }
+
+    if (
+      collabRecord.role === "co_owner" &&
+      !canRoleManageCoOwners(currentRole)
+    ) {
+      return {
+        success: false,
+        error: "Only the bot owner can remove a Co-owner",
+      };
+    }
   }
 
-  // Log the removal activity (only if owner is removing)
-  if (isOwner && !isSelf) {
+  const { error } = await supabase
+    .from("bot_collaborators")
+    .delete()
+    .eq("id", collaboratorId);
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  if (!isSelf) {
     await supabase.from("bot_activity_log").insert({
       bot_id: collabRecord.bot_id,
       user_id: access.user.id,
@@ -162,14 +341,6 @@ export async function removeCollaborator(collaboratorId: string) {
     });
   }
 
-  const { error } = await supabase
-    .from("bot_collaborators")
-    .delete()
-    .eq("id", collaboratorId);
-
-  if (error) {
-    return { success: false, error: error.message };
-  }
   return { success: true };
 }
 
@@ -184,51 +355,26 @@ export async function getBotCollaborators(botId: string) {
     return { success: false, error: "Not authenticated", collaborators: [] };
   }
 
-  // First try with join syntax
+  const currentRole = await getBotWorkspaceRole(
+    supabase,
+    botId,
+    access.user.id,
+  );
+
+  if (!currentRole) {
+    return { success: false, error: "Forbidden", collaborators: [] };
+  }
+
   const { data, error } = await supabase
     .from("bot_collaborators")
     .select(
-      "id, user_id, invited_by, role, status, created_at, profile:user_id(username, display_name, avatar_url), inviter:invited_by(username, display_name)",
+      "id, user_id, invited_by, role, status, invite_message, created_at, updated_at, expires_at, responded_at, profile:user_id(username, display_name, avatar_url), inviter:invited_by(username, display_name, avatar_url)",
     )
-    .eq("bot_id", botId);
+    .eq("bot_id", botId)
+    .order("created_at", { ascending: true });
 
   if (error) {
-    // Fallback: fetch collaborators and profiles separately
-    const { data: collabs, error: collabError } = await supabase
-      .from("bot_collaborators")
-      .select("id, user_id, invited_by, role, status, created_at")
-      .eq("bot_id", botId);
-
-    if (collabError) {
-      return { success: false, error: collabError.message, collaborators: [] };
-    }
-
-    // Fetch all unique user IDs
-    const userIds = [
-      ...new Set([
-        ...(collabs || []).map((c) => c.user_id),
-        ...(collabs || []).map((c) => c.invited_by),
-      ]),
-    ];
-
-    if (userIds.length > 0) {
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, username, display_name, avatar_url")
-        .in("id", userIds);
-
-      const profileMap = new Map((profiles || []).map((p) => [p.id, p]));
-
-      const enrichedCollabs = (collabs || []).map((c) => ({
-        ...c,
-        profile: profileMap.get(c.user_id) || null,
-        inviter: profileMap.get(c.invited_by) || null,
-      }));
-
-      return { success: true, collaborators: enrichedCollabs };
-    }
-
-    return { success: true, collaborators: collabs || [] };
+    return { success: false, error: error.message, collaborators: [] };
   }
 
   return { success: true, collaborators: data || [] };
@@ -248,26 +394,34 @@ export async function updateCollaboratorRole(
     return { success: false, error: "Not authenticated" };
   }
 
-  // Get the collaborator record
   const { data: collabRecord } = await supabase
     .from("bot_collaborators")
     .select("id, bot_id, user_id, role")
     .eq("id", collaboratorId)
-    .single();
+    .maybeSingle();
 
   if (!collabRecord) {
     return { success: false, error: "Collaborator not found" };
   }
 
-  // Verify ownership
-  const { data: bot } = await supabase
-    .from("active_bots")
-    .select("user_id")
-    .eq("id", collabRecord.bot_id)
-    .single();
+  const currentRole = await getBotWorkspaceRole(
+    supabase,
+    collabRecord.bot_id,
+    access.user.id,
+  );
 
-  if (!bot || bot.user_id !== access.user.id) {
-    return { success: false, error: "Only the bot owner can change roles" };
+  if (!currentRole || !canRoleManageNormalMembers(currentRole)) {
+    return { success: false, error: "You cannot change collaborator roles" };
+  }
+
+  const touchesCoOwner =
+    collabRecord.role === "co_owner" || newRole === "co_owner";
+
+  if (touchesCoOwner && !canRoleManageCoOwners(currentRole)) {
+    return {
+      success: false,
+      error: "Only the bot owner can add, remove, or change a Co-owner",
+    };
   }
 
   const { error } = await supabase
@@ -279,7 +433,6 @@ export async function updateCollaboratorRole(
     return { success: false, error: error.message };
   }
 
-  // Log activity
   await supabase.from("bot_activity_log").insert({
     bot_id: collabRecord.bot_id,
     user_id: access.user.id,
@@ -292,77 +445,6 @@ export async function updateCollaboratorRole(
   });
 
   return { success: true };
-}
-
-// ---------------------------------------------------------------------------
-// Fork a bot
-// ---------------------------------------------------------------------------
-
-export async function forkBot(originalBotId: string, reason?: string) {
-  const supabase = await createClient();
-  const access = await getCurrentUserAccess(supabase);
-  if (!access.user) {
-    return { success: false, error: "Not authenticated" };
-  }
-
-  // Get original bot
-  const { data: originalBot } = await supabase
-    .from("active_bots")
-    .select("*")
-    .eq("id", originalBotId)
-    .single();
-
-  if (!originalBot) {
-    return { success: false, error: "Original bot not found" };
-  }
-
-  // Create forked bot
-  const { data: forkedBot, error: insertError } = await supabase
-    .from("active_bots")
-    .insert({
-      user_id: access.user.id,
-      name: `${originalBot.name} (Fork)`,
-      chat_name: originalBot.chat_name,
-      short_description: originalBot.short_description,
-      personality: originalBot.personality,
-      first_message: originalBot.first_message,
-      alternate_greetings: originalBot.alternate_greetings || [],
-      scenario: originalBot.scenario,
-      example_dialogues: originalBot.example_dialogues,
-      tags: originalBot.tags || [],
-      rating: originalBot.rating,
-      image_url: originalBot.image_url,
-    })
-    .select("id")
-    .single();
-
-  if (insertError || !forkedBot) {
-    return {
-      success: false,
-      error: insertError?.message || "Failed to create fork",
-    };
-  }
-
-  // Record fork relationship
-  await supabase.from("bot_forks").insert({
-    original_bot_id: originalBotId,
-    forked_bot_id: forkedBot.id,
-    forked_by: access.user.id,
-    fork_reason: reason || "",
-  });
-
-  // Log activity on original bot
-  await supabase.from("bot_activity_log").insert({
-    bot_id: originalBotId,
-    user_id: access.user.id,
-    action: "forked",
-    details: {
-      forked_bot_id: forkedBot.id,
-      reason: reason || "",
-    },
-  });
-
-  return { success: true, forkedBotId: forkedBot.id };
 }
 
 // ---------------------------------------------------------------------------
@@ -402,43 +484,10 @@ export async function getMyPendingInvites() {
     return { success: false, error: "Not authenticated", invites: [] };
   }
 
-  // Use the SECURITY DEFINER function to bypass RLS and get bot info
-  const { data, error } = await supabase.rpc(
-    "get_pending_invites_with_bot_info",
-    { p_user_id: access.user.id },
-  );
+  const { data, error } = await supabase.rpc("get_my_pending_bot_invites");
 
   if (error) {
-    // Fallback to direct query if RPC doesn't exist yet (migration not applied)
-    const { data: fallbackData, error: fallbackError } = await supabase
-      .from("bot_collaborators")
-      .select(
-        "id, bot_id, invited_by, role, status, created_at, bot:bot_id(name, image_url), inviter:invited_by(username, display_name, avatar_url)",
-      )
-      .eq("user_id", access.user.id)
-      .eq("status", "pending");
-
-    if (fallbackError) {
-      return { success: false, error: fallbackError.message, invites: [] };
-    }
-
-    return {
-      success: true,
-      invites: (fallbackData || []).map((inv: any) => ({
-        id: inv.id,
-        bot_id: inv.bot_id,
-        invited_by: inv.invited_by,
-        role: inv.role,
-        status: inv.status,
-        created_at: inv.created_at,
-        bot_name: inv.bot?.name || null,
-        bot_image_url: inv.bot?.image_url || null,
-        bot_short_description: null,
-        inviter_username: inv.inviter?.username || null,
-        inviter_display_name: inv.inviter?.display_name || null,
-        inviter_avatar_url: inv.inviter?.avatar_url || null,
-      })),
-    };
+    return { success: false, error: error.message, invites: [] };
   }
 
   return { success: true, invites: data || [] };
@@ -621,6 +670,7 @@ export async function submitChangeRequest(
   botId: string,
   proposedChanges: Record<string, unknown>,
   description?: string,
+  title?: string,
 ) {
   const supabase = await createClient();
   const access = await getCurrentUserAccess(supabase);
@@ -628,8 +678,54 @@ export async function submitChangeRequest(
     return { success: false, error: "Not authenticated" };
   }
 
-  if (!proposedChanges || Object.keys(proposedChanges).length === 0) {
-    return { success: false, error: "No changes proposed" };
+  const currentRole = await getBotWorkspaceRole(
+    supabase,
+    botId,
+    access.user.id,
+  );
+
+  if (
+    currentRole !== "owner" &&
+    currentRole !== "editor" &&
+    currentRole !== "co_owner"
+  ) {
+    return { success: false, error: "You cannot propose changes to this bot" };
+  }
+
+  const { changes, rejectedFields } = sanitizeBotChangeRequestChanges(
+    proposedChanges,
+    currentRole,
+  );
+
+  if (rejectedFields.length > 0) {
+    return {
+      success: false,
+      error: `These fields cannot be changed by your role: ${rejectedFields.join(
+        ", ",
+      )}`,
+    };
+  }
+
+  if (Object.keys(changes).length === 0) {
+    return { success: false, error: "No valid changes proposed" };
+  }
+
+  const cleanDescription = description?.trim() || null;
+  const cleanTitle = title?.trim() || null;
+
+  const { data: baseVersion, error: baseVersionError } = await supabase
+    .from("bot_versions")
+    .select("id")
+    .eq("bot_id", botId)
+    .order("version_number", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (baseVersionError || !baseVersion) {
+    return {
+      success: false,
+      error: "Could not establish a safe base version for this request",
+    };
   }
 
   const { data, error } = await supabase
@@ -637,8 +733,11 @@ export async function submitChangeRequest(
     .insert({
       bot_id: botId,
       author_id: access.user.id,
-      proposed_changes: proposedChanges,
-      description: description || null,
+      proposed_changes: changes,
+      title: cleanTitle,
+      description: cleanDescription,
+      status: "pending",
+      base_version_id: baseVersion.id,
     })
     .select("id")
     .single();
@@ -647,14 +746,13 @@ export async function submitChangeRequest(
     return { success: false, error: error.message };
   }
 
-  // Log activity
   await supabase.from("bot_activity_log").insert({
     bot_id: botId,
     user_id: access.user.id,
     action: "change_request_submitted",
     details: {
       change_request_id: data.id,
-      fields: Object.keys(proposedChanges),
+      fields: Object.keys(changes),
     },
   });
 
@@ -665,67 +763,165 @@ export async function approveChangeRequest(changeRequestId: string) {
   const supabase = await createClient();
   const access = await getCurrentUserAccess(supabase);
   if (!access.user) {
-    return { success: false, error: "Not authenticated" };
+    return { success: false as const, error: "Not authenticated" };
   }
 
   const { data: cr } = await supabase
     .from("bot_change_requests")
     .select("id, bot_id, author_id, status, proposed_changes")
     .eq("id", changeRequestId)
-    .single();
+    .maybeSingle();
+
+  if (!cr) {
+    return { success: false as const, error: "Change request not found" };
+  }
+  if (cr.status !== "pending" && cr.status !== "changes_requested") {
+    return {
+      success: false as const,
+      error: "This change request is already closed",
+    };
+  }
+
+  const currentRole = await getBotWorkspaceRole(
+    supabase,
+    cr.bot_id,
+    access.user.id,
+  );
+
+  if (!currentRole || !canRoleReviewChanges(currentRole)) {
+    return {
+      success: false as const,
+      error: "You cannot review this change request",
+    };
+  }
+
+  const authorRole = await getBotWorkspaceRole(
+    supabase,
+    cr.bot_id,
+    cr.author_id,
+  );
+
+  const sanitizingRole =
+    authorRole === "owner" ||
+    authorRole === "editor" ||
+    authorRole === "co_owner"
+      ? authorRole
+      : "editor";
+
+  const { changes, rejectedFields } = sanitizeBotChangeRequestChanges(
+    cr.proposed_changes as Record<string, unknown>,
+    sanitizingRole,
+  );
+
+  if (rejectedFields.length > 0) {
+    return {
+      success: false as const,
+      error: `This request contains unsupported fields: ${rejectedFields.join(
+        ", ",
+      )}`,
+    };
+  }
+
+  const { data, error } = await supabase.rpc(
+    "apply_bot_change_request_if_current",
+    {
+      p_change_request_id: changeRequestId,
+      p_changes: changes,
+    },
+  );
+
+  if (error) {
+    return { success: false as const, error: error.message };
+  }
+
+  const merge = (data || {}) as {
+    success?: boolean;
+    error?: string;
+    conflict_fields?: string[];
+    version_id?: string;
+    version_number?: number;
+  };
+
+  if (!merge.success) {
+    const conflictFields = Array.isArray(merge.conflict_fields)
+      ? merge.conflict_fields
+      : [];
+    return {
+      success: false as const,
+      error: merge.error || "Failed to merge change request",
+      conflictFields,
+    };
+  }
+
+  return {
+    success: true as const,
+    changes,
+    versionId: merge.version_id || null,
+    versionNumber: merge.version_number || null,
+  };
+}
+
+export async function requestChangesOnChangeRequest(
+  changeRequestId: string,
+  reviewComment: string,
+) {
+  const supabase = await createClient();
+  const access = await getCurrentUserAccess(supabase);
+  if (!access.user) {
+    return { success: false, error: "Not authenticated" };
+  }
+
+  const comment = reviewComment.trim();
+  if (!comment) {
+    return {
+      success: false,
+      error: "Explain what should be changed before sending it back",
+    };
+  }
+
+  const { data: cr } = await supabase
+    .from("bot_change_requests")
+    .select("id, bot_id, author_id, status")
+    .eq("id", changeRequestId)
+    .maybeSingle();
 
   if (!cr) return { success: false, error: "Change request not found" };
-  if (cr.status !== "pending")
-    return { success: false, error: "Already reviewed" };
-
-  // Verify ownership
-  const { data: bot } = await supabase
-    .from("active_bots")
-    .select("user_id")
-    .eq("id", cr.bot_id)
-    .single();
-
-  if (!bot || bot.user_id !== access.user.id) {
-    return { success: false, error: "Only the owner can approve" };
+  if (cr.status !== "pending") {
+    return { success: false, error: "This change request is not open" };
   }
 
-  // Apply the changes to the bot
-  const updatePayload: Record<string, unknown> = {};
-  const changes = cr.proposed_changes as Record<string, unknown>;
-  for (const [field, value] of Object.entries(changes)) {
-    updatePayload[field] = value;
+  const currentRole = await getBotWorkspaceRole(
+    supabase,
+    cr.bot_id,
+    access.user.id,
+  );
+
+  if (!currentRole || !canRoleReviewChanges(currentRole)) {
+    return { success: false, error: "You cannot review this change request" };
   }
 
-  if (Object.keys(updatePayload).length > 0) {
-    const { error: updateError } = await supabase
-      .from("bots")
-      .update(updatePayload)
-      .eq("id", cr.bot_id);
-
-    if (updateError) {
-      return {
-        success: false,
-        error: `Failed to apply changes: ${updateError.message}`,
-      };
-    }
-  }
-
-  // Mark as approved
-  await supabase
+  const { error } = await supabase
     .from("bot_change_requests")
     .update({
-      status: "approved",
-      reviewed_by: access.user.id,
-      reviewed_at: new Date().toISOString(),
+      status: "changes_requested",
+      review_comment: comment,
+      changes_requested_at: new Date().toISOString(),
+      changes_requested_by: access.user.id,
+      reviewed_by: null,
+      reviewed_at: null,
     })
     .eq("id", changeRequestId);
 
-  // Log activity
+  if (error) return { success: false, error: error.message };
+
   await supabase.from("bot_activity_log").insert({
     bot_id: cr.bot_id,
     user_id: access.user.id,
-    action: "change_request_approved",
-    details: { change_request_id: changeRequestId, author_id: cr.author_id },
+    action: "change_request_changes_requested",
+    details: {
+      change_request_id: changeRequestId,
+      author_id: cr.author_id,
+    },
   });
 
   return { success: true };
@@ -745,37 +941,43 @@ export async function rejectChangeRequest(
     .from("bot_change_requests")
     .select("id, bot_id, author_id, status")
     .eq("id", changeRequestId)
-    .single();
+    .maybeSingle();
 
   if (!cr) return { success: false, error: "Change request not found" };
-  if (cr.status !== "pending")
-    return { success: false, error: "Already reviewed" };
-
-  const { data: bot } = await supabase
-    .from("active_bots")
-    .select("user_id")
-    .eq("id", cr.bot_id)
-    .single();
-
-  if (!bot || bot.user_id !== access.user.id) {
-    return { success: false, error: "Only the owner can reject" };
+  if (cr.status !== "pending" && cr.status !== "changes_requested") {
+    return { success: false, error: "This change request is already closed" };
   }
 
-  await supabase
+  const currentRole = await getBotWorkspaceRole(
+    supabase,
+    cr.bot_id,
+    access.user.id,
+  );
+
+  if (!currentRole || !canRoleReviewChanges(currentRole)) {
+    return { success: false, error: "You cannot review this change request" };
+  }
+
+  const { error } = await supabase
     .from("bot_change_requests")
     .update({
       status: "rejected",
       reviewed_by: access.user.id,
       reviewed_at: new Date().toISOString(),
-      rejection_reason: reason || null,
+      rejection_reason: reason?.trim() || null,
     })
     .eq("id", changeRequestId);
+
+  if (error) return { success: false, error: error.message };
 
   await supabase.from("bot_activity_log").insert({
     bot_id: cr.bot_id,
     user_id: access.user.id,
     action: "change_request_rejected",
-    details: { change_request_id: changeRequestId, reason: reason || "" },
+    details: {
+      change_request_id: changeRequestId,
+      reason: reason?.trim() || "",
+    },
   });
 
   return { success: true };
@@ -793,24 +995,7 @@ export async function getBotChangeRequests(botId: string) {
   });
 
   if (error) {
-    // Fallback to direct query
-    const { data: fallbackData, error: fallbackError } = await supabase
-      .from("bot_change_requests")
-      .select(
-        "id, bot_id, author_id, status, proposed_changes, description, reviewed_by, reviewed_at, rejection_reason, created_at, updated_at",
-      )
-      .eq("bot_id", botId)
-      .order("created_at", { ascending: false });
-
-    if (fallbackError) {
-      return {
-        success: false,
-        error: fallbackError.message,
-        changeRequests: [],
-      };
-    }
-
-    return { success: true, changeRequests: fallbackData || [] };
+    return { success: false, error: error.message, changeRequests: [] };
   }
 
   return { success: true, changeRequests: data || [] };
