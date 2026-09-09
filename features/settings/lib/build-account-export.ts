@@ -457,7 +457,7 @@ export async function buildCurrentUserAccountExport(): Promise<
       bots: botsResult.data.bots,
       forms: formsResult.data.forms,
       creatorPages: creatorPagesResult.data.creatorPages,
-      atlas: atlasResult.data.atlas,
+      atlas: atlasResult.data,
 
       social: {
         following: asExportRecords(following),

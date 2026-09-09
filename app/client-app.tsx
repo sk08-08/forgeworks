@@ -12,7 +12,6 @@ import { AdminPanel } from "@/features/admin/components/admin-panel";
 import { BotManager } from "@/features/bots/components/bot-manager";
 import { FormManager } from "@/features/forms/components/form-manager";
 import { RequestsView } from "@/features/forms/components/submissions/requests-view";
-import { AtlasHub } from "@/features/atlas/components/atlas-hub";
 import { CreatorPages } from "@/features/creator-pages/components/creator-pages";
 import { ProfilePage } from "@/features/profile/components/profile-page";
 import { FeedbackInbox } from "@/features/feedback/components/feedback-inbox";
@@ -71,8 +70,6 @@ function ViewRouter() {
       return <ModerationPageContent />;
     case "feedback":
       return <FeedbackInbox />;
-    case "atlas":
-      return <AtlasHub />;
     case "creator-pages":
       return <CreatorPages />;
     case "profiles":

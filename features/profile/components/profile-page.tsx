@@ -190,7 +190,7 @@ export function ProfilePage() {
       slug: string;
       kind: string;
       description: string;
-      active_atlas_world_bots?: { bot_id: string }[];
+      world_bot_links?: { bot_id: string }[];
     }>
   >([]);
 
@@ -220,8 +220,8 @@ export function ProfilePage() {
             .order("updated_at", { ascending: false }),
 
           supabase
-            .from("active_atlas_worlds")
-            .select("id, title, slug, kind, description")
+            .from("atlas_worlds")
+            .select("id, title, slug, description")
             .eq("user_id", ownProfileResult.profile.id)
             .order("updated_at", { ascending: false }),
         ]);
@@ -238,7 +238,7 @@ export function ProfilePage() {
 
         if (worldIds.length > 0) {
           const { data, error } = await supabase
-            .from("active_atlas_world_bots")
+            .from("atlas_world_bots")
             .select("world_id, bot_id")
             .in("world_id", worldIds);
 
@@ -260,7 +260,7 @@ export function ProfilePage() {
 
         const normalizedWorlds = (worldRows || []).map((world: any) => ({
           ...world,
-          active_atlas_world_bots: worldBotsByWorldId.get(world.id) || [],
+          world_bot_links: worldBotsByWorldId.get(world.id) || [],
         }));
 
         return {
@@ -1159,7 +1159,7 @@ export function ProfilePage() {
                         variant="secondary"
                         className="text-[10px] capitalize"
                       >
-                        {world.kind}
+                        World
                       </Badge>
                       <p className="text-sm font-medium truncate">
                         {world.title}
@@ -1169,7 +1169,7 @@ export function ProfilePage() {
                       {world.description || "No description"}
                     </p>
                     <p className="text-[10px] text-muted-foreground mt-1">
-                      {world.active_atlas_world_bots?.length || 0} bots
+                      {world.world_bot_links?.length || 0} bots
                     </p>
                   </div>
                 ))}
@@ -1297,7 +1297,7 @@ export function ProfilePage() {
                       Bots in this world
                     </p>
                     <p className="text-sm">
-                      {(selectedItem.data as any).active_atlas_world_bots
+                      {(selectedItem.data as any).world_bot_links
                         ?.length || 0}{" "}
                       bots
                     </p>

@@ -327,6 +327,16 @@ export function DashboardLayout({ children, username }: DashboardLayoutProps) {
       return;
     }
 
+    if (view === "atlas") {
+      router.push("/atlas");
+
+      if (isMobile) {
+        setMobileMenuOpen(false);
+      }
+
+      return;
+    }
+
     setCurrentView(view);
 
     if (isMobile) {

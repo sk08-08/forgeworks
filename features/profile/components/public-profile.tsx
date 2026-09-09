@@ -136,10 +136,8 @@ interface WorldPreview {
   id: string;
   title: string;
   slug: string;
-  kind: string;
-  status: string;
   description: string;
-  active_atlas_world_bots?: { bot_id: string }[];
+  world_bot_links?: { bot_id: string }[];
 }
 
 interface FormPreview {
@@ -977,7 +975,7 @@ export function PublicProfile({
                           variant="secondary"
                           className="text-[10px] capitalize"
                         >
-                          {world.kind}
+                          World
                         </Badge>
                         <p className="text-sm font-medium truncate">
                           {world.title}
@@ -987,7 +985,7 @@ export function PublicProfile({
                         {world.description || "No description"}
                       </p>
                       <p className="text-[10px] text-muted-foreground mt-1">
-                        {world.active_atlas_world_bots?.length || 0} bots
+                        {world.world_bot_links?.length || 0} bots
                       </p>
                     </div>
                   ))}

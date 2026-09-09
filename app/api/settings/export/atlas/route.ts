@@ -17,6 +17,6 @@ export async function GET() {
 
   return createJsonExportResponse(
     result.data,
-    `janitorforge-atlas-export-${getExportDate()}.json`,
+    `forge-knowledge-atlas-${getExportDate()}.json`,
   );
 }

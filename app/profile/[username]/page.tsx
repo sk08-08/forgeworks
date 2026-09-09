@@ -275,9 +275,10 @@ export default async function UserProfilePage({ params }: PageProps) {
 
   // Fetch worlds (same strategy as own profile: worlds + links in separate queries)
   const { data: worldRows, error: worldsError } = await supabase
-    .from("active_atlas_worlds")
-    .select("id, title, slug, kind, status, description")
+    .from("atlas_worlds")
+    .select("id, title, slug, description")
     .eq("user_id", normalizedProfile.id)
+    .eq("visibility", "public")
     .order("updated_at", { ascending: false });
 
   if (worldsError) {
@@ -289,7 +290,7 @@ export default async function UserProfilePage({ params }: PageProps) {
 
   if (worldIds.length > 0) {
     const { data, error: worldBotsError } = await supabase
-      .from("active_atlas_world_bots")
+      .from("atlas_world_bots")
       .select("world_id, bot_id")
       .in("world_id", worldIds);
 
@@ -309,7 +310,7 @@ export default async function UserProfilePage({ params }: PageProps) {
 
   const worlds = (worldRows || []).map((world: any) => ({
     ...world,
-    active_atlas_world_bots: worldBotsByWorldId.get(world.id) || [],
+    world_bot_links: worldBotsByWorldId.get(world.id) || [],
   }));
 
   const profileWorlds = applyProfileSectionSelection(
@@ -386,10 +387,8 @@ export default async function UserProfilePage({ params }: PageProps) {
         id: w.id,
         title: w.title,
         slug: w.slug,
-        kind: w.kind,
-        status: w.status,
         description: w.description,
-        active_atlas_world_bots: w.active_atlas_world_bots || [],
+        world_bot_links: w.world_bot_links || [],
       }))}
       forms={profileForms.map((form: any) => ({
         id: form.id,

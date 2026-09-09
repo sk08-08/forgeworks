@@ -43,9 +43,7 @@ export function LorebookInspector({
   return (
     <div className="space-y-4 border-t border-border/60 pt-4">
       <div className="grid grid-cols-2 gap-1 rounded-xl bg-muted/50 p-1 sm:grid-cols-4">
-        {(
-          ["content", "layout", "style", "motion"] as const
-        ).map((value) => (
+        {(["content", "layout", "style", "motion"] as const).map((value) => (
           <Button
             key={value}
             type="button"
@@ -53,8 +51,7 @@ export function LorebookInspector({
             size="sm"
             className={cn(
               "h-8 cursor-pointer rounded-lg px-1.5 text-[11px] capitalize",
-              blockInspectorTab === value &&
-                "bg-background shadow-sm",
+              blockInspectorTab === value && "bg-background shadow-sm",
             )}
             onClick={() => setBlockInspectorTab(value)}
           >
@@ -98,17 +95,9 @@ export function LorebookInspector({
             {availableLorebooks.length > 0 ? (
               <div className="max-h-64 space-y-2 overflow-y-auto pr-1">
                 {availableLorebooks.map((lorebook) => {
-                  const checked =
-                    editingSelectedLorebookIds.includes(
-                      lorebook.id,
-                    );
-                  const worldTitle =
-                    lorebook.world_title ||
-                    availableWorlds.find(
-                      (world) =>
-                        world.id === lorebook.world_id,
-                    )?.title ||
-                    "";
+                  const checked = editingSelectedLorebookIds.includes(
+                    lorebook.id,
+                  );
 
                   return (
                     <label
@@ -118,14 +107,10 @@ export function LorebookInspector({
                       <Checkbox
                         checked={checked}
                         onCheckedChange={(value) =>
-                          setEditingSelectedLorebookIds(
-                            (current) =>
-                              value
-                                ? [...current, lorebook.id]
-                                : current.filter(
-                                    (id) =>
-                                      id !== lorebook.id,
-                                  ),
+                          setEditingSelectedLorebookIds((current) =>
+                            value
+                              ? [...current, lorebook.id]
+                              : current.filter((id) => id !== lorebook.id),
                           )
                         }
                       />
@@ -134,16 +119,10 @@ export function LorebookInspector({
                         <p className="truncate text-xs font-medium">
                           {lorebook.title}
                         </p>
-                        {worldTitle && (
-                          <p className="mt-1 truncate text-[10px] text-muted-foreground">
-                            {worldTitle}
-                          </p>
-                        )}
+
                         {lorebook.summary && (
                           <p className="mt-1 line-clamp-2 text-[10px] leading-relaxed text-muted-foreground">
-                            {stripMarkdownToText(
-                              lorebook.summary,
-                            )}
+                            {stripMarkdownToText(lorebook.summary)}
                           </p>
                         )}
                       </div>
@@ -158,8 +137,7 @@ export function LorebookInspector({
             )}
 
             <p className="text-[10px] leading-relaxed text-muted-foreground">
-              Leave everything unselected to show all
-              lorebooks automatically.
+              Leave everything unselected to show all lorebooks automatically.
             </p>
           </div>
         </div>
@@ -174,9 +152,7 @@ export function LorebookInspector({
           <div className="space-y-2">
             <Label className="text-xs">Presentation</Label>
             <Select
-              value={
-                sectionConfigEdit.lorebookLayout || "grid"
-              }
+              value={sectionConfigEdit.lorebookLayout || "grid"}
               onValueChange={(value) =>
                 setSectionConfigEdit((current) => ({
                   ...current,
@@ -189,15 +165,9 @@ export function LorebookInspector({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="grid">Grid</SelectItem>
-                <SelectItem value="carousel">
-                  Horizontal carousel
-                </SelectItem>
-                <SelectItem value="compact">
-                  Compact list
-                </SelectItem>
-                <SelectItem value="editorial">
-                  Editorial
-                </SelectItem>
+                <SelectItem value="carousel">Horizontal carousel</SelectItem>
+                <SelectItem value="compact">Compact list</SelectItem>
+                <SelectItem value="editorial">Editorial</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -205,8 +175,7 @@ export function LorebookInspector({
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
               <Label className="text-xs">Columns</Label>
-              {sectionConfigEdit.lorebookLayout !==
-                "grid" && (
+              {sectionConfigEdit.lorebookLayout !== "grid" && (
                 <span className="text-[10px] text-muted-foreground">
                   Grid only
                 </span>
@@ -214,9 +183,7 @@ export function LorebookInspector({
             </div>
             <Select
               value={sectionConfigEdit.lorebookColumns || "3"}
-              disabled={
-                sectionConfigEdit.lorebookLayout !== "grid"
-              }
+              disabled={sectionConfigEdit.lorebookLayout !== "grid"}
               onValueChange={(value) =>
                 setSectionConfigEdit((current) => ({
                   ...current,
@@ -238,9 +205,7 @@ export function LorebookInspector({
           <div className="space-y-2">
             <Label className="text-xs">Gap</Label>
             <Select
-              value={
-                sectionConfigEdit.lorebookGap || "normal"
-              }
+              value={sectionConfigEdit.lorebookGap || "normal"}
               onValueChange={(value) =>
                 setSectionConfigEdit((current) => ({
                   ...current,
@@ -254,9 +219,7 @@ export function LorebookInspector({
               <SelectContent>
                 <SelectItem value="tight">Tight</SelectItem>
                 <SelectItem value="normal">Normal</SelectItem>
-                <SelectItem value="relaxed">
-                  Relaxed
-                </SelectItem>
+                <SelectItem value="relaxed">Relaxed</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -265,10 +228,7 @@ export function LorebookInspector({
 
       {blockInspectorTab === "style" &&
         (() => {
-          const fixedLayout = [
-            "compact",
-            "editorial",
-          ].includes(
+          const fixedLayout = ["compact", "editorial"].includes(
             sectionConfigEdit.lorebookLayout || "grid",
           );
           return (
@@ -294,14 +254,9 @@ export function LorebookInspector({
                   ["left", "center", "right"],
                 ],
               ].map(([label, key, values]) => (
-                <div
-                  className="space-y-2"
-                  key={key as string}
-                >
+                <div className="space-y-2" key={key as string}>
                   <div className="flex items-center justify-between gap-2">
-                    <Label className="text-xs">
-                      {label as string}
-                    </Label>
+                    <Label className="text-xs">{label as string}</Label>
                     {fixedLayout && (
                       <span className="text-[10px] text-muted-foreground">
                         Fixed by this layout
@@ -327,8 +282,7 @@ export function LorebookInspector({
                     <SelectContent>
                       {(values as string[]).map((value) => (
                         <SelectItem key={value} value={value}>
-                          {value.charAt(0).toUpperCase() +
-                            value.slice(1)}
+                          {value.charAt(0).toUpperCase() + value.slice(1)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -338,53 +292,15 @@ export function LorebookInspector({
 
               <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-border/60 p-3 text-xs">
                 <Checkbox
-                  checked={
-                    sectionConfigEdit.showLorebookSummary !==
-                    "false"
-                  }
+                  checked={sectionConfigEdit.showLorebookSummary !== "false"}
                   onCheckedChange={(checked) =>
                     setSectionConfigEdit((current) => ({
                       ...current,
-                      showLorebookSummary: checked
-                        ? "true"
-                        : "false",
+                      showLorebookSummary: checked ? "true" : "false",
                     }))
                   }
                 />
                 Show summary
-              </label>
-
-              <label
-                className={cn(
-                  "flex items-center gap-2 rounded-xl border border-border/60 p-3 text-xs",
-                  fixedLayout
-                    ? "cursor-not-allowed opacity-60"
-                    : "cursor-pointer",
-                )}
-              >
-                <Checkbox
-                  checked={
-                    sectionConfigEdit.showLorebookWorld !==
-                    "false"
-                  }
-                  disabled={fixedLayout}
-                  onCheckedChange={(checked) =>
-                    setSectionConfigEdit((current) => ({
-                      ...current,
-                      showLorebookWorld: checked
-                        ? "true"
-                        : "false",
-                    }))
-                  }
-                />
-                <span className="min-w-0 flex-1">
-                  Show world label
-                </span>
-                {fixedLayout && (
-                  <span className="text-[10px] text-muted-foreground">
-                    Fixed
-                  </span>
-                )}
               </label>
             </div>
           );
@@ -392,10 +308,7 @@ export function LorebookInspector({
 
       {blockInspectorTab === "motion" &&
         (() => {
-          const fixedLayout = [
-            "compact",
-            "editorial",
-          ].includes(
+          const fixedLayout = ["compact", "editorial"].includes(
             sectionConfigEdit.lorebookLayout || "grid",
           );
           return (
@@ -406,9 +319,7 @@ export function LorebookInspector({
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-2">
-                  <Label className="text-xs">
-                    Hover motion
-                  </Label>
+                  <Label className="text-xs">Hover motion</Label>
                   {fixedLayout && (
                     <span className="text-[10px] text-muted-foreground">
                       Fixed by this layout
@@ -416,10 +327,7 @@ export function LorebookInspector({
                   )}
                 </div>
                 <Select
-                  value={
-                    sectionConfigEdit.lorebookHoverMotion ||
-                    "lift"
-                  }
+                  value={sectionConfigEdit.lorebookHoverMotion || "lift"}
                   disabled={fixedLayout}
                   onValueChange={(value) =>
                     setSectionConfigEdit((current) => ({
@@ -434,23 +342,16 @@ export function LorebookInspector({
                   <SelectContent>
                     <SelectItem value="none">None</SelectItem>
                     <SelectItem value="lift">Lift</SelectItem>
-                    <SelectItem value="scale">
-                      Scale
-                    </SelectItem>
+                    <SelectItem value="scale">Scale</SelectItem>
                     <SelectItem value="glow">Glow</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs">
-                  Entrance animation
-                </Label>
+                <Label className="text-xs">Entrance animation</Label>
                 <Select
-                  value={
-                    sectionConfigEdit.lorebookEntranceAnimation ||
-                    "none"
-                  }
+                  value={sectionConfigEdit.lorebookEntranceAnimation || "none"}
                   onValueChange={(value) =>
                     setSectionConfigEdit((current) => ({
                       ...current,
@@ -464,25 +365,17 @@ export function LorebookInspector({
                   <SelectContent>
                     <SelectItem value="none">None</SelectItem>
                     <SelectItem value="fade">Fade</SelectItem>
-                    <SelectItem value="fade-up">
-                      Fade up
-                    </SelectItem>
-                    <SelectItem value="scale">
-                      Scale
-                    </SelectItem>
+                    <SelectItem value="fade-up">Fade up</SelectItem>
+                    <SelectItem value="scale">Scale</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              {sectionConfigEdit.lorebookEntranceAnimation !==
-                "none" && (
+              {sectionConfigEdit.lorebookEntranceAnimation !== "none" && (
                 <div className="grid gap-4">
                   <CreatorNumberControl
                     label="Duration"
-                    value={
-                      sectionConfigEdit.lorebookMotionDuration ||
-                      "500"
-                    }
+                    value={sectionConfigEdit.lorebookMotionDuration || "500"}
                     min={150}
                     max={2500}
                     step={50}
@@ -498,10 +391,7 @@ export function LorebookInspector({
                   />
                   <CreatorNumberControl
                     label="Delay"
-                    value={
-                      sectionConfigEdit.lorebookMotionDelay ||
-                      "0"
-                    }
+                    value={sectionConfigEdit.lorebookMotionDelay || "0"}
                     min={0}
                     max={2500}
                     step={50}

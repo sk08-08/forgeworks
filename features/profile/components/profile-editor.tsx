@@ -516,7 +516,6 @@ export function ProfileEditor({
     Array<{
       id: string;
       title: string;
-      kind: string;
     }>
   >([]);
 
@@ -817,8 +816,8 @@ export function ProfileEditor({
             .order("updated_at", { ascending: false }),
 
           supabase
-            .from("active_atlas_worlds")
-            .select("id, title, kind")
+            .from("atlas_worlds")
+            .select("id, title")
             .eq("user_id", p.id)
             .order("updated_at", { ascending: false }),
         ]);
@@ -843,7 +842,6 @@ export function ProfileEditor({
           (worldRows || []).map((world) => ({
             id: world.id,
             title: world.title || "Untitled",
-            kind: world.kind || "world",
           })),
         );
         const loadedFeaturedBotIds = (p.active_profile_featured_bots || [])
@@ -2136,7 +2134,7 @@ export function ProfileEditor({
                 items={worlds.map((world) => ({
                   id: world.id,
                   label: world.title,
-                  description: world.kind,
+                  description: "World",
                 }))}
                 selectedIds={selectedWorldIds}
                 onSelectedIdsChange={setSelectedWorldIds}

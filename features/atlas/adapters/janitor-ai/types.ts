@@ -1,0 +1,30 @@
+export interface JanitorLorebookEntry {
+  activationMode?: string;
+  activationScript?: string;
+  case_sensitive?: boolean;
+  category?: string;
+  comment?: string;
+  constant?: boolean;
+  content?: string;
+  depth?: number;
+  enabled?: boolean;
+  extensions?: Record<string, unknown>;
+  groupWeight?: number;
+  id?: number | string;
+  inclusionGroupRaw?: string;
+  insertion_order?: number;
+  key?: string[];
+  keyMatchPriority?: boolean;
+  keysecondary?: string[];
+  keysecondaryRaw?: string;
+  keysRaw?: string;
+  matchWholeWords?: boolean;
+  minMessages?: number;
+  name?: string;
+  prioritizeInclusion?: boolean;
+  priority?: number;
+  probability?: number;
+  selectiveLogic?: number;
+  tags?: string[];
+  [key: string]: unknown;
+}

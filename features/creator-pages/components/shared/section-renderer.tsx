@@ -64,7 +64,6 @@ import type {
   WorldPreview,
 } from "@/features/creator-pages/types/creator-page-types";
 
-
 export interface SectionRendererProps {
   section: CreatorPageSection;
   bots: BotPreview[];
@@ -792,7 +791,7 @@ export function SectionRenderer({
             >
               {showType && (
                 <Badge variant="secondary" className="text-[10px] capitalize">
-                  {world.kind}
+                  World
                 </Badge>
               )}
 
@@ -918,7 +917,7 @@ export function SectionRenderer({
                           variant="secondary"
                           className="text-[10px] capitalize"
                         >
-                          {world.kind}
+                          World
                         </Badge>
                       </div>
 
@@ -2375,8 +2374,6 @@ export function SectionRenderer({
       const showSummary =
         cfg.showLorebookSummary !== false &&
         cfg.showLorebookSummary !== "false";
-      const showWorld =
-        cfg.showLorebookWorld !== false && cfg.showLorebookWorld !== "false";
       const specialized = mode === "compact" || mode === "editorial";
       const hoverClass = specialized
         ? ""
@@ -2444,14 +2441,6 @@ export function SectionRenderer({
               <h3 className="text-base font-semibold tracking-tight">
                 {item.title}
               </h3>
-              {showWorld && item.world_title && (
-                <p
-                  className="mt-1 text-[11px] font-medium"
-                  style={{ color: themeColor }}
-                >
-                  {item.world_title}
-                </p>
-              )}
             </div>
           </div>
 
@@ -2508,14 +2497,6 @@ export function SectionRenderer({
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                         <h3 className="text-sm font-semibold">{item.title}</h3>
-                        {item.world_title && (
-                          <span
-                            className="text-[10px] font-medium"
-                            style={{ color: themeColor }}
-                          >
-                            {item.world_title}
-                          </span>
-                        )}
                       </div>
                       {showSummary && item.summary && (
                         <div className="mt-1.5 line-clamp-3 text-xs leading-5 text-muted-foreground">
@@ -2543,11 +2524,6 @@ export function SectionRenderer({
                       >
                         Lorebook {String(index + 1).padStart(2, "0")}
                       </p>
-                      {item.world_title && (
-                        <p className="mt-2 text-xs text-muted-foreground">
-                          {item.world_title}
-                        </p>
-                      )}
                     </div>
                     <div className="min-w-0">
                       <h3 className="text-lg font-semibold tracking-tight">

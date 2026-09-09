@@ -846,6 +846,30 @@ function SubmissionsTab({
 
   return (
     <div className="space-y-4">
+      {/* ======================================================
+          HEADER
+      ====================================================== */}
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <Inbox className="h-5 w-5 text-primary" />
+
+            <h2 className="text-lg font-semibold">Submission Management</h2>
+          </div>
+
+          <p className="mt-1 text-sm text-muted-foreground">
+            View and manage all form submissions on the platform. You can
+            filter, sort, and review submissions.
+          </p>
+        </div>
+
+        <Badge variant="outline" className="w-fit shrink-0">
+          {total} submission
+          {total === 1 ? "" : "s"}
+        </Badge>
+      </div>
+
       <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
         <Select
           value={statusFilter}
@@ -1561,6 +1585,31 @@ function FormsTab({ staffRole }: { staffRole: StaffRole }) {
 
   return (
     <div className="space-y-4">
+      {/* ======================================================
+          HEADER
+      ====================================================== */}
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <FileText className="h-5 w-5 text-primary" />
+
+            <h2 className="text-lg font-semibold">Form Management</h2>
+          </div>
+
+          <p className="mt-1 text-sm text-muted-foreground">
+            View and manage all forms submitted by users. You can filter and
+            sort the list to find specific forms, and click on a form to view
+            its details.
+          </p>
+        </div>
+
+        <Badge variant="outline" className="w-fit shrink-0">
+          {total} form
+          {total === 1 ? "" : "s"}
+        </Badge>
+      </div>
+
       <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
         <SearchInput
           value={userFilter}
@@ -2321,6 +2370,29 @@ function BotsTab({ staffRole }: { staffRole: StaffRole }) {
 
   return (
     <div className="space-y-4">
+      {/* ======================================================
+          HEADER
+      ====================================================== */}
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <Bot className="h-5 w-5 text-primary" />
+
+            <h2 className="text-lg font-semibold">Bot Management</h2>
+          </div>
+
+          <p className="mt-1 text-sm text-muted-foreground">
+            View and manage all bots on the platform, including their details
+            and settings.
+          </p>
+        </div>
+
+        <Badge variant="outline" className="w-fit shrink-0">
+          {total} bot
+          {total === 1 ? "" : "s"}
+        </Badge>
+      </div>
       <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
         <Select
           value={ratingFilter}

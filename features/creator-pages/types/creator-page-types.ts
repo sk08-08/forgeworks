@@ -112,18 +112,14 @@ export interface WorldPreview {
   id: string;
   title: string;
   slug: string;
-  kind: string;
-  status: string;
   description: string;
   bot_ids: string[];
 }
 
 export interface CreatorPageLorebookPreview {
   id: string;
-  world_id: string;
   title: string;
   summary: string;
-  world_title: string;
 }
 
 export interface CreatorPageFormState {

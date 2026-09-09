@@ -1,3 +1,5 @@
+import type { ForgeKnowledgePackage } from "@/features/atlas/fkf/fkf-types";
+
 export const ACCOUNT_EXPORT_FORMAT = "janitorforge-account-export" as const;
 export const ACCOUNT_EXPORT_VERSION = 1 as const;
 
@@ -73,7 +75,7 @@ export interface JanitorForgeAccountExportV1 {
 
   creatorPages: CreatorPagesExportData;
 
-  atlas: AtlasExportData;
+  atlas: ForgeKnowledgePackage;
 
   social: {
     following: ExportRecord[];

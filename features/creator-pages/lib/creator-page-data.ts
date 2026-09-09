@@ -65,12 +65,12 @@ export async function fetchCreatorPageData(
       .order("updated_at", { ascending: false })
       .limit(50),
     supabase
-      .from("active_atlas_worlds")
+      .from("atlas_worlds")
       .select(
-        "id, title, slug, kind, status, description, active_atlas_world_bots(bot_id)",
+        "id, title, slug, description, world_bot_links:atlas_world_bots(bot_id)",
       )
       .eq("user_id", creatorPage.user_id)
-      .eq("status", "active")
+      .eq("visibility", "public")
       .order("updated_at", { ascending: false }),
   ]);
 
@@ -102,11 +102,9 @@ export async function fetchCreatorPageData(
       id: w.id as string,
       title: w.title as string,
       slug: w.slug as string,
-      kind: w.kind as string,
-      status: w.status as string,
       description: (w.description as string) || "",
       bot_ids: (
-        (w.active_atlas_world_bots as Array<{ bot_id: string }> | null) || []
+        (w.world_bot_links as Array<{ bot_id: string }> | null) || []
       ).map((rel) => rel.bot_id),
     })),
   };

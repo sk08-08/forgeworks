@@ -509,9 +509,9 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
     try {
       const supabase = createClient();
       const { data } = await supabase
-        .from("active_atlas_worlds")
+        .from("atlas_worlds")
         .select(
-          "id, title, slug, kind, status, description, active_atlas_world_bots(bot_id)",
+          "id, title, slug, description, world_bot_links:atlas_world_bots(bot_id)",
         )
         .eq("user_id", currentUserId)
         .order("title");
@@ -522,11 +522,9 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
             id: world.id,
             title: world.title,
             slug: world.slug || "",
-            kind: world.kind || "",
-            status: world.status || "active",
             description: world.description || "",
-            bot_ids: Array.isArray(world.active_atlas_world_bots)
-              ? world.active_atlas_world_bots.map((rel: any) => rel.bot_id)
+            bot_ids: Array.isArray(world.world_bot_links)
+              ? world.world_bot_links.map((rel: any) => rel.bot_id)
               : [],
           })),
         );
@@ -540,8 +538,8 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
     try {
       const supabase = createClient();
       const { data, error } = await supabase
-        .from("active_atlas_lorebooks")
-        .select("id, world_id, title, summary")
+        .from("atlas_lorebooks")
+        .select("id, title, summary")
         .eq("user_id", currentUserId)
         .order("title");
 
@@ -550,7 +548,6 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
       setAvailableLorebooks(
         (data || []).map((lorebook: any) => ({
           id: lorebook.id,
-          world_id: lorebook.world_id || "",
           title: stripMarkdownToText(lorebook.title) || "Untitled lorebook",
           summary: lorebook.summary || "",
           world_title:

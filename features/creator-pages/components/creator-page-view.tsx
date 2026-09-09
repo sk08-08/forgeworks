@@ -378,7 +378,7 @@ export function CreatorPageView({
         const supabase = createClient();
         let query = supabase
           .from("atlas_lorebooks")
-          .select("id, world_id, title, summary")
+          .select("id, title, summary")
           .is("deleted_at", null)
           .order("title");
 
@@ -393,11 +393,8 @@ export function CreatorPageView({
         setLiveLorebooks(
           (data || []).map((item: any) => ({
             id: item.id,
-            world_id: item.world_id || "",
             title: item.title || "Untitled lorebook",
             summary: item.summary || "",
-            world_title:
-              worlds.find((world) => world.id === item.world_id)?.title || "",
           })),
         );
       } catch (error) {
