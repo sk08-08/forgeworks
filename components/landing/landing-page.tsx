@@ -17,6 +17,7 @@ import {
   Menu,
   Moon,
   Palette,
+  PanelsTopLeft,
   Shield,
   Sparkles,
   Sun,
@@ -498,10 +499,11 @@ function Hero() {
 
           <Reveal delay={0.16}>
             <p className="mx-auto mt-6 max-w-xl text-pretty text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8 lg:mx-0">
-              Forgeworks started as a better way to handle creator requests
+              Forgeworks started as a better way to handle creator submissions
               without relying on DMs and generic forms. I kept adding the tools
               I wanted for my own bots, and it slowly became a workspace for
-              forms, submissions, profiles, collaboration, and more.
+              forms, submissions, bot management, collaboration, Creator Pages,
+              Atlas, and more.
             </p>
           </Reveal>
 
@@ -571,7 +573,7 @@ function Hero() {
                     <p className="text-[10px] font-semibold">Bot Manager</p>
 
                     <p className="text-[9px] text-muted-foreground">
-                      actual workspace
+                      create & manage
                     </p>
                   </div>
                 </div>
@@ -585,7 +587,7 @@ function Hero() {
                     <p className="text-[10px] font-semibold">Submissions</p>
 
                     <p className="text-[9px] text-muted-foreground">
-                      one workspace
+                      review & organize
                     </p>
                   </div>
                 </div>
@@ -615,7 +617,7 @@ const workflowSteps = [
   {
     number: "02",
     icon: Shield,
-    title: "Let requests come in",
+    title: "Receive submissions",
     description:
       "Incoming submissions can be checked by moderation tools before they become another thing you have to deal with manually.",
     tone: "text-orange-500",
@@ -624,7 +626,7 @@ const workflowSteps = [
   {
     number: "03",
     icon: Kanban,
-    title: "Keep track of them",
+    title: "Organize the workflow",
     description:
       "Move submissions through your workflow, open the full responses, add notes, and keep the queue somewhere other than your DMs.",
     tone: "text-blue-500",
@@ -657,14 +659,14 @@ function Workflow() {
             </div>
 
             <h2 className="text-balance text-3xl font-bold tracking-[-0.035em] sm:text-4xl md:text-5xl">
-              Requests shouldn&apos;t have to live in random DMs and generic
+              Submissions shouldn&apos;t disappear into random DMs and generic
               forms.
             </h2>
 
             <p className="mt-5 max-w-2xl text-pretty leading-7 text-muted-foreground sm:text-lg">
               Forms were the first reason Forgeworks existed. The workflow grew
               from one simple idea: give creators somewhere safer and more
-              organized to receive and manage requests.
+              organized to receive and manage submissions.
             </p>
           </div>
         </Reveal>
@@ -759,9 +761,9 @@ const tools = [
   {
     icon: Users,
     title: "Collaboration",
-    eyebrow: "Shared bots",
+    eyebrow: "Shared workspaces",
     description:
-      "Invite another creator to work on a bot with roles, permissions, activity, comments, and review tools.",
+      "Work on shared Bots inside dedicated workspaces with roles, review flows, Change Requests, visual diffs, history, and recovery tools.",
     className: "lg:col-span-1",
     iconClass: "bg-emerald-500/10 text-emerald-500",
   },
@@ -777,18 +779,27 @@ const tools = [
   {
     icon: Globe,
     title: "Atlas",
-    eyebrow: "W.I.P.",
+    eyebrow: "Knowledge",
     description:
-      "Worlds, lorebooks, characters, and connected creations. Atlas exists today, but it is still one of the systems I want to rethink more deeply.",
+      "Build reusable Entries for characters, places, events, factions, lore, and more, then organize them into Worlds, Collections, Lorebooks, and relations.",
     className: "lg:col-span-1",
     iconClass: "bg-pink-500/10 text-pink-500",
+  },
+  {
+    icon: PanelsTopLeft,
+    title: "Creator Pages",
+    eyebrow: "Public spaces",
+    description:
+      "Build customizable public pages with a block-based editor for Bots, Worlds, Lorebooks, Forms, text, media, galleries, links, embeds, and more.",
+    className: "lg:col-span-2",
+    iconClass: "bg-blue-500/10 text-blue-500",
   },
   {
     icon: Hash,
     title: "Community & Resources",
     eyebrow: "Hub",
     description:
-      "Browse creator profiles, platform discussions, project updates, reports, and Janitor-related resources without leaving the workspace.",
+      "Browse creator profiles, platform discussions, project updates, reports, guides, tools, templates, and useful Janitor AI resources without leaving the workspace.",
     className: "lg:col-span-2",
     iconClass: "bg-violet-500/10 text-violet-500",
   },
@@ -820,9 +831,10 @@ function Tools() {
             </div>
 
             <p className="max-w-2xl text-pretty leading-7 text-muted-foreground sm:text-lg lg:justify-self-end">
-              Forgeworks stopped being only a request-form project once I
-              started using it myself. Bot management, profiles, collaboration,
-              Markdown, community tools, and Atlas grew from that.
+              Forgeworks stopped being only a forms-and-submissions project once
+              I started using it myself. Bot management, profiles,
+              collaboration, Creator Pages, Markdown, community tools, and Atlas
+              grew from that.
             </p>
           </div>
         </Reveal>
@@ -915,9 +927,9 @@ function Why() {
               <div className="space-y-5 text-sm leading-7 text-muted-foreground sm:text-base">
                 <p>
                   Forgeworks originally started because a friend was handling
-                  bot requests through Google Forms and received a seriously
-                  abusive submission. I wanted to make something that gave her
-                  more control over what reached her and made the requests
+                  bot submissions through Google Forms and received a seriously
+                  abusive one. I wanted to make something that gave her more
+                  control over what reached her and made those submissions
                   easier to organize.
                 </p>
 
@@ -1084,7 +1096,7 @@ const screenshotCardConfig = [
     screenshot: landingScreenshots.forms,
     label: "Form Builder",
     description:
-      "Build request forms with sections, appearance controls, Markdown, media, and shareable links.",
+      "Build submission forms with sections, appearance controls, Markdown, media, and shareable public links.",
   },
   {
     screenshot: landingScreenshots.profile,
