@@ -9,6 +9,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTheme, type Theme } from "@/components/theme-provider";
 import { createClient } from "@/lib/supabase/client";
 import { getCurrentUserAccess } from "@/lib/access";
+import { deleteCurrentAccount } from "@/features/settings/actions/delete-account";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -335,16 +336,34 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   // Delete account
   const handleDeleteAccount = useCallback(async () => {
     if (deleteConfirmText !== "DELETE") return;
+
     setDeleting(true);
+
     try {
-      const supabase = createClient();
-      const { error } = await supabase.rpc("delete_user_account");
-      if (error) throw error;
+      const result = await deleteCurrentAccount();
+
+      if (!result.success) {
+        throw new Error(result.error || "Could not delete account");
+      }
+
+      if ("storageCleanupWarning" in result && result.storageCleanupWarning) {
+        console.warn(
+          "Account deleted with Storage cleanup warning:",
+          result.storageCleanupWarning,
+        );
+      }
+
       toast.success("Account deleted");
+
       window.location.href = "/login";
     } catch (error) {
       console.error("Account deletion failed:", error);
-      toast.error("Could not delete account. Contact support.");
+
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Could not delete account. Contact support.",
+      );
     } finally {
       setDeleting(false);
       setDeleteConfirmOpen(false);

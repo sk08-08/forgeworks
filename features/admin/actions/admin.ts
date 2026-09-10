@@ -941,6 +941,36 @@ export async function clearUserAvatar(userId: string) {
   return { success: true };
 }
 
+const FEEDBACK_IMAGES_BUCKET = "feedback_images";
+
+type FeedbackImageMetadata = {
+  url?: string | null;
+};
+
+function extractFeedbackImageUrls(metadata: unknown): string[] {
+  if (!metadata || typeof metadata !== "object") {
+    return [];
+  }
+
+  const images = (metadata as { images?: unknown }).images;
+
+  if (!Array.isArray(images)) {
+    return [];
+  }
+
+  return images
+    .map((image) => {
+      if (!image || typeof image !== "object") {
+        return null;
+      }
+
+      const url = (image as FeedbackImageMetadata).url;
+
+      return typeof url === "string" && url.trim() ? url.trim() : null;
+    })
+    .filter((url): url is string => Boolean(url));
+}
+
 async function removeProfileAssetsForDeletedUser(
   adminClient: NonNullable<Awaited<ReturnType<typeof createAdminClient>>>,
   userId: string,
@@ -953,6 +983,7 @@ async function removeProfileAssetsForDeletedUser(
     avatarUrl,
     PROFILE_ASSETS_BUCKET,
   );
+
   const bannerPath = extractStorageObjectPathFromPublicUrl(
     bannerUrl,
     PROFILE_ASSETS_BUCKET,
@@ -961,20 +992,15 @@ async function removeProfileAssetsForDeletedUser(
   if (avatarPath) paths.add(avatarPath);
   if (bannerPath) paths.add(bannerPath);
 
-  /*
-   * Current profile uploads live under:
-   *   <user-id>/avatar-...
-   *   <user-id>/banner-...
-   *
-   * Listing the folder also catches abandoned/replaced profile images that
-   * are no longer referenced by avatar_url or banner_url.
-   */
   const { data: folderObjects, error: listError } = await adminClient.storage
     .from(PROFILE_ASSETS_BUCKET)
     .list(userId, {
       limit: 1000,
       offset: 0,
-      sortBy: { column: "name", order: "asc" },
+      sortBy: {
+        column: "name",
+        order: "asc",
+      },
     });
 
   if (listError) {
@@ -984,13 +1010,8 @@ async function removeProfileAssetsForDeletedUser(
     };
   }
 
-  for (const object of folderObjects || []) {
+  for (const object of folderObjects ?? []) {
     if (!object?.name) continue;
-
-    /*
-     * Profile uploads are flat inside the user's folder. Ignore any folder
-     * placeholder returned by Storage; remove() only needs real object paths.
-     */
     if (object.id === null) continue;
 
     paths.add(`${userId}/${object.name}`);
@@ -1014,9 +1035,140 @@ async function removeProfileAssetsForDeletedUser(
   return { success: true };
 }
 
+async function removeBotAssetsForDeletedUser(
+  adminClient: NonNullable<Awaited<ReturnType<typeof createAdminClient>>>,
+  imageUrls: Array<string | null>,
+) {
+  const paths = new Set<string>();
+
+  for (const imageUrl of imageUrls) {
+    const path = extractStorageObjectPathFromPublicUrl(
+      imageUrl,
+      BOT_ASSETS_BUCKET,
+    );
+
+    if (path) {
+      paths.add(path);
+    }
+  }
+
+  if (paths.size === 0) {
+    return { success: true };
+  }
+
+  const { error } = await adminClient.storage
+    .from(BOT_ASSETS_BUCKET)
+    .remove([...paths]);
+
+  if (error) {
+    return {
+      success: false,
+      error: `Could not remove bot assets: ${error.message}`,
+    };
+  }
+
+  return { success: true };
+}
+
+async function removeFormAssetsForDeletedUser(
+  adminClient: NonNullable<Awaited<ReturnType<typeof createAdminClient>>>,
+  forms: Array<{
+    sections: unknown;
+    banner_asset_path: string | null;
+  }>,
+) {
+  const assetPaths = new Set<string>();
+  const bannerPaths = new Set<string>();
+
+  for (const form of forms) {
+    for (const path of extractFormAssetPathsFromSections(form.sections)) {
+      assetPaths.add(path);
+    }
+
+    const bannerPath = String(form.banner_asset_path ?? "").trim();
+
+    if (bannerPath) {
+      bannerPaths.add(bannerPath);
+    }
+  }
+
+  if (assetPaths.size > 0) {
+    const { error } = await adminClient.storage
+      .from(FORM_ASSETS_BUCKET)
+      .remove([...assetPaths]);
+
+    if (error) {
+      return {
+        success: false,
+        error: `Could not remove form assets: ${error.message}`,
+      };
+    }
+  }
+
+  if (bannerPaths.size > 0) {
+    const { error } = await adminClient.storage
+      .from(FORM_BANNERS_BUCKET)
+      .remove([...bannerPaths]);
+
+    if (error) {
+      return {
+        success: false,
+        error: `Could not remove form banners: ${error.message}`,
+      };
+    }
+  }
+
+  return { success: true };
+}
+
+async function removeFeedbackImagesForDeletedUser(
+  adminClient: NonNullable<Awaited<ReturnType<typeof createAdminClient>>>,
+  metadataRows: unknown[],
+) {
+  const paths = new Set<string>();
+
+  for (const metadata of metadataRows) {
+    const urls = extractFeedbackImageUrls(metadata);
+
+    for (const url of urls) {
+      const path = extractStorageObjectPathFromPublicUrl(
+        url,
+        FEEDBACK_IMAGES_BUCKET,
+      );
+
+      if (path) {
+        paths.add(path);
+      }
+    }
+  }
+
+  if (paths.size === 0) {
+    return { success: true };
+  }
+
+  const { error } = await adminClient.storage
+    .from(FEEDBACK_IMAGES_BUCKET)
+    .remove([...paths]);
+
+  if (error) {
+    return {
+      success: false,
+      error: `Could not remove feedback images: ${error.message}`,
+    };
+  }
+
+  return { success: true };
+}
+
 export async function deleteUserAsAdmin(userId: string) {
   const { supabase, userId: actorId, error } = await requireOwner();
-  if (error) return { success: false, error };
+
+  if (error) {
+    return {
+      success: false,
+      error,
+    };
+  }
 
   if (actorId === userId) {
     return {
@@ -1025,23 +1177,69 @@ export async function deleteUserAsAdmin(userId: string) {
     };
   }
 
-  const { data: target, error: targetError } = await supabase
-    .from("profiles")
-    .select("id, staff_role, avatar_url, banner_url")
-    .eq("id", userId)
-    .maybeSingle();
+  const [targetResult, botsResult, formsResult, feedbackResult] =
+    await Promise.all([
+      supabase
+        .from("profiles")
+        .select("id, staff_role, avatar_url, banner_url")
+        .eq("id", userId)
+        .maybeSingle(),
 
-  if (targetError) return { success: false, error: targetError.message };
-  if (!target) return { success: false, error: "User not found" };
-  if (target.staff_role === "owner") {
-    return { success: false, error: "Owner accounts cannot be deleted here" };
+      supabase.from("bots").select("image_url").eq("user_id", userId),
+
+      supabase
+        .from("request_forms")
+        .select("sections, banner_asset_path")
+        .eq("user_id", userId),
+
+      supabase
+        .from("feedback_submissions")
+        .select("metadata")
+        .eq("submitter_user_id", userId),
+    ]);
+
+  if (targetResult.error) {
+    return {
+      success: false,
+      error: targetResult.error.message,
+    };
   }
 
-  /*
-   * Supabase Storage explicitly forbids deleting rows from storage.objects
-   * directly. Remove physical objects through the Storage API BEFORE the RPC
-   * deletes auth.users -> profiles.
-   */
+  if (!targetResult.data) {
+    return {
+      success: false,
+      error: "User not found",
+    };
+  }
+
+  if (targetResult.data.staff_role === "owner") {
+    return {
+      success: false,
+      error: "Owner accounts cannot be deleted here",
+    };
+  }
+
+  if (botsResult.error) {
+    return {
+      success: false,
+      error: botsResult.error.message,
+    };
+  }
+
+  if (formsResult.error) {
+    return {
+      success: false,
+      error: formsResult.error.message,
+    };
+  }
+
+  if (feedbackResult.error) {
+    return {
+      success: false,
+      error: feedbackResult.error.message,
+    };
+  }
+
   const adminClient = await createAdminClient();
 
   if (!adminClient) {
@@ -1051,27 +1249,58 @@ export async function deleteUserAsAdmin(userId: string) {
     };
   }
 
-  const profileAssetCleanup = await removeProfileAssetsForDeletedUser(
+  const profileCleanup = await removeProfileAssetsForDeletedUser(
     adminClient,
     userId,
-    target.avatar_url,
-    target.banner_url,
+    targetResult.data.avatar_url,
+    targetResult.data.banner_url,
   );
 
-  if (!profileAssetCleanup.success) {
-    return {
-      success: false,
-      error: profileAssetCleanup.error,
-    };
+  if (!profileCleanup.success) {
+    return profileCleanup;
+  }
+
+  const botCleanup = await removeBotAssetsForDeletedUser(
+    adminClient,
+    (botsResult.data ?? []).map((bot) => bot.image_url),
+  );
+
+  if (!botCleanup.success) {
+    return botCleanup;
+  }
+
+  const formCleanup = await removeFormAssetsForDeletedUser(
+    adminClient,
+    formsResult.data ?? [],
+  );
+
+  if (!formCleanup.success) {
+    return formCleanup;
+  }
+
+  const feedbackCleanup = await removeFeedbackImagesForDeletedUser(
+    adminClient,
+    (feedbackResult.data ?? []).map((row) => row.metadata),
+  );
+
+  if (!feedbackCleanup.success) {
+    return feedbackCleanup;
   }
 
   const { error: rpcError } = await supabase.rpc("delete_user_as_admin", {
     target_user_id: userId,
   });
 
-  if (rpcError) return { success: false, error: rpcError.message };
+  if (rpcError) {
+    return {
+      success: false,
+      error: rpcError.message,
+    };
+  }
 
-  return { success: true };
+  return {
+    success: true,
+  };
 }
 
 // ============================================================================

@@ -654,7 +654,7 @@ export function DashboardHome() {
                             <img
                               src={bot.imageUrl}
                               alt={bot.name}
-                              className="h-full w-full object-cover transition-transform duration-500 hover:scale-110"
+                              className="aspect-4/5 w-full object-cover transition-transform duration-500 hover:scale-110"
                             />
                           ) : (
                             <div className="flex h-full w-full items-center justify-center bg-primary/10">

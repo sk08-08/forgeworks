@@ -1,6 +1,5 @@
 "use client";
 
-import { createClient } from "@/lib/supabase/client";
 import { useState, type FormEvent } from "react";
 import { Bug, Lightbulb, MessageSquarePlus, Send, Upload } from "lucide-react";
 import { toast } from "sonner";
@@ -166,10 +165,14 @@ export function FeedbackActions({
 
   const closeDialog = (nextOpen: boolean) => {
     setOpen(nextOpen);
+
     if (!nextOpen) {
       setSubject("");
       setMessage("");
       setContact("");
+      setImages([]);
+      setOtherLocation("");
+      setLocation(resolveInitialLocation(context));
       setFeedbackType("suggestion");
     }
   };
@@ -187,68 +190,50 @@ export function FeedbackActions({
 
     setIsSubmitting(true);
 
-    const supabase = createClient();
-    const uploadedImagesUrls: { name: string; size: number; url: string }[] =
-      [];
+    try {
+      const chosenSource =
+        location === "Other (specify)"
+          ? otherLocation.trim() || "Other"
+          : location;
 
-    if (images.length > 0) {
-      for (const img of images) {
-        const fileExt = img.name.split(".").pop();
-        const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-        const filePath = `feedback/${fileName}`;
+      const formData = new FormData();
 
-        const { error: uploadError } = await supabase.storage
-          .from("feedback_images")
-          .upload(filePath, img.file);
+      formData.set("feedbackType", feedbackType);
+      formData.set("subject", trimmedSubject);
+      formData.set("message", trimmedMessage);
+      formData.set("contact", contact.trim());
+      formData.set("sourcePage", chosenSource);
+      formData.set("sourceLabel", chosenSource);
+      formData.set("sourcePath", context.sourcePath ?? "");
+      formData.set("relatedId", context.relatedId ?? "");
 
-        if (uploadError) {
-          toast.error(`Failed to upload image: ${img.name}`);
-          continue;
-        }
+      formData.set("metadata", JSON.stringify(context.metadata ?? {}));
 
-        const {
-          data: { publicUrl },
-        } = supabase.storage.from("feedback_images").getPublicUrl(filePath);
-
-        uploadedImagesUrls.push({
-          name: img.name,
-          size: img.size,
-          url: publicUrl,
-        });
+      for (const image of images) {
+        formData.append("images", image.file, image.name);
       }
+
+      const result = await submitFeedbackAction(formData);
+
+      if (!result.success) {
+        toast.error(result.error || "Failed to send feedback.");
+        return;
+      }
+
+      toast.success(
+        feedbackType === "bug"
+          ? "Bug report sent. We'll review it soon."
+          : "Suggestion sent. Thanks for the input.",
+      );
+
+      closeDialog(false);
+    } catch (error) {
+      console.error("Feedback submission failed:", error);
+
+      toast.error("Failed to send feedback. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    const chosenSource =
-      location === "other" ? otherLocation.trim() || "Other" : location;
-
-    const result = await submitFeedbackAction({
-      feedbackType,
-      subject: trimmedSubject,
-      message: trimmedMessage,
-      contact: contact.trim(),
-      sourcePage: chosenSource,
-      sourceLabel: chosenSource,
-      sourcePath: context.sourcePath ?? "",
-      relatedId: context.relatedId ?? "",
-      metadata: {
-        ...(context.metadata ?? {}),
-        images: uploadedImagesUrls,
-      },
-    });
-
-    setIsSubmitting(false);
-
-    if (!result.success) {
-      toast.error(result.error || "Failed to send feedback.");
-      return;
-    }
-
-    toast.success(
-      feedbackType === "bug"
-        ? "Bug report sent. We'll review it soon."
-        : "Suggestion sent. Thanks for the input.",
-    );
-    closeDialog(false);
   };
 
   const ActionSheet = (
@@ -387,7 +372,7 @@ export function FeedbackActions({
               <SelectItem value="Other (specify)">Other (specify)</SelectItem>
             </SelectContent>
           </Select>
-          {location === "other" && (
+          {location === "Other (specify)" && (
             <Input
               value={otherLocation}
               onChange={(e) => setOtherLocation(e.target.value)}
