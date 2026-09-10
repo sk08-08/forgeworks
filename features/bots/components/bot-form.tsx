@@ -916,7 +916,7 @@ export function BotForm({
                     })}
                   </div>
                   <p className="mt-2 text-xs text-muted-foreground">
-                    Janitor AI supports up to {MAX_INITIAL_MESSAGES} initial
+                    Forgeworks supports up to {MAX_INITIAL_MESSAGES} initial
                     messages total.
                   </p>
                 </div>

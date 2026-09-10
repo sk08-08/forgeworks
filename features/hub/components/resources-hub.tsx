@@ -1054,8 +1054,8 @@ export function ResourcesHub() {
               </h1>
 
               <p className="mt-4 max-w-xl text-sm leading-7 text-muted-foreground sm:text-base">
-                Discover community guides, tools, templates, references and
-                knowledge curated for Janitor AI creators.
+                Discover community guides, tools, templates, references, and
+                knowledge curated across character platforms.
               </p>
 
               <div className="relative mt-7 max-w-xl">

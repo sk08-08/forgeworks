@@ -968,9 +968,9 @@ export function CommunityHub() {
               </h1>
 
               <p className="mt-5 max-w-xl text-sm leading-7 text-muted-foreground sm:text-base">
-                Reports, creator concerns, platform changes and important
-                conversations around Janitor AI — organized with sources,
-                evidence and follow-ups instead of disappearing into a feed.
+                Reports, creator concerns, platform updates, and key discussions
+                across character platforms — organized with sources, evidence,
+                and follow-ups instead of disappearing into a feed.
               </p>
 
               <div className="relative mt-7 max-w-xl">
