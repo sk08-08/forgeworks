@@ -20,6 +20,6 @@ export async function GET() {
 
   return createJsonExportResponse(
     result.data,
-    `janitorforge-${username}-export-${getExportDate()}.json`,
+    `forgeworks-${username}-export-${getExportDate()}.json`,
   );
 }

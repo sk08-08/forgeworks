@@ -17,6 +17,6 @@ export async function GET() {
 
   return createJsonExportResponse(
     result.data,
-    `janitorforge-creator-pages-export-${getExportDate()}.json`,
+    `forgeworks-creator-pages-export-${getExportDate()}.json`,
   );
 }

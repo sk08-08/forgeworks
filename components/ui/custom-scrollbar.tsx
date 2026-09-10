@@ -112,12 +112,12 @@ export function CustomScrollbar() {
   useEffect(() => {
     // Inject styles into head
     const style = document.createElement("style");
-    style.id = "janitorforge-custom-scrollbar";
+    style.id = "forgeworks-custom-scrollbar";
     style.textContent = scrollbarStyles;
     document.head.appendChild(style);
 
     return () => {
-      const existing = document.getElementById("janitorforge-custom-scrollbar");
+      const existing = document.getElementById("forgeworks-custom-scrollbar");
       if (existing) existing.remove();
     };
   }, []);
