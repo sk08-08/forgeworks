@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Moderation Content Component
+// Forgeworks - Moderation Content Component
 // Main moderation interface (used in dashboard)
 // ============================================================================
 

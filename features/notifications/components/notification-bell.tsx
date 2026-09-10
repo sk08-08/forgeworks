@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Notification Bell
+// Forgeworks - Notification Bell
 // Important account activity: social, collaboration, and moderation
 // ============================================================================
 

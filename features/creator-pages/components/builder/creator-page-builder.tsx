@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Creator Pages Editor
+// Forgeworks - Creator Pages Editor
 // Create and manage customizable public creator pages
 // ============================================================================
 

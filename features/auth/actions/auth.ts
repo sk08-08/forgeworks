@@ -29,7 +29,7 @@ export async function loginWithPin(username: string, pin: string) {
   if (pinError) return { success: false, error: pinError };
 
   const supabase = await createClient();
-  const email = `${clean}@janitorforge.local`;
+  const email = `${clean}@forgeworks.local`;
   const password = `${pin}${clean}`;
 
   // Sign in via Supabase Auth
@@ -69,10 +69,10 @@ export async function loginWithPin(username: string, pin: string) {
       .eq("id", authUser.id);
   }
 
-  // Keep a simple janitorforge_session cookie for app-level info
+  // Keep a simple forgeworks_session cookie for app-level info
   const cookieStore = await cookies();
   cookieStore.set(
-    "janitorforge_session",
+    "forgeworks_session",
     JSON.stringify({
       userId: authUser.id,
       username: clean,
@@ -123,7 +123,7 @@ export async function logout() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   const cookieStore = await cookies();
-  cookieStore.delete("janitorforge_session");
+  cookieStore.delete("forgeworks_session");
   return { success: true };
 }
 
@@ -150,7 +150,7 @@ export async function changePin(
   }
 
   const supabase = await createClient();
-  const email = `${clean}@janitorforge.local`;
+  const email = `${clean}@forgeworks.local`;
   const currentPassword = `${currentPin}${clean}`;
   const nextPassword = `${newPin}${clean}`;
 
@@ -188,7 +188,7 @@ export async function changePin(
 
   const cookieStore = await cookies();
   cookieStore.set(
-    "janitorforge_session",
+    "forgeworks_session",
     JSON.stringify({
       userId: signInData.user.id,
       username: clean,
@@ -208,7 +208,7 @@ export async function changePin(
 
 export async function getSession() {
   const cookieStore = await cookies();
-  const session = cookieStore.get("janitorforge_session");
+  const session = cookieStore.get("forgeworks_session");
 
   if (!session?.value) {
     return null;
@@ -234,7 +234,7 @@ export async function registerUser(username: string, pin: string) {
   if (pinError) return { success: false, error: pinError };
 
   const supabase = await createClient();
-  const email = `${clean}@janitorforge.local`;
+  const email = `${clean}@forgeworks.local`;
   const password = `${pin}${clean}`;
 
   // Try to sign in first (user may already exist with this PIN)
@@ -246,7 +246,7 @@ export async function registerUser(username: string, pin: string) {
     const existingUser = signInExisting.user;
     const cookieStore = await cookies();
     cookieStore.set(
-      "janitorforge_session",
+      "forgeworks_session",
       JSON.stringify({
         userId: existingUser.id,
         username: clean,
@@ -323,7 +323,7 @@ export async function registerUser(username: string, pin: string) {
   // Set session cookie
   const cookieStore = await cookies();
   cookieStore.set(
-    "janitorforge_session",
+    "forgeworks_session",
     JSON.stringify({
       userId: authUser.id,
       username: clean,

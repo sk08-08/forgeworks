@@ -1,19 +1,19 @@
 import type { ForgeKnowledgePackage } from "@/features/atlas/fkf/fkf-types";
 
-export const ACCOUNT_EXPORT_FORMAT = "janitorforge-account-export" as const;
+export const ACCOUNT_EXPORT_FORMAT = "forgeworks-account-export" as const;
 export const ACCOUNT_EXPORT_VERSION = 1 as const;
 
-export const BOTS_EXPORT_FORMAT = "janitorforge-bots-export" as const;
+export const BOTS_EXPORT_FORMAT = "forgeworks-bots-export" as const;
 export const BOTS_EXPORT_VERSION = 1 as const;
 
-export const FORMS_EXPORT_FORMAT = "janitorforge-forms-export" as const;
+export const FORMS_EXPORT_FORMAT = "forgeworks-forms-export" as const;
 export const FORMS_EXPORT_VERSION = 1 as const;
 
 export const CREATOR_PAGES_EXPORT_FORMAT =
-  "janitorforge-creator-pages-export" as const;
+  "forgeworks-creator-pages-export" as const;
 export const CREATOR_PAGES_EXPORT_VERSION = 1 as const;
 
-export const ATLAS_EXPORT_FORMAT = "janitorforge-atlas-export" as const;
+export const ATLAS_EXPORT_FORMAT = "forgeworks-atlas-export" as const;
 export const ATLAS_EXPORT_VERSION = 1 as const;
 
 export type ExportRecord = Record<string, unknown>;

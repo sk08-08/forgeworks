@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Form Assets Helpers
+// Forgeworks - Form Assets Helpers
 // Shared helpers for section image assets used by request forms.
 // ============================================================================
 

@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Reusable User Search Input
+// Forgeworks - Reusable User Search Input
 // Search for users by username with avatar, suggestions, and profile links
 // ============================================================================
 

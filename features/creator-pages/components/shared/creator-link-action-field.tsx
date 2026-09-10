@@ -125,7 +125,7 @@ export function CreatorLinkActionField({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="external">External URL</SelectItem>
-            <SelectItem value="internal">Janitor Forge page</SelectItem>
+            <SelectItem value="internal">Forgeworks page</SelectItem>
             <SelectItem value="anchor">Section on this page</SelectItem>
           </SelectContent>
         </Select>

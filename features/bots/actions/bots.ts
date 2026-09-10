@@ -31,7 +31,7 @@ const MAX_BOT_IMAGE_SIZE_BYTES = 4 * 1024 * 1024;
 export async function createBotAction(data: BotFormData) {
   const supabase = await createClient();
 
-  // Try to determine user from supabase auth, fallback to janitorforge_session cookie
+  // Try to determine user from supabase auth, fallback to forgeworks_session cookie
   let userId: string | undefined;
   try {
     const { data: userData } = await supabase.auth.getUser();
@@ -43,7 +43,7 @@ export async function createBotAction(data: BotFormData) {
 
   if (!userId) {
     const cookieStore = await cookies();
-    const session = cookieStore.get("janitorforge_session")?.value;
+    const session = cookieStore.get("forgeworks_session")?.value;
     if (session) {
       try {
         const parsed = JSON.parse(session);
@@ -85,10 +85,7 @@ export async function createBotAction(data: BotFormData) {
     };
   }
 
-  const historyResult = await captureBotVersion(
-    inserted.id,
-    "create",
-    [
+  const historyResult = await captureBotVersion(inserted.id, "create", [
     "name",
     "chat_name",
     "short_description",
@@ -101,11 +98,13 @@ export async function createBotAction(data: BotFormData) {
     "rating",
     "image_url",
     "hide_sensitive_fields",
-  ] as BotCollaborationField[],
-  );
+  ] as BotCollaborationField[]);
 
   if (!historyResult.success) {
-    console.error("Failed to capture initial bot version:", historyResult.error);
+    console.error(
+      "Failed to capture initial bot version:",
+      historyResult.error,
+    );
   }
 
   return { success: true, bot: inserted };
@@ -124,7 +123,7 @@ export async function updateBotAction(id: string, data: Partial<BotFormData>) {
 
   if (!userId) {
     const cookieStore = await cookies();
-    const session = cookieStore.get("janitorforge_session")?.value;
+    const session = cookieStore.get("forgeworks_session")?.value;
     if (session) {
       try {
         const parsed = JSON.parse(session);
@@ -192,10 +191,7 @@ export async function updateBotAction(id: string, data: Partial<BotFormData>) {
   const payload: Record<string, unknown> = {};
   const changedFields: BotCollaborationField[] = [];
 
-  const setField = (
-    field: BotCollaborationField,
-    value: unknown,
-  ) => {
+  const setField = (field: BotCollaborationField, value: unknown) => {
     if (!canRoleEditField(workspaceRole, field)) return;
     payload[field] = value;
     changedFields.push(field);
@@ -205,8 +201,7 @@ export async function updateBotAction(id: string, data: Partial<BotFormData>) {
   if (data.chatName !== undefined) setField("chat_name", data.chatName || null);
   if (data.shortDescription !== undefined)
     setField("short_description", data.shortDescription);
-  if (data.personality !== undefined)
-    setField("personality", data.personality);
+  if (data.personality !== undefined) setField("personality", data.personality);
   if (data.firstMessage !== undefined)
     setField("first_message", data.firstMessage);
   if (data.alternateGreetings !== undefined)
@@ -216,8 +211,7 @@ export async function updateBotAction(id: string, data: Partial<BotFormData>) {
     setField("example_dialogues", data.exampleDialogues);
   if (data.tags !== undefined) setField("tags", data.tags);
   if (data.rating !== undefined) setField("rating", data.rating);
-  if (data.imageUrl !== undefined)
-    setField("image_url", data.imageUrl || null);
+  if (data.imageUrl !== undefined) setField("image_url", data.imageUrl || null);
   if (data.hideSensitiveFields !== undefined)
     setField("hide_sensitive_fields", data.hideSensitiveFields);
 
@@ -268,7 +262,7 @@ export async function updateBotAction(id: string, data: Partial<BotFormData>) {
 export async function deleteBotAction(id: string) {
   const supabase = await createClient();
 
-  // Ensure authenticated (supabase auth or janitorforge_session)
+  // Ensure authenticated (supabase auth or forgeworks_session)
   let userId: string | undefined;
   try {
     const { data: userData } = await supabase.auth.getUser();
@@ -279,7 +273,7 @@ export async function deleteBotAction(id: string) {
   }
   if (!userId) {
     const cookieStore = await cookies();
-    const session = cookieStore.get("janitorforge_session")?.value;
+    const session = cookieStore.get("forgeworks_session")?.value;
     if (session) {
       try {
         const parsed = JSON.parse(session);
@@ -353,7 +347,7 @@ export async function uploadBotImageAction(formData: FormData) {
   }
   if (!userId) {
     const cookieStore = await cookies();
-    const session = cookieStore.get("janitorforge_session")?.value;
+    const session = cookieStore.get("forgeworks_session")?.value;
     if (session) {
       try {
         const parsed = JSON.parse(session);
@@ -402,7 +396,7 @@ export async function removeBotImageAction(url: string) {
   }
   if (!userId) {
     const cookieStore = await cookies();
-    const session = cookieStore.get("janitorforge_session")?.value;
+    const session = cookieStore.get("forgeworks_session")?.value;
     if (session) {
       try {
         const parsed = JSON.parse(session);

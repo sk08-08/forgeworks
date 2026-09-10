@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Centralized Bot Tags
+// Forgeworks - Centralized Bot Tags
 // Janitor-style tag catalog with aliases, colors, and normalization.
 // Unknown tags are preserved as custom tags.
 // ============================================================================

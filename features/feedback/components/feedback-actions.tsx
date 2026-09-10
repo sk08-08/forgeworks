@@ -106,7 +106,7 @@ const copyByType: Record<
   suggestion: {
     title: "Send a suggestion",
     description:
-      "Share an idea, comment, or improvement you would like to see in JanitorForge.",
+      "Share an idea, comment, or improvement you would like to see in Forgeworks.",
     subjectLabel: "Suggestion title",
     subjectPlaceholder: "Example: Add a faster form preview",
     messageLabel: "What would you like to change?",

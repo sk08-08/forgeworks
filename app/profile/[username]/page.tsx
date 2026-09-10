@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Public User Profile
+// Forgeworks - Public User Profile
 // Accessible at /profile/[username] for viewing other users' profiles
 // ============================================================================
 
@@ -59,7 +59,7 @@ export async function generateMetadata({
   const description =
     profile.tagline ||
     plainBio.slice(0, 160) ||
-    `Profile of ${title} on JanitorForge`;
+    `Profile of ${title} on Forgeworks`;
 
   return {
     title: `@${title}`,

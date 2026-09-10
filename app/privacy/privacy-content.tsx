@@ -56,9 +56,9 @@ export function PrivacyContent() {
     <div>
       <PolicySection number="01" title="About this policy">
         <p>
-          JanitorForge is an independent creator toolkit for managing bots,
-          forms, submissions, profiles, creator pages, collaboration, and
-          related content.
+          Forgeworks is an independent creator toolkit for managing bots, forms,
+          submissions, profiles, creator pages, collaboration, and related
+          content.
         </p>
 
         <p>
@@ -69,7 +69,7 @@ export function PrivacyContent() {
         </p>
 
         <p>
-          By using JanitorForge, you acknowledge this Privacy Policy. The{" "}
+          By using Forgeworks, you acknowledge this Privacy Policy. The{" "}
           <Link
             href="/terms"
             className="font-medium text-primary transition-opacity hover:opacity-75"
@@ -80,7 +80,7 @@ export function PrivacyContent() {
         </p>
       </PolicySection>
 
-      <PolicySection number="02" title="Information JanitorForge handles">
+      <PolicySection number="02" title="Information Forgeworks handles">
         <Subheading>Account information</Subheading>
 
         <p>An account currently uses:</p>
@@ -98,7 +98,7 @@ export function PrivacyContent() {
         </List>
 
         <p>
-          JanitorForge does not require you to provide a normal email address to
+          Forgeworks does not require you to provide a normal email address to
           register. A technical authentication identifier may be created
           internally so the account system can function.
         </p>
@@ -121,7 +121,7 @@ export function PrivacyContent() {
         <Subheading>Content you create or submit</Subheading>
 
         <p>
-          JanitorForge stores content needed for the features you use. This may
+          Forgeworks stores content needed for the features you use. This may
           include:
         </p>
 
@@ -151,9 +151,9 @@ export function PrivacyContent() {
         </p>
       </PolicySection>
 
-      <PolicySection number="03" title="What JanitorForge does not require">
+      <PolicySection number="03" title="What Forgeworks does not require">
         <p>
-          JanitorForge is intentionally designed to require relatively little
+          Forgeworks is intentionally designed to require relatively little
           personal information.
         </p>
 
@@ -164,7 +164,7 @@ export function PrivacyContent() {
           <li>A phone number.</li>
           <li>A physical mailing address.</li>
           <li>Government identification.</li>
-          <li>Payment information, since JanitorForge is currently free.</li>
+          <li>Payment information, since Forgeworks is currently free.</li>
           <li>Biometric information.</li>
           <li>Precise GPS location.</li>
         </List>
@@ -180,7 +180,7 @@ export function PrivacyContent() {
       <PolicySection number="04" title="How the information is used">
         <p>
           Information is used only where it is reasonably needed to operate,
-          protect, or improve JanitorForge.
+          protect, or improve Forgeworks.
         </p>
 
         <List>
@@ -199,7 +199,7 @@ export function PrivacyContent() {
 
       <PolicySection number="05" title="Public, private, and shared content">
         <p>
-          Some parts of JanitorForge are designed to be public while others are
+          Some parts of Forgeworks are designed to be public while others are
           private or limited by access settings.
         </p>
 
@@ -232,7 +232,7 @@ export function PrivacyContent() {
 
         <p>
           Making something public or sharing it with another person means they
-          may be able to copy or retain what they can see. JanitorForge cannot
+          may be able to copy or retain what they can see. Forgeworks cannot
           control what another person does with information after they receive
           it outside the platform.
         </p>
@@ -240,8 +240,8 @@ export function PrivacyContent() {
 
       <PolicySection number="06" title="Infrastructure and service providers">
         <p>
-          JanitorForge relies on third-party infrastructure to function. The
-          main providers currently include:
+          Forgeworks relies on third-party infrastructure to function. The main
+          providers currently include:
         </p>
 
         <List>
@@ -258,7 +258,7 @@ export function PrivacyContent() {
 
         <p>
           These providers may process technical data as necessary to provide
-          their services. JanitorForge does not sell user information to
+          their services. Forgeworks does not sell user information to
           advertisers.
         </p>
 
@@ -270,7 +270,7 @@ export function PrivacyContent() {
 
       <PolicySection number="07" title="Cookies and local preferences">
         <p>
-          JanitorForge uses browser storage and authentication mechanisms needed
+          Forgeworks uses browser storage and authentication mechanisms needed
           to keep the application working.
         </p>
 
@@ -303,16 +303,15 @@ export function PrivacyContent() {
         </p>
 
         <p>
-          When an account or content is deleted, JanitorForge removes or
-          schedules removal of associated information where technically
-          supported. Some residual information may temporarily remain in
-          backups, logs, cached systems, moderation records, or storage
-          infrastructure.
+          When an account or content is deleted, Forgeworks removes or schedules
+          removal of associated information where technically supported. Some
+          residual information may temporarily remain in backups, logs, cached
+          systems, moderation records, or storage infrastructure.
         </p>
 
         <p>
           Content that was shared with collaborators or copied outside
-          JanitorForge may also continue to exist independently of your account.
+          Forgeworks may also continue to exist independently of your account.
         </p>
 
         <p>
@@ -324,7 +323,7 @@ export function PrivacyContent() {
 
       <PolicySection number="09" title="Security">
         <p>
-          JanitorForge uses technical safeguards intended to reduce unauthorized
+          Forgeworks uses technical safeguards intended to reduce unauthorized
           access and protect stored information.
         </p>
 
@@ -344,7 +343,7 @@ export function PrivacyContent() {
         </List>
 
         <p>
-          No online service can guarantee perfect security. JanitorForge is
+          No online service can guarantee perfect security. Forgeworks is
           actively developed, and security-related issues are treated as
           something to investigate and improve rather than something the project
           claims can never happen.
@@ -353,7 +352,7 @@ export function PrivacyContent() {
 
       <PolicySection number="10" title="Your controls and privacy rights">
         <p>
-          JanitorForge provides direct controls for much of the information
+          Forgeworks provides direct controls for much of the information
           associated with your account.
         </p>
 
@@ -374,19 +373,19 @@ export function PrivacyContent() {
 
         <p>
           If you need help exercising a privacy-related right that is not
-          available directly in the interface, contact JanitorForge through the
+          available directly in the interface, contact Forgeworks through the
           platform.
         </p>
       </PolicySection>
 
       <PolicySection number="11" title="Age requirement">
         <p>
-          JanitorForge is intended for users who are at least{" "}
+          Forgeworks is intended for users who are at least{" "}
           <Strong>18 years old</Strong>.
         </p>
 
         <p>
-          JanitorForge does not knowingly maintain accounts belonging to users
+          Forgeworks does not knowingly maintain accounts belonging to users
           known to be under that age. If an underage account is identified,
           appropriate action may be taken, including removal of the account.
         </p>
@@ -395,19 +394,18 @@ export function PrivacyContent() {
       <PolicySection number="12" title="Third-party links">
         <p>
           Profiles, Creator Pages, community content, and other parts of
-          JanitorForge may contain links to external websites or services.
+          Forgeworks may contain links to external websites or services.
         </p>
 
         <p>
-          JanitorForge does not control those sites or their privacy practices.
-          Once you leave JanitorForge, the destination&apos;s own policies
-          apply.
+          Forgeworks does not control those sites or their privacy practices.
+          Once you leave Forgeworks, the destination&apos;s own policies apply.
         </p>
       </PolicySection>
 
       <PolicySection number="13" title="Changes to this policy">
         <p>
-          JanitorForge is still in Beta, so the platform and the information it
+          Forgeworks is still in Beta, so the platform and the information it
           needs may change over time.
         </p>
 
@@ -422,7 +420,7 @@ export function PrivacyContent() {
         <p>
           If something about this policy is unclear, or you have a concern about
           information connected to your account, please reach out through
-          JanitorForge.
+          Forgeworks.
         </p>
 
         <p>

@@ -30,9 +30,7 @@ export function EmbedInspector({
   return (
     <div className="space-y-4 border-t border-border/60 pt-4">
       <div className="grid grid-cols-2 gap-1 rounded-xl bg-muted/50 p-1 sm:grid-cols-4">
-        {(
-          ["content", "layout", "style", "motion"] as const
-        ).map((value) => (
+        {(["content", "layout", "style", "motion"] as const).map((value) => (
           <Button
             key={value}
             type="button"
@@ -40,8 +38,7 @@ export function EmbedInspector({
             size="sm"
             className={cn(
               "h-8 cursor-pointer rounded-lg px-1.5 text-[11px] capitalize",
-              blockInspectorTab === value &&
-                "bg-background shadow-sm",
+              blockInspectorTab === value && "bg-background shadow-sm",
             )}
             onClick={() => setBlockInspectorTab(value)}
           >
@@ -102,17 +99,11 @@ export function EmbedInspector({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="youtube">
-                  YouTube
-                </SelectItem>
+                <SelectItem value="youtube">YouTube</SelectItem>
                 <SelectItem value="vimeo">Vimeo</SelectItem>
-                <SelectItem value="spotify">
-                  Spotify
-                </SelectItem>
+                <SelectItem value="spotify">Spotify</SelectItem>
                 <SelectItem value="twitch">Twitch</SelectItem>
-                <SelectItem value="custom">
-                  Custom embed
-                </SelectItem>
+                <SelectItem value="custom">Custom embed</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -143,32 +134,23 @@ export function EmbedInspector({
                   onBlur={() => {
                     if (!rawUrl.trim()) return;
 
-                    const normalized =
-                      normalizeCreatorEmbedSource({
-                        provider,
-                        url: rawUrl,
-                        twitchParent: "localhost",
-                      });
+                    const normalized = normalizeCreatorEmbedSource({
+                      provider,
+                      url: rawUrl,
+                      twitchParent: "localhost",
+                    });
 
-                    if (
-                      normalized.valid &&
-                      normalized.normalizedUrl
-                    ) {
+                    if (normalized.valid && normalized.normalizedUrl) {
                       setSectionConfigEdit((current) => ({
                         ...current,
-                        embedUrl:
-                          normalized.normalizedUrl || "",
+                        embedUrl: normalized.normalizedUrl || "",
                       }));
                     }
                   }}
-                  placeholder={creatorEmbedPlaceholder(
-                    provider,
-                  )}
+                  placeholder={creatorEmbedPlaceholder(provider)}
                   className={cn(
                     "h-9",
-                    validation &&
-                      !validation.valid &&
-                      "border-destructive/55",
+                    validation && !validation.valid && "border-destructive/55",
                   )}
                 />
 
@@ -187,17 +169,15 @@ export function EmbedInspector({
 
                 {provider === "custom" && (
                   <p className="text-[10px] leading-relaxed text-muted-foreground">
-                    Custom embeds run inside a restricted
-                    sandbox. Some sites block iframe embedding
-                    and may refuse to display.
+                    Custom embeds run inside a restricted sandbox. Some sites
+                    block iframe embedding and may refuse to display.
                   </p>
                 )}
 
                 {provider === "twitch" && (
                   <p className="text-[10px] leading-relaxed text-muted-foreground">
-                    Twitch requires the current Janitor Forge
-                    hostname as an embed parent. This is added
-                    automatically on the public page.
+                    Twitch requires the current Forgeworks hostname as an embed
+                    parent. This is added automatically on the public page.
                   </p>
                 )}
               </div>
@@ -230,9 +210,7 @@ export function EmbedInspector({
                 <SelectItem value="narrow">Narrow</SelectItem>
                 <SelectItem value="medium">Medium</SelectItem>
                 <SelectItem value="wide">Wide</SelectItem>
-                <SelectItem value="full">
-                  Full width
-                </SelectItem>
+                <SelectItem value="full">Full width</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -249,12 +227,8 @@ export function EmbedInspector({
             </div>
 
             <Select
-              value={
-                sectionConfigEdit.embedAlignment || "center"
-              }
-              disabled={
-                sectionConfigEdit.embedWidth === "full"
-              }
+              value={sectionConfigEdit.embedAlignment || "center"}
+              disabled={sectionConfigEdit.embedWidth === "full"}
               onValueChange={(value) =>
                 setSectionConfigEdit((current) => ({
                   ...current,
@@ -277,9 +251,7 @@ export function EmbedInspector({
             <div className="space-y-2">
               <Label className="text-xs">Player size</Label>
               <Select
-                value={
-                  sectionConfigEdit.spotifySize || "standard"
-                }
+                value={sectionConfigEdit.spotifySize || "standard"}
                 onValueChange={(value) =>
                   setSectionConfigEdit((current) => ({
                     ...current,
@@ -291,26 +263,17 @@ export function EmbedInspector({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="compact">
-                    Compact
-                  </SelectItem>
-                  <SelectItem value="standard">
-                    Standard
-                  </SelectItem>
+                  <SelectItem value="compact">Compact</SelectItem>
+                  <SelectItem value="standard">Standard</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           ) : (
             <>
               <div className="space-y-2">
-                <Label className="text-xs">
-                  Aspect ratio
-                </Label>
+                <Label className="text-xs">Aspect ratio</Label>
                 <Select
-                  value={
-                    sectionConfigEdit.embedAspectRatio ||
-                    "16:9"
-                  }
+                  value={sectionConfigEdit.embedAspectRatio || "16:9"}
                   onValueChange={(value) =>
                     setSectionConfigEdit((current) => ({
                       ...current,
@@ -326,20 +289,15 @@ export function EmbedInspector({
                     <SelectItem value="4:3">4:3</SelectItem>
                     <SelectItem value="1:1">1:1</SelectItem>
                     <SelectItem value="9:16">9:16</SelectItem>
-                    <SelectItem value="custom">
-                      Custom height
-                    </SelectItem>
+                    <SelectItem value="custom">Custom height</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              {sectionConfigEdit.embedAspectRatio ===
-                "custom" && (
+              {sectionConfigEdit.embedAspectRatio === "custom" && (
                 <CreatorNumberControl
                   label="Height"
-                  value={
-                    sectionConfigEdit.embedHeight || "400"
-                  }
+                  value={sectionConfigEdit.embedHeight || "400"}
                   min={120}
                   max={1200}
                   step={10}
@@ -383,9 +341,7 @@ export function EmbedInspector({
                 <SelectItem value="none">None</SelectItem>
                 <SelectItem value="card">Card</SelectItem>
                 <SelectItem value="soft">Soft</SelectItem>
-                <SelectItem value="outline">
-                  Outline
-                </SelectItem>
+                <SelectItem value="outline">Outline</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -416,9 +372,7 @@ export function EmbedInspector({
           <div className="space-y-2">
             <Label className="text-xs">Border</Label>
             <Select
-              value={
-                sectionConfigEdit.embedBorder || "subtle"
-              }
+              value={sectionConfigEdit.embedBorder || "subtle"}
               onValueChange={(value) =>
                 setSectionConfigEdit((current) => ({
                   ...current,
@@ -470,9 +424,7 @@ export function EmbedInspector({
           <div className="space-y-2">
             <Label className="text-xs">Hover motion</Label>
             <Select
-              value={
-                sectionConfigEdit.embedHoverMotion || "none"
-              }
+              value={sectionConfigEdit.embedHoverMotion || "none"}
               onValueChange={(value) =>
                 setSectionConfigEdit((current) => ({
                   ...current,
@@ -493,14 +445,9 @@ export function EmbedInspector({
           </div>
 
           <div className="space-y-2">
-            <Label className="text-xs">
-              Entrance animation
-            </Label>
+            <Label className="text-xs">Entrance animation</Label>
             <Select
-              value={
-                sectionConfigEdit.embedEntranceAnimation ||
-                "none"
-              }
+              value={sectionConfigEdit.embedEntranceAnimation || "none"}
               onValueChange={(value) =>
                 setSectionConfigEdit((current) => ({
                   ...current,
@@ -514,23 +461,17 @@ export function EmbedInspector({
               <SelectContent>
                 <SelectItem value="none">None</SelectItem>
                 <SelectItem value="fade">Fade</SelectItem>
-                <SelectItem value="fade-up">
-                  Fade up
-                </SelectItem>
+                <SelectItem value="fade-up">Fade up</SelectItem>
                 <SelectItem value="scale">Scale</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {sectionConfigEdit.embedEntranceAnimation !==
-            "none" && (
+          {sectionConfigEdit.embedEntranceAnimation !== "none" && (
             <div className="grid gap-4">
               <CreatorNumberControl
                 label="Duration"
-                value={
-                  sectionConfigEdit.embedMotionDuration ||
-                  "550"
-                }
+                value={sectionConfigEdit.embedMotionDuration || "550"}
                 min={150}
                 max={2500}
                 step={50}
@@ -547,9 +488,7 @@ export function EmbedInspector({
 
               <CreatorNumberControl
                 label="Delay"
-                value={
-                  sectionConfigEdit.embedMotionDelay || "0"
-                }
+                value={sectionConfigEdit.embedMotionDelay || "0"}
                 min={0}
                 max={2500}
                 step={50}

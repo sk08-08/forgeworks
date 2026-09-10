@@ -386,15 +386,15 @@ export default function LoginPage() {
             <div className="mb-8 flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 shadow-lg shadow-primary/10">
                 <Image
-                  src="/logo.png"
-                  alt="JanitorForge"
+                  src="/logo.svg"
+                  alt="Forgeworks"
                   width={30}
                   height={30}
                 />
               </div>
 
               <div>
-                <p className="text-lg font-bold tracking-tight">JanitorForge</p>
+                <p className="text-lg font-bold tracking-tight">Forgeworks</p>
 
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                   Independent creator project · Beta
@@ -448,7 +448,7 @@ export default function LoginPage() {
                 <p className="text-xs font-medium">No email required</p>
 
                 <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                  JanitorForge currently uses a username and 4-digit PIN. The
+                  Forgeworks currently uses a username and 4-digit PIN. The
                   project is free and still in Beta.
                 </p>
               </div>
@@ -466,8 +466,8 @@ export default function LoginPage() {
             <Link href="/">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/15 shadow-lg shadow-primary/10">
                 <Image
-                  src="/logo.png"
-                  alt="JanitorForge"
+                  src="/logo.svg"
+                  alt="Forgeworks"
                   width={34}
                   height={34}
                 />
@@ -475,7 +475,7 @@ export default function LoginPage() {
             </Link>
 
             <h1 className="mt-4 text-2xl font-bold tracking-tight">
-              JanitorForge
+              Forgeworks
             </h1>
 
             <p className="mt-1 text-xs text-muted-foreground">

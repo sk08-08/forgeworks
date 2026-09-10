@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Form Builder Component
+// Forgeworks - Form Builder Component
 // Visual form designer for creating custom forms
 // ============================================================================
 

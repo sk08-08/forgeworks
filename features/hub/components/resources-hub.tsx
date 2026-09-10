@@ -163,7 +163,7 @@ type ResourceEntryFormState = {
   isPublished: boolean;
 };
 
-const RESOURCE_SECTION_STORAGE_KEY = "janitorforge-resources-section";
+const RESOURCE_SECTION_STORAGE_KEY = "forgeworks-resources-section";
 const emptySectionForm: ResourceSectionFormState = {
   title: "",
   description: "",
@@ -1045,7 +1045,7 @@ export function ResourcesHub() {
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary backdrop-blur">
                 <BookOpen className="h-3.5 w-3.5" />
-                Janitor Forge Library
+                Forgeworks Library
               </div>
 
               <h1 className="mt-5 max-w-xl text-balance text-4xl font-bold tracking-tight sm:text-5xl">
@@ -1182,7 +1182,7 @@ export function ResourcesHub() {
                 </div>
 
                 <p className="mt-3 text-sm font-semibold">
-                  Curated by Janitor Forge
+                  Curated by Forgeworks
                 </p>
 
                 <p className="mt-1 text-[10px] leading-relaxed text-muted-foreground">
@@ -1293,7 +1293,7 @@ export function ResourcesHub() {
 
                     <div>
                       <h2 className="text-xl font-semibold tracking-tight">
-                        Janitor Forge Picks
+                        Forgeworks Picks
                       </h2>
 
                       <p className="text-sm text-muted-foreground">
@@ -1390,7 +1390,7 @@ export function ResourcesHub() {
                             <p className="truncate text-xs text-muted-foreground">
                               {entry.contributor?.username
                                 ? `by @${entry.contributor.username}`
-                                : "Janitor Forge"}
+                                : "Forgeworks"}
                             </p>
                           </div>
 
@@ -1801,7 +1801,7 @@ export function ResourcesHub() {
                                 </span>
                               ) : (
                                 <span className="text-xs text-muted-foreground">
-                                  Janitor Forge
+                                  Forgeworks
                                 </span>
                               )}
                             </div>
@@ -2229,7 +2229,7 @@ export function ResourcesHub() {
               <div>
                 <p className="text-sm font-medium">Pinned by platform</p>
                 <p className="text-xs text-muted-foreground">
-                  Feature this resource in Janitor Forge Picks.
+                  Feature this resource in Forgeworks Picks.
                 </p>
               </div>
               <Switch

@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Admin Panel
+// Forgeworks - Admin Panel
 // Centralised moderation and management panel for site admins.
 // ============================================================================
 
@@ -130,7 +130,7 @@ type AdminTab =
   | "users"
   | "moderation";
 
-const ADMIN_TAB_STORAGE_KEY = "janitorforge.admin.activeTab";
+const ADMIN_TAB_STORAGE_KEY = "forgeworks.admin.activeTab";
 const ADMIN_TAB_IDS: AdminTab[] = [
   "overview",
   "submissions",
@@ -428,7 +428,7 @@ function OverviewTab({
           <h3 className="text-sm font-semibold">Platform</h3>
 
           <p className="mt-0.5 text-xs text-muted-foreground">
-            Main activity and content across Janitor Forge.
+            Main activity and content across Forgeworks.
           </p>
         </div>
 

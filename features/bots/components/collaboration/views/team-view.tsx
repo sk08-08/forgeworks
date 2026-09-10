@@ -204,7 +204,7 @@ export function TeamView() {
           <DialogHeader>
             <DialogTitle>Invite collaborator</DialogTitle>
             <DialogDescription>
-              Invite a Janitor Forge user and choose their starting role.
+              Invite a Forgeworks user and choose their starting role.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">

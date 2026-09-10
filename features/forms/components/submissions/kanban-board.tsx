@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Kanban Board Component
+// Forgeworks - Kanban Board Component
 // Visual request management with drag-and-drop columns
 // ============================================================================
 

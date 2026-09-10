@@ -5,7 +5,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* JanitorForge Light Theme */
+/* Forgeworks Light Theme */
 :root {
   --background: oklch(0.98 0.005 280);
   --foreground: oklch(0.15 0.01 280);
@@ -1940,7 +1940,7 @@ html::-webkit-scrollbar-thumb:hover {
 }
 
 /* ========================================================================== */
-/* JanitorForge Status / 404 Scene                                            */
+/* Forgeworks Status / 404 Scene                                            */
 /* ========================================================================== */
 
 .jf-status-scene {

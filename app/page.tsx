@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Main Application Page
+// Forgeworks - Main Application Page
 // Entry point that renders the dashboard with dynamic views
 // ============================================================================
 

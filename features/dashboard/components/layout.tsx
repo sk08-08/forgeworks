@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Dashboard Layout
+// Forgeworks - Dashboard Layout
 // Main layout wrapper with sidebar navigation
 // ============================================================================
 
@@ -540,8 +540,8 @@ export function DashboardLayout({ children, username }: DashboardLayoutProps) {
           >
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/20 neon-glow-sm">
               <Image
-                src="/logo.png"
-                alt="JanitorForge Logo"
+                src="/logo.svg"
+                alt="Forgeworks Logo"
                 width={24}
                 height={24}
               />
@@ -549,7 +549,7 @@ export function DashboardLayout({ children, username }: DashboardLayoutProps) {
             {!collapsed && (
               <div className="flex flex-col">
                 <span className="font-semibold text-sidebar-foreground">
-                  JanitorForge (Beta)
+                  Forgeworks (Beta)
                 </span>
                 <span className="text-xs text-muted-foreground">
                   Bot Creator Toolkit
@@ -708,14 +708,14 @@ export function DashboardLayout({ children, username }: DashboardLayoutProps) {
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/20 neon-glow-sm overflow-hidden">
                       <Image
-                        src="/logo.png"
-                        alt="JanitorForge Logo"
+                        src="/logo.svg"
+                        alt="Forgeworks Logo"
                         width={24}
                         height={24}
                       />
                     </div>
                     <div className="flex flex-col">
-                      <SheetTitle>JanitorForge (Beta)</SheetTitle>
+                      <SheetTitle>Forgeworks (Beta)</SheetTitle>
                       <SheetDescription>Bot Creator Toolkit</SheetDescription>
                     </div>
                   </div>

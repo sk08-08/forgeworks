@@ -628,7 +628,7 @@ export function ProfilesHub() {
 
               <h1 className="mt-5 max-w-3xl text-balance text-4xl font-bold tracking-tight sm:text-5xl lg:text-[3.4rem] lg:leading-[1.02]">
                 Meet the people behind
-                <span className="text-primary"> Janitor Forge.</span>
+                <span className="text-primary"> Forgeworks.</span>
               </h1>
 
               <p className="mt-5 max-w-xl text-sm leading-7 text-muted-foreground sm:text-base">

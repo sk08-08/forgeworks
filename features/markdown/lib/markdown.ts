@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Markdown Utilities
+// Forgeworks - Markdown Utilities
 // ============================================================================
 
 /**
@@ -24,7 +24,7 @@ export function stripMarkdownToText(md?: string | null): string {
   // Links: [label](url) -> label
   text = text.replace(/\[([^\]]+)\]\([^\)]+\)/g, "$1");
 
-  // JanitorForge custom colors:
+  // Forgeworks custom colors:
   // [text]{#06b6d4} -> text
   text = text.replace(/\[([^\]]+)\]\{#[0-9a-fA-F]{3,8}\}/g, "$1");
 

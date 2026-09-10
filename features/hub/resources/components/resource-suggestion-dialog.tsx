@@ -252,7 +252,7 @@ export function ResourceSuggestionDialog({
           <DialogDescription>
             {isEditing
               ? "Update your resource and submit the changes for staff review."
-              : "Share a useful guide, tool, reference or article with the Janitor Forge community. Suggestions are reviewed before appearing in the public library."}
+              : "Share a useful guide, tool, reference or article with the Forgeworks community. Suggestions are reviewed before appearing in the public library."}
           </DialogDescription>
         </DialogHeader>
 
@@ -288,8 +288,8 @@ export function ResourceSuggestionDialog({
                     <p className="text-sm font-medium">Import from a website</p>
 
                     <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                      Paste an article or guide URL and Janitor Forge will try
-                      to extract its main written content and convert it to
+                      Paste an article or guide URL and Forgeworks will try to
+                      extract its main written content and convert it to
                       editable Markdown.
                     </p>
                   </div>
@@ -387,7 +387,7 @@ export function ResourceSuggestionDialog({
 
               <p className="text-xs text-muted-foreground">
                 Optional if you are writing the full resource directly inside
-                Janitor Forge.
+                Forgeworks.
               </p>
             </div>
 
@@ -426,8 +426,8 @@ export function ResourceSuggestionDialog({
 
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                     Your suggestion will not appear publicly immediately.
-                    Janitor Forge staff can review, adjust and approve it before
-                    it is added to the library.
+                    Forgeworks staff can review, adjust and approve it before it
+                    is added to the library.
                   </p>
                 </div>
               </div>

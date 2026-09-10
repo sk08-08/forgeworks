@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Bot Manager View
+// Forgeworks - Bot Manager View
 // Full CRUD interface for managing bots
 // ============================================================================
 

@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Filtered Search Input
+// Forgeworks - Filtered Search Input
 // SearchInput combined with a Select filter dropdown (e.g. status, rating)
 // ============================================================================
 

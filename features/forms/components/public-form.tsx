@@ -1026,7 +1026,7 @@ export default function PublicForm({ form, feedbackContext }: PublicFormProps) {
             <Link href="/">
               <Button variant="outline" className="mt-6 cursor-pointer">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to JanitorForge
+                Back to Forgeworks
               </Button>
             </Link>
           </div>
@@ -1051,7 +1051,7 @@ export default function PublicForm({ form, feedbackContext }: PublicFormProps) {
             <Link href="/">
               <Button variant="outline" className="mt-6 cursor-pointer">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to JanitorForge
+                Back to Forgeworks
               </Button>
             </Link>
           </div>
@@ -1287,7 +1287,7 @@ export default function PublicForm({ form, feedbackContext }: PublicFormProps) {
                   appearance.accent.text,
                 )}
               >
-                JanitorForge
+                Forgeworks
               </Link>{" "}
               — Bot Creator Toolkit
             </p>

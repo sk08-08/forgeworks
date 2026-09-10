@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Admin Feedback Inbox
+// Forgeworks - Admin Feedback Inbox
 // Professional admin view for suggestions and bug reports
 // ============================================================================
 
@@ -152,7 +152,7 @@ type InboxPersistedState = {
   showUnreadOnly: boolean;
 };
 
-const FEEDBACK_INBOX_STORAGE_KEY = "janitorforge.feedback.inboxState";
+const FEEDBACK_INBOX_STORAGE_KEY = "forgeworks.feedback.inboxState";
 
 const defaultInboxState: InboxPersistedState = {
   searchQuery: "",

@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Profile Page
+// Forgeworks - Profile Page
 // Full-page profile view with edit capability
 // ============================================================================
 
@@ -541,13 +541,13 @@ export function ProfilePage() {
 
     const publicProfileUrl = `${window.location.origin}${publicProfilePath}`;
     const profileName =
-      p.display_name || p.slug || p.username || "JanitorForge profile";
+      p.display_name || p.slug || p.username || "Forgeworks profile";
 
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `${profileName} on JanitorForge`,
-          text: `Check out ${profileName}'s profile on JanitorForge.`,
+          title: `${profileName} on Forgeworks`,
+          text: `Check out ${profileName}'s profile on Forgeworks.`,
           url: publicProfileUrl,
         });
         return;
@@ -1297,8 +1297,7 @@ export function ProfilePage() {
                       Bots in this world
                     </p>
                     <p className="text-sm">
-                      {(selectedItem.data as any).world_bot_links
-                        ?.length || 0}{" "}
+                      {(selectedItem.data as any).world_bot_links?.length || 0}{" "}
                       bots
                     </p>
                   </div>

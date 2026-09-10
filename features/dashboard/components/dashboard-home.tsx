@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Dashboard Home View
+// Forgeworks - Dashboard Home View
 // Dynamic workspace dashboard with animated hero, timeline, and quick actions
 // ============================================================================
 

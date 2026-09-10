@@ -26,7 +26,7 @@ function invalid(raw: string, message: string): CreatorPageLinkResult {
 
 function normalizeInternal(raw: string): CreatorPageLinkResult {
   if (!raw.startsWith("/") || raw.startsWith("//")) {
-    return invalid(raw, "Use a Janitor Forge path starting with a single /.");
+    return invalid(raw, "Use a Forgeworks path starting with a single /.");
   }
 
   if (CONTROL_CHARS.test(raw)) {
@@ -38,7 +38,7 @@ function normalizeInternal(raw: string): CreatorPageLinkResult {
     href: raw,
     kind: "internal",
     valid: true,
-    message: "Janitor Forge page",
+    message: "Forgeworks page",
   };
 }
 

@@ -28,7 +28,7 @@ type CommentRow = {
   } | null;
 };
 
-const VIEWER_KEY = "janitorforge-resources-viewer";
+const VIEWER_KEY = "forgeworks-resources-viewer";
 
 function getViewerFingerprint() {
   const existing = localStorage.getItem(VIEWER_KEY);

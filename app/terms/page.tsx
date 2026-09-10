@@ -14,13 +14,13 @@ import {
 import { TermsContent } from "./terms-content";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | JanitorForge",
+  title: "Terms of Service | Forgeworks",
   description:
-    "The basic rules for using JanitorForge, creating content, collaborating, submitting forms, and participating in the platform.",
+    "The basic rules for using Forgeworks, creating content, collaborating, submitting forms, and participating in the platform.",
   openGraph: {
-    title: "Terms of Service | JanitorForge",
+    title: "Terms of Service | Forgeworks",
     description:
-      "Plain-language rules for using JanitorForge and its creator tools.",
+      "Plain-language rules for using Forgeworks and its creator tools.",
   },
 };
 
@@ -29,7 +29,7 @@ const termsHighlights = [
     icon: BadgeCheck,
     title: "Your content remains yours",
     description:
-      "JanitorForge does not claim ownership of the work you bring to the platform.",
+      "Forgeworks does not claim ownership of the work you bring to the platform.",
   },
   {
     icon: Handshake,
@@ -78,17 +78,12 @@ export default function TermsPage() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-7">
           <Link href="/" className="group flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/15 transition-transform duration-300 group-hover:rotate-3 group-hover:scale-105">
-              <Image
-                src="/logo.png"
-                alt="JanitorForge"
-                width={24}
-                height={24}
-              />
+              <Image src="/logo.svg" alt="Forgeworks" width={24} height={24} />
             </div>
 
             <div className="flex flex-col">
               <span className="text-sm font-semibold leading-tight sm:text-base">
-                JanitorForge
+                Forgeworks
               </span>
 
               <span className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -102,7 +97,7 @@ export default function TermsPage() {
             className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:text-sm"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            Back to JanitorForge
+            Back to Forgeworks
           </Link>
         </div>
       </header>
@@ -136,7 +131,7 @@ export default function TermsPage() {
 
             <p className="mt-5 max-w-2xl text-pretty leading-7 text-muted-foreground sm:text-lg">
               These terms describe the basic expectations for accounts, creator
-              content, collaboration, forms, and participation in JanitorForge.
+              content, collaboration, forms, and participation in Forgeworks.
             </p>
 
             <p className="mt-5 text-xs text-muted-foreground">
@@ -198,7 +193,7 @@ export default function TermsPage() {
               </p>
 
               <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                JanitorForge is still a small Beta project. These terms mostly
+                Forgeworks is still a small Beta project. These terms mostly
                 exist to explain expectations clearly and give the project room
                 to deal with abuse when necessary.
               </p>
@@ -223,8 +218,8 @@ export default function TermsPage() {
                   "You keep the rights you already have in your content.",
                   "Do not use the platform to harass or target other people.",
                   "Shared or public content may be seen or copied by others.",
-                  "JanitorForge is still Beta and features may change.",
-                  "Forms are tools — JanitorForge is not part of private agreements.",
+                  "Forgeworks is still Beta and features may change.",
+                  "Forms are tools — Forgeworks is not part of private agreements.",
                 ].map((item) => (
                   <div key={item} className="flex items-start gap-2.5">
                     <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/70" />
@@ -257,7 +252,7 @@ export default function TermsPage() {
                   href="/"
                   className="group flex items-center justify-between rounded-xl px-3 py-2 text-xs transition-colors hover:bg-primary/5"
                 >
-                  <span>JanitorForge Home</span>
+                  <span>Forgeworks Home</span>
                   <span className="text-muted-foreground transition-transform group-hover:translate-x-0.5">
                     →
                   </span>
@@ -287,7 +282,7 @@ export default function TermsPage() {
                 </p>
 
                 <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                  JanitorForge changes quickly. These terms are meant to stay
+                  Forgeworks changes quickly. These terms are meant to stay
                   understandable as the project evolves, not become a wall of
                   legal jargon.
                 </p>
@@ -297,7 +292,7 @@ export default function TermsPage() {
         </section>
 
         <footer className="mt-12 flex flex-col gap-4 border-t border-border/60 pt-7 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <p>JanitorForge · Independent creator project</p>
+          <p>Forgeworks · Independent creator project</p>
 
           <div className="flex flex-wrap items-center gap-4">
             <Link href="/" className="transition-colors hover:text-foreground">

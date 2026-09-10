@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Bot Form Component
+// Forgeworks - Bot Form Component
 // Advanced bot creation and editing form with validation
 // ============================================================================
 

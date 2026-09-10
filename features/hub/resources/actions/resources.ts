@@ -307,7 +307,7 @@ async function fetchImportPage(initialUrl: string, signal: AbortSignal) {
 
       headers: {
         "User-Agent":
-          "Mozilla/5.0 (compatible; JanitorForgeResourceImporter/1.0)",
+          "Mozilla/5.0 (compatible; ForgeworksResourceImporter/1.0)",
 
         Accept: "text/html,application/xhtml+xml",
       },
@@ -872,7 +872,7 @@ export async function importResourceFromUrl(
       return {
         success: false,
         error:
-          "Janitor Forge could not find readable content on that page. You can still paste the content manually.",
+          "Forgeworks could not find readable content on that page. You can still paste the content manually.",
       };
     }
 
@@ -913,7 +913,7 @@ export async function importResourceFromUrl(
       return {
         success: false,
         error:
-          "Janitor Forge found the page, but could not extract useful written content from it.",
+          "Forgeworks found the page, but could not extract useful written content from it.",
       };
     }
 

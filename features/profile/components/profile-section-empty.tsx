@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Shared profile section empty state
+// Forgeworks - Shared profile section empty state
 // Consistent dashed empty card used by own and public profile sections
 // ============================================================================
 

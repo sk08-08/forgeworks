@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Catch-All Slug Route (Redirector)
+// Forgeworks - Catch-All Slug Route (Redirector)
 // Accessible at /[slug]
 // - If slug matches a published creator page → redirect to /page/[slug]
 // - If slug matches a profile → redirect to /profile/[username]
@@ -30,7 +30,7 @@ export async function generateMetadata({
     .maybeSingle();
 
   if (creatorPage) {
-    return { title: `${creatorPage.title} — JanitorForge` };
+    return { title: `${creatorPage.title} — Forgeworks` };
   }
 
   // Check profile
@@ -47,10 +47,10 @@ export async function generateMetadata({
     const description =
       profile.tagline ||
       plainBio.slice(0, 160) ||
-      `Profile page of ${title} on JanitorForge`;
+      `Profile page of ${title} on Forgeworks`;
 
     return {
-      title: `${title} — JanitorForge`,
+      title: `${title} — Forgeworks`,
       description: description.slice(0, 160),
       openGraph: {
         title,

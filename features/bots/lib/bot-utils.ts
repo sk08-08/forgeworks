@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Token Validation Utilities
+// Forgeworks - Token Validation Utilities
 // Provides token counting and variable validation for bot content
 // ============================================================================
 
@@ -230,7 +230,7 @@ export async function exportCharacterCardPNG(
   ctx.fillStyle = "#a78bfa";
   ctx.font = "14px system-ui";
   ctx.fillText("Character Card V2", 200, 330);
-  ctx.fillText("Created with JanitorForge", 200, 350);
+  ctx.fillText("Created with Forgeworks", 200, 350);
 
   if (imageUrl) {
     try {

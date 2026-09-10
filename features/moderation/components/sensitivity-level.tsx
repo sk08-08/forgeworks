@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Sensitivity Level Settings
+// Forgeworks - Sensitivity Level Settings
 // Adjust detection strictness for form submissions
 // ============================================================================
 

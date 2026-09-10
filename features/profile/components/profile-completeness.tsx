@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Shared Profile Completeness Card
+// Forgeworks - Shared Profile Completeness Card
 // Shows missing profile areas and a progress bar until the profile is complete
 // ============================================================================
 

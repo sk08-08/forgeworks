@@ -244,7 +244,7 @@ export function EditorView() {
           <EditorSection
             id="classification"
             title="Classification"
-            description="Rating and tags used across Janitor Forge."
+            description="Rating and tags used across Forgeworks."
           >
             <CollaborativeField field="rating">
               <RadioGroup

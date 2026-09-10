@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Profile Editor (Tabbed)
+// Forgeworks - Profile Editor (Tabbed)
 // Rich profile customization with General, Social, Appearance, Featured, Privacy
 // Fully responsive with improved UX
 // ============================================================================

@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Client Application Component
+// Forgeworks - Client Application Component
 // Client-side app wrapper with providers
 // ============================================================================
 

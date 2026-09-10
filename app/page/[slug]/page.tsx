@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Public Creator Page
+// Forgeworks - Public Creator Page
 // Accessible at /page/[slug] for published creator pages
 // ============================================================================
 

@@ -20,16 +20,17 @@ const geistMono = Geist_Mono({
 // SEO Metadata
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "https://janitorforge.vercel.app",
+    process.env.NEXT_PUBLIC_SITE_URL ||
+      "https://forgeworks-platform.vercel.app",
   ),
   title: {
-    default: "JanitorForge (Beta)",
+    default: "Forgeworks (Beta)",
     template: "%s",
   },
   description:
     "Create, manage, and share your AI characters. Custom forms, visual boards, real collaboration — everything in one place for character creators.",
   keywords: [
-    "Janitor AI",
+    "Forgeworks",
     "bot creator",
     "character card",
     "AI chatbot",
@@ -40,31 +41,32 @@ export const metadata: Metadata = {
     "character management",
     "AI character editor",
   ],
-  authors: [{ name: "JanitorForge" }],
-  creator: "JanitorForge",
+  authors: [{ name: "Forgeworks" }],
+  creator: "Forgeworks",
+  manifest: "/site.webmanifest",
   openGraph: {
     type: "website",
     locale: "en_US",
     url: "/",
-    siteName: "JanitorForge (Beta)",
-    title: "JanitorForge (Beta) — The toolkit for character creators",
+    siteName: "Forgeworks (Beta)",
+    title: "Forgeworks (Beta) — The toolkit for character creators",
     description:
       "Create, manage, and share your AI characters. Custom forms, visual boards, real collaboration — everything in one place.",
     images: [
       {
-        url: "/logo.png",
+        url: "/web-app-manifest-512x512.png",
         width: 512,
         height: 512,
-        alt: "JanitorForge (Beta) Logo",
+        alt: "Forgeworks Logo",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "JanitorForge (Beta) — The toolkit for character creators",
+    title: "Forgeworks (Beta) — The toolkit for character creators",
     description:
       "Create, manage, and share your AI characters. Custom forms, visual boards, real collaboration — everything in one place.",
-    images: ["/logo.png"],
+    images: ["/web-app-manifest-512x512.png"],
   },
   robots: {
     index: true,
@@ -79,11 +81,13 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/icon-light-32x32.png", media: "(prefers-color-scheme: light)" },
-      { url: "/icon-dark-32x32.png", media: "(prefers-color-scheme: dark)" },
-      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
     ],
-    apple: "/apple-icon.png",
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
   },
 };
 

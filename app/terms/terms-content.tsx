@@ -56,27 +56,26 @@ export function TermsContent() {
     <div>
       <TermsSection number="01" title="About these terms">
         <p>
-          JanitorForge is an independent toolkit for creators to manage bots,
+          Forgeworks is an independent toolkit for creators to manage bots,
           forms, submissions, profiles, creator pages, collaboration, and
           related content.
         </p>
 
         <p>
           These Terms describe the basic rules for using the platform. By using
-          JanitorForge, you agree to follow them. If you do not agree with the
+          Forgeworks, you agree to follow them. If you do not agree with the
           rules, please do not use the platform.
         </p>
 
         <p>
-          JanitorForge is still in Beta. These Terms may change as features,
+          Forgeworks is still in Beta. These Terms may change as features,
           moderation needs, and the project itself evolve.
         </p>
       </TermsSection>
 
       <TermsSection number="02" title="Age requirement">
         <p>
-          You must be at least <Strong>18 years old</Strong> to use
-          JanitorForge.
+          You must be at least <Strong>18 years old</Strong> to use Forgeworks.
         </p>
 
         <p>
@@ -86,7 +85,7 @@ export function TermsContent() {
       </TermsSection>
 
       <TermsSection number="03" title="Your account">
-        <p>JanitorForge accounts currently use a username and PIN.</p>
+        <p>Forgeworks accounts currently use a username and PIN.</p>
 
         <List>
           <li>Keep your PIN private.</li>
@@ -108,38 +107,37 @@ export function TermsContent() {
       <TermsSection number="04" title="Your content">
         <p>
           You keep whatever rights you already have in the content you create,
-          write, or upload to JanitorForge.
+          write, or upload to Forgeworks.
         </p>
 
         <p>
-          JanitorForge does not claim ownership of your bots, writing, images,
+          Forgeworks does not claim ownership of your bots, writing, images,
           forms, Creator Pages, lore, or other creator content simply because
           you use the platform.
         </p>
 
         <p>
           You are responsible for making sure you have the right to upload or
-          publish the content you place on JanitorForge.
+          publish the content you place on Forgeworks.
         </p>
 
         <Subheading>Permission needed to operate the platform</Subheading>
 
         <p>
-          When you upload, save, publish, or share content, you give
-          JanitorForge the limited permission necessary to store, process,
-          display, transmit, and otherwise handle that content so the feature
-          you chose can work.
+          When you upload, save, publish, or share content, you give Forgeworks
+          the limited permission necessary to store, process, display, transmit,
+          and otherwise handle that content so the feature you chose can work.
         </p>
 
         <p>
-          For example, a public profile cannot work unless JanitorForge is
-          allowed to display the profile information you chose to publish.
+          For example, a public profile cannot work unless Forgeworks is allowed
+          to display the profile information you chose to publish.
         </p>
 
         <Subheading>Backups are still a good idea</Subheading>
 
         <p>
-          JanitorForge tries to protect stored content, but no Beta project or
+          Forgeworks tries to protect stored content, but no Beta project or
           online service can promise that data will never be lost. Keep your own
           copy of anything you consider important.
         </p>
@@ -154,13 +152,13 @@ export function TermsContent() {
 
         <p>
           People who can see content may also be able to copy, screenshot, or
-          otherwise retain it outside JanitorForge. The platform cannot control
+          otherwise retain it outside Forgeworks. The platform cannot control
           copies made outside its systems.
         </p>
 
         <p>
           Visibility and access settings should therefore be treated as tools
-          for controlling access inside JanitorForge, not as a guarantee that
+          for controlling access inside Forgeworks, not as a guarantee that
           something another person has already seen can be erased from their
           possession.
         </p>
@@ -168,7 +166,7 @@ export function TermsContent() {
 
       <TermsSection number="06" title="Treat other people like people">
         <p>
-          JanitorForge includes public profiles, forms, comments, collaboration,
+          Forgeworks includes public profiles, forms, comments, collaboration,
           submissions, and other ways for people to interact. Do not use those
           tools to deliberately harm other users.
         </p>
@@ -176,7 +174,7 @@ export function TermsContent() {
         <p>In particular, do not:</p>
 
         <List>
-          <li>Use JanitorForge for illegal activity.</li>
+          <li>Use Forgeworks for illegal activity.</li>
           <li>
             Harass, threaten, intimidate, or deliberately target another person.
           </li>
@@ -198,8 +196,8 @@ export function TermsContent() {
             systems, or infrastructure.
           </li>
           <li>
-            Spam, scrape, automate, or overload JanitorForge in ways that harm
-            the service or its users.
+            Spam, scrape, automate, or overload Forgeworks in ways that harm the
+            service or its users.
           </li>
         </List>
 
@@ -212,7 +210,7 @@ export function TermsContent() {
 
       <TermsSection number="07" title="Moderation">
         <p>
-          JanitorForge does not manually review everything people create or
+          Forgeworks does not manually review everything people create or
           submit.
         </p>
 
@@ -220,7 +218,7 @@ export function TermsContent() {
           However, content, accounts, submissions, or activity may be reviewed,
           restricted, removed, or blocked when there is a reasonable reason to
           believe they violate these Terms, create a safety problem, abuse the
-          service, or expose JanitorForge to legal or security risk.
+          service, or expose Forgeworks to legal or security risk.
         </p>
 
         <p>
@@ -232,7 +230,7 @@ export function TermsContent() {
 
       <TermsSection number="08" title="Collaboration">
         <p>
-          Some JanitorForge tools allow creators to share access to bots or
+          Some Forgeworks tools allow creators to share access to bots or
           related workspaces.
         </p>
 
@@ -255,15 +253,15 @@ export function TermsContent() {
         </List>
 
         <p>
-          JanitorForge provides collaboration tools, but it is not responsible
-          for settling personal disagreements, creative ownership disputes, or
+          Forgeworks provides collaboration tools, but it is not responsible for
+          settling personal disagreements, creative ownership disputes, or
           private agreements between collaborators.
         </p>
       </TermsSection>
 
       <TermsSection number="09" title="Forms and requests">
         <p>
-          Creators can use JanitorForge Forms to receive requests, suggestions,
+          Creators can use Forgeworks Forms to receive requests, suggestions,
           commissions, or other submissions.
         </p>
 
@@ -276,11 +274,11 @@ export function TermsContent() {
             Submitters are responsible for the content they send through a form.
           </li>
           <li>
-            JanitorForge provides the form and workflow tools but is not a party
+            Forgeworks provides the form and workflow tools but is not a party
             to private agreements made between creators and submitters.
           </li>
           <li>
-            JanitorForge does not currently process payments or act as a
+            Forgeworks does not currently process payments or act as a
             marketplace.
           </li>
         </List>
@@ -288,36 +286,36 @@ export function TermsContent() {
         <p>
           Payment disputes, delivery promises, commission terms, refunds, and
           similar arrangements must be handled between the people involved
-          unless JanitorForge later introduces a feature that explicitly says
+          unless Forgeworks later introduces a feature that explicitly says
           otherwise.
         </p>
       </TermsSection>
 
-      <TermsSection number="10" title="JanitorForge itself">
+      <TermsSection number="10" title="Forgeworks itself">
         <p>
-          User-created content is separate from JanitorForge&apos;s own
-          branding, original interface, platform code, documentation, and other
-          project materials.
+          User-created content is separate from Forgeworks&apos;s own branding,
+          original interface, platform code, documentation, and other project
+          materials.
         </p>
 
         <p>
-          Please do not copy or redistribute JanitorForge&apos;s project
-          materials in a way that falsely presents them as your own, creates
-          confusion about who operates the platform, or violates applicable
-          rights or licenses.
+          Please do not copy or redistribute Forgeworks&apos;s project materials
+          in a way that falsely presents them as your own, creates confusion
+          about who operates the platform, or violates applicable rights or
+          licenses.
         </p>
       </TermsSection>
 
       <TermsSection number="11" title="Third-party services and links">
         <p>
-          JanitorForge depends on external infrastructure, currently including
+          Forgeworks depends on external infrastructure, currently including
           services such as Vercel and Supabase.
         </p>
 
         <p>
-          JanitorForge may also display links added by creators or community
+          Forgeworks may also display links added by creators or community
           members. External services have their own rules, availability,
-          security, and privacy practices. JanitorForge does not control what
+          security, and privacy practices. Forgeworks does not control what
           happens once you visit another service.
         </p>
       </TermsSection>
@@ -331,8 +329,8 @@ export function TermsContent() {
           >
             Privacy Policy
           </Link>{" "}
-          explains what information JanitorForge handles and how the platform
-          uses it.
+          explains what information Forgeworks handles and how the platform uses
+          it.
         </p>
 
         <p>
@@ -343,7 +341,7 @@ export function TermsContent() {
 
       <TermsSection number="13" title="Beta software and availability">
         <p>
-          JanitorForge is provided on an <Strong>as-is Beta basis</Strong>.
+          Forgeworks is provided on an <Strong>as-is Beta basis</Strong>.
         </p>
 
         <p>
@@ -353,7 +351,7 @@ export function TermsContent() {
         </p>
 
         <p>
-          JanitorForge does not guarantee uninterrupted availability, permanent
+          Forgeworks does not guarantee uninterrupted availability, permanent
           storage, or that every feature will remain exactly as it exists today.
         </p>
       </TermsSection>
@@ -365,7 +363,7 @@ export function TermsContent() {
         </p>
 
         <p>
-          JanitorForge may temporarily restrict, suspend, or remove an account
+          Forgeworks may temporarily restrict, suspend, or remove an account
           when reasonably necessary to address serious or repeated rule
           violations, security issues, abuse, or legal obligations.
         </p>
@@ -376,23 +374,23 @@ export function TermsContent() {
         </p>
       </TermsSection>
 
-      <TermsSection number="15" title="Changes to JanitorForge or these terms">
+      <TermsSection number="15" title="Changes to Forgeworks or these terms">
         <p>
-          JanitorForge is actively developed. Features may be added, rebuilt,
+          Forgeworks is actively developed. Features may be added, rebuilt,
           changed, or removed.
         </p>
 
         <p>
           These Terms may also be updated when the platform changes or when a
           rule needs clarification. Meaningful changes will update the date
-          shown at the top of the page and may be announced through JanitorForge
+          shown at the top of the page and may be announced through Forgeworks
           where appropriate.
         </p>
       </TermsSection>
 
       <TermsSection number="16" title="If there is a problem">
         <p>
-          If you believe something involving JanitorForge has gone wrong,
+          If you believe something involving Forgeworks has gone wrong,
           reporting the issue through the platform is usually the best first
           step.
         </p>

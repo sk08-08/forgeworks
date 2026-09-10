@@ -38,27 +38,27 @@ const landingScreenshots = {
   dashboard: {
     dark: "/landing/dashboard-dark.webp",
     light: "/landing/dashboard-light.webp",
-    alt: "JanitorForge dashboard",
+    alt: "Forgeworks dashboard",
   },
   forms: {
     dark: "/landing/form-builder-dark.webp",
     light: "/landing/form-builder-light.webp",
-    alt: "JanitorForge form builder",
+    alt: "Forgeworks form builder",
   },
   submissions: {
     dark: "/landing/submissions-dark.webp",
     light: "/landing/submissions-light.webp",
-    alt: "JanitorForge submissions board",
+    alt: "Forgeworks submissions board",
   },
   profile: {
     dark: "/landing/profile-dark.webp",
     light: "/landing/profile-light.webp",
-    alt: "Customized JanitorForge creator profile",
+    alt: "Customized Forgeworks creator profile",
   },
   bots: {
     dark: "/landing/bot-manager-dark.webp",
     light: "/landing/bot-manager-light.webp",
-    alt: "JanitorForge Bot Manager",
+    alt: "Forgeworks Bot Manager",
   },
 } as const;
 
@@ -285,12 +285,12 @@ function Navbar() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-7">
         <Link href="/" className="group flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/15 transition-transform duration-300 group-hover:rotate-3 group-hover:scale-105">
-            <Image src="/logo.png" alt="JanitorForge" width={24} height={24} />
+            <Image src="/logo.svg" alt="Forgeworks" width={24} height={24} />
           </div>
 
           <div className="flex flex-col">
             <span className="text-sm font-semibold leading-tight sm:text-base">
-              JanitorForge
+              Forgeworks
             </span>
 
             <span className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -325,7 +325,7 @@ function Navbar() {
               size="sm"
               className="group cursor-pointer rounded-full px-5 shadow-md shadow-primary/15"
             >
-              Try JanitorForge
+              Try Forgeworks
               <ArrowRight className="ml-1.5 h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
             </Button>
           </Link>
@@ -478,7 +478,7 @@ function Hero() {
                 variant="outline"
                 className="border-primary/25 bg-primary/8 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary"
               >
-                Free · Beta · Made for Janitor AI users
+                Free · Beta · Made for bot creators
               </Badge>
             </div>
           </Reveal>
@@ -488,7 +488,7 @@ function Hero() {
               Tools I wanted as a{" "}
               <span className="relative inline-block">
                 <span className="bg-linear-to-r from-primary via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  Janitor AI creator.
+                  bot creator.
                 </span>
 
                 <span className="absolute -bottom-1 left-0 right-0 h-px bg-linear-to-r from-primary/0 via-primary/55 to-primary/0" />
@@ -498,7 +498,7 @@ function Hero() {
 
           <Reveal delay={0.16}>
             <p className="mx-auto mt-6 max-w-xl text-pretty text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8 lg:mx-0">
-              JanitorForge started as a better way to handle creator requests
+              Forgeworks started as a better way to handle creator requests
               without relying on DMs and generic forms. I kept adding the tools
               I wanted for my own bots, and it slowly became a workspace for
               forms, submissions, profiles, collaboration, and more.
@@ -512,7 +512,7 @@ function Hero() {
                   size="lg"
                   className="group h-11 w-full cursor-pointer rounded-full px-6 shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.02] sm:w-auto"
                 >
-                  Try JanitorForge
+                  Try Forgeworks
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
@@ -558,7 +558,7 @@ function Hero() {
               <ScreenshotFrame
                 src={dashboardScreenshot.src}
                 alt={dashboardScreenshot.alt}
-                label="janitorforge / dashboard"
+                label="forgeworks / dashboard"
                 priority
               />
 
@@ -662,8 +662,8 @@ function Workflow() {
             </h2>
 
             <p className="mt-5 max-w-2xl text-pretty leading-7 text-muted-foreground sm:text-lg">
-              Forms were the first reason JanitorForge existed. The workflow
-              grew from one simple idea: give creators somewhere safer and more
+              Forms were the first reason Forgeworks existed. The workflow grew
+              from one simple idea: give creators somewhere safer and more
               organized to receive and manage requests.
             </p>
           </div>
@@ -820,7 +820,7 @@ function Tools() {
             </div>
 
             <p className="max-w-2xl text-pretty leading-7 text-muted-foreground sm:text-lg lg:justify-self-end">
-              JanitorForge stopped being only a request-form project once I
+              Forgeworks stopped being only a request-form project once I
               started using it myself. Bot management, profiles, collaboration,
               Markdown, community tools, and Atlas grew from that.
             </p>
@@ -869,7 +869,7 @@ function Tools() {
 }
 
 // ============================================================================
-// Why JanitorForge exists
+// Why Forgeworks exists
 // ============================================================================
 
 function Why() {
@@ -914,7 +914,7 @@ function Why() {
 
               <div className="space-y-5 text-sm leading-7 text-muted-foreground sm:text-base">
                 <p>
-                  JanitorForge originally started because a friend was handling
+                  Forgeworks originally started because a friend was handling
                   bot requests through Google Forms and received a seriously
                   abusive submission. I wanted to make something that gave her
                   more control over what reached her and made the requests
@@ -1124,7 +1124,7 @@ function Screenshots() {
               </div>
 
               <h2 className="text-3xl font-bold tracking-[-0.035em] sm:text-4xl md:text-5xl">
-                This is JanitorForge.
+                This is Forgeworks.
               </h2>
             </div>
 
@@ -1213,9 +1213,9 @@ function BetaSection() {
               </h2>
 
               <p className="mx-auto mt-4 max-w-xl text-pretty leading-7 text-muted-foreground">
-                JanitorForge is free, still changing, and definitely not
-                finished. Make an account, poke around, break things, and tell
-                me what could be better.
+                Forgeworks is free, still changing, and definitely not finished.
+                Make an account, poke around, break things, and tell me what
+                could be better.
               </p>
 
               <div className="mt-7">
@@ -1224,7 +1224,7 @@ function BetaSection() {
                     size="lg"
                     className="group cursor-pointer rounded-full px-7 shadow-lg shadow-primary/20"
                   >
-                    Try JanitorForge
+                    Try Forgeworks
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </Button>
                 </Link>
@@ -1252,16 +1252,11 @@ function Footer() {
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-[1fr_auto_auto] lg:items-center">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
-              <Image
-                src="/logo.png"
-                alt="JanitorForge"
-                width={23}
-                height={23}
-              />
+              <Image src="/logo.svg" alt="Forgeworks" width={23} height={23} />
             </div>
 
             <div>
-              <p className="text-sm font-semibold">JanitorForge</p>
+              <p className="text-sm font-semibold">Forgeworks</p>
 
               <p className="text-[10px] text-muted-foreground">
                 An independent creator project.

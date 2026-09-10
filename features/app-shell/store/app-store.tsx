@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Application Store
+// Forgeworks - Application Store
 // Client-side state management using React Context
 // ============================================================================
 

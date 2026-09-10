@@ -46,7 +46,7 @@ export function StatusPage({
     icon: Home,
   },
   secondaryAction,
-  footer = "JanitorForge — Bot Creator Toolkit",
+  footer = "Forgeworks — Bot Creator Toolkit",
   className,
 }: StatusPageProps) {
   const PrimaryIcon = primaryAction.icon;
@@ -113,8 +113,8 @@ export function StatusPage({
           >
             <div className="neon-glow-sm flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/15 transition-transform duration-300 group-hover:rotate-3 group-hover:scale-105">
               <Image
-                src="/logo.png"
-                alt="JanitorForge"
+                src="/logo.svg"
+                alt="Forgeworks"
                 width={25}
                 height={25}
                 priority
@@ -123,7 +123,7 @@ export function StatusPage({
 
             <div className="hidden min-w-0 sm:block">
               <p className="truncate text-sm font-semibold leading-tight">
-                JanitorForge
+                Forgeworks
               </p>
               <p className="truncate text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                 Bot Creator Toolkit

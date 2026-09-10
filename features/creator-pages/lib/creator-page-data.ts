@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Creator Page Data
+// Forgeworks - Creator Page Data
 // Server-side data required to render a published Creator Page.
 // ============================================================================
 
@@ -35,9 +35,7 @@ export async function fetchCreatorPageData(
   // Find published creator page by slug
   const { data: creatorPage, error: pageError } = await supabase
     .from("active_creator_pages")
-    .select(
-      "id, user_id, slug, title, description, is_published, config",
-    )
+    .select("id, user_id, slug, title, description, is_published, config")
     .eq("slug", slug)
     .eq("is_published", true)
     .maybeSingle();
@@ -128,7 +126,7 @@ export function buildCreatorPageMeta(
     `Creator page by ${profile?.display_name || profile?.username || "Unknown"}`;
 
   return {
-    title: `${title} — JanitorForge`,
+    title: `${title} — Forgeworks`,
     description: description.slice(0, 160),
     openGraph: {
       title,

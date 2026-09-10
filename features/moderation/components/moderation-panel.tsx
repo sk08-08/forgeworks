@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Moderation Panel
+// Forgeworks - Moderation Panel
 // Review and manage flagged form submissions
 // ============================================================================
 

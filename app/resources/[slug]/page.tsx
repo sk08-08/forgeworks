@@ -218,7 +218,7 @@ export default async function ResourcePage({ params }: PageProps) {
                   </div>
 
                   <div>
-                    <p className="text-sm font-medium">Janitor Forge</p>
+                    <p className="text-sm font-medium">Forgeworks</p>
 
                     <p className="text-xs text-muted-foreground">
                       Curated resource

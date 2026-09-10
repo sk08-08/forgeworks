@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Token Counter Component
+// Forgeworks - Token Counter Component
 // Real-time token counting and variable validation display
 // ============================================================================
 

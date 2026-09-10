@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Social Icons
+// Forgeworks - Social Icons
 // Simple Icons SVG components for social media platforms
 // ============================================================================
 

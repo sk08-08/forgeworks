@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Public Profile View
+// Forgeworks - Public Profile View
 // Read-only view of another user's profile at /profile/[username]
 // Shows profile info, bots, creator pages, worlds, follow button
 // ============================================================================
@@ -1096,7 +1096,7 @@ export function PublicProfile({
                 className="hover:underline"
                 style={{ color: readablePrimaryMutedColor }}
               >
-                JanitorForge
+                Forgeworks
               </Link>{" "}
               — Bot Creator Toolkit
             </p>

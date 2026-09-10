@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Shared Profile Badges Section
+// Forgeworks - Shared Profile Badges Section
 // Normalized badge renderer with empty state and badge icon support
 // ============================================================================
 

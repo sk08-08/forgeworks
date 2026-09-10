@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Settings Dialog
+// Forgeworks - Settings Dialog
 // General platform settings: appearance, notifications, data, shortcuts, security
 // ============================================================================
 
@@ -429,7 +429,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   <div>
                     <h3 className="text-base font-semibold">Appearance</h3>
                     <p className="text-sm text-muted-foreground">
-                      Customize the look and feel of JanitorForge.
+                      Customize the look and feel of Forgeworks.
                     </p>
                   </div>
 
@@ -539,7 +539,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   <div>
                     <h3 className="text-base font-semibold">Data & Privacy</h3>
                     <p className="text-sm text-muted-foreground">
-                      Export your account data and review Janitor Forge&apos;s
+                      Export your account data and review Forgeworks&apos;
                       privacy information.
                     </p>
                   </div>
@@ -552,8 +552,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                           Export account data
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Download a copy of your Janitor Forge account data in
-                          a single JSON file.
+                          Download a copy of your Forgeworks account data in a
+                          single JSON file.
                         </p>
                       </div>
                       <Button asChild className="w-full shrink-0 sm:w-auto">
@@ -572,7 +572,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                         Individual exports
                       </Label>
                       <p className="text-xs text-muted-foreground">
-                        Download data from a specific Janitor Forge workspace.
+                        Download data from a specific Forgeworks workspace.
                       </p>
                     </div>
 
@@ -615,7 +615,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                             Privacy and terms
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            Learn how JanitorForge handles your data and review
+                            Learn how Forgeworks handles your data and review
                             the platform rules.
                           </p>
                         </div>

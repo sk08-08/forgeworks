@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Search Input Component
+// Forgeworks - Search Input Component
 // Reusable search input with icon, clear button, and optional debounce
 // ============================================================================
 

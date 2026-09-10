@@ -53,7 +53,7 @@ type DateTimePickerProps = {
   defaultIncludeTime?: boolean;
 
   /**
-   * Locale used for month/date labels. Janitor Forge defaults to English.
+   * Locale used for month/date labels. Forgeworks defaults to English.
    */
   locale?: string;
 };

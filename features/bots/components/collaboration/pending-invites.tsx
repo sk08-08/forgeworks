@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Pending Collaboration Invites (Overhaul)
+// Forgeworks - Pending Collaboration Invites (Overhaul)
 // Shows pending invites with bot images, inviter avatars, and role details
 // ============================================================================
 

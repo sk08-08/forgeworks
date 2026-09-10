@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Follow List Modal
+// Forgeworks - Follow List Modal
 // Shows followers or following list in a dialog
 // ============================================================================
 

@@ -14,13 +14,13 @@ import {
 import { PrivacyContent } from "./privacy-content";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | JanitorForge",
+  title: "Privacy Policy | Forgeworks",
   description:
-    "How JanitorForge handles account information, creator content, submissions, safety data, and privacy controls.",
+    "How Forgeworks handles account information, creator content, submissions, safety data, and privacy controls.",
   openGraph: {
-    title: "Privacy Policy | JanitorForge",
+    title: "Privacy Policy | Forgeworks",
     description:
-      "A plain-language overview of how JanitorForge handles account information, creator content, and privacy.",
+      "A plain-language overview of how Forgeworks handles account information, creator content, and privacy.",
   },
 };
 
@@ -34,7 +34,7 @@ const privacyHighlights = [
     icon: Database,
     title: "Your work stays yours",
     description:
-      "JanitorForge stores the content needed to provide the tools you use.",
+      "Forgeworks stores the content needed to provide the tools you use.",
   },
   {
     icon: ShieldCheck,
@@ -77,17 +77,12 @@ export default function PrivacyPage() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-7">
           <Link href="/" className="group flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/15 transition-transform duration-300 group-hover:rotate-3 group-hover:scale-105">
-              <Image
-                src="/logo.png"
-                alt="JanitorForge"
-                width={24}
-                height={24}
-              />
+              <Image src="/logo.svg" alt="Forgeworks" width={24} height={24} />
             </div>
 
             <div className="flex flex-col">
               <span className="text-sm font-semibold leading-tight sm:text-base">
-                JanitorForge
+                Forgeworks
               </span>
 
               <span className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -101,7 +96,7 @@ export default function PrivacyPage() {
             className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:text-sm"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            Back to JanitorForge
+            Back to Forgeworks
           </Link>
         </div>
       </header>
@@ -134,8 +129,8 @@ export default function PrivacyPage() {
             </h1>
 
             <p className="mt-5 max-w-2xl text-pretty leading-7 text-muted-foreground sm:text-lg">
-              This page explains what JanitorForge needs to store, why it is
-              used, what may be public, and what controls you have over your
+              This page explains what Forgeworks needs to store, why it is used,
+              what may be public, and what controls you have over your
               information.
             </p>
 
@@ -197,15 +192,15 @@ export default function PrivacyPage() {
               <p className="mt-3 text-sm font-semibold">Something unclear?</p>
 
               <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                JanitorForge is still an independent Beta project. If something
-                on this page does not make sense, feedback is welcome.
+                Forgeworks is still an independent Beta project. If something on
+                this page does not make sense, feedback is welcome.
               </p>
 
               <Link
                 href="/login"
                 className="mt-4 inline-flex text-xs font-medium text-primary transition-opacity hover:opacity-75"
               >
-                Open JanitorForge →
+                Open Forgeworks →
               </Link>
             </div>
 
@@ -221,7 +216,7 @@ export default function PrivacyPage() {
                   "No email is required to create an account.",
                   "Public content follows the visibility choices you make.",
                   "Form safety tools may process limited network information.",
-                  "JanitorForge does not sell your information to advertisers.",
+                  "Forgeworks does not sell your information to advertisers.",
                   "You can manage or remove much of your content directly.",
                 ].map((item) => (
                   <div key={item} className="flex items-start gap-2.5">
@@ -255,7 +250,7 @@ export default function PrivacyPage() {
                   href="/"
                   className="group flex items-center justify-between rounded-xl px-3 py-2 text-xs transition-colors hover:bg-primary/5"
                 >
-                  <span>JanitorForge Home</span>
+                  <span>Forgeworks Home</span>
                   <span className="text-muted-foreground transition-transform group-hover:translate-x-0.5">
                     →
                   </span>
@@ -285,9 +280,9 @@ export default function PrivacyPage() {
                 </p>
 
                 <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                  JanitorForge is not a large company or ad platform. This
-                  policy exists so people can understand what the project does
-                  with their information.
+                  Forgeworks is not a large company or ad platform. This policy
+                  exists so people can understand what the project does with
+                  their information.
                 </p>
               </div>
             </div>
@@ -296,7 +291,7 @@ export default function PrivacyPage() {
 
         {/* Footer navigation */}
         <footer className="mt-12 flex flex-col gap-4 border-t border-border/60 pt-7 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <p>JanitorForge · Independent creator project</p>
+          <p>Forgeworks · Independent creator project</p>
 
           <div className="flex flex-wrap items-center gap-4">
             <Link href="/" className="transition-colors hover:text-foreground">

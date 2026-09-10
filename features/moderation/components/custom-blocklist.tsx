@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Custom Blocklist Management
+// Forgeworks - Custom Blocklist Management
 // Manage form-specific word/pattern blocklists
 // ============================================================================
 

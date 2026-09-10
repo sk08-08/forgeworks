@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Creator Page Section Renderer
+// Forgeworks - Creator Page Section Renderer
 // Renders all Creator Page block kinds.
 // ============================================================================
 

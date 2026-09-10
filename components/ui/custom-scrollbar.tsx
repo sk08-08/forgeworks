@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Custom Scrollbar
+// Forgeworks - Custom Scrollbar
 // Global custom scrollbar component with smooth styling
 // ============================================================================
 

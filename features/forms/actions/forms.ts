@@ -184,7 +184,7 @@ async function resolveUserIdForActions() {
 
   if (!userId) {
     const cookieStore = await cookies();
-    const session = cookieStore.get("janitorforge_session")?.value;
+    const session = cookieStore.get("forgeworks_session")?.value;
     if (session) {
       try {
         const parsed = JSON.parse(session);

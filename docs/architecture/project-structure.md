@@ -1,6 +1,6 @@
-# JanitorForge Project Structure
+# Forgeworks Project Structure
 
-JanitorForge uses a feature-first architecture.
+Forgeworks uses a feature-first architecture.
 
 ## Core rules
 
@@ -54,7 +54,7 @@ Examples:
 - Popover
 - Tooltip
 
-Components here should not contain JanitorForge-specific business logic.
+Components here should not contain Forgeworks-specific business logic.
 
 ---
 

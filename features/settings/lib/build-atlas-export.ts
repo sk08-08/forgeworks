@@ -161,7 +161,9 @@ function pushGrouped<T>(map: Map<string, T[]>, key: string, value: T) {
   else map.set(key, [value]);
 }
 
-function sortByOrder<T extends { sort_order: number }>(rows: T[] | undefined): T[] {
+function sortByOrder<T extends { sort_order: number }>(
+  rows: T[] | undefined,
+): T[] {
   return [...(rows ?? [])].sort((a, b) => a.sort_order - b.sort_order);
 }
 
@@ -209,9 +211,17 @@ export async function buildCurrentUserAtlasExport(): Promise<
 
     const userId = access.user.id;
 
-    const [entries, worlds, collections, lorebooks, relations, propertyDefinitions] =
-      await Promise.all([
-        fetchAllPages("Atlas entries", async (from, to) =>
+    const [
+      entries,
+      worlds,
+      collections,
+      lorebooks,
+      relations,
+      propertyDefinitions,
+    ] = await Promise.all([
+      fetchAllPages(
+        "Atlas entries",
+        async (from, to) =>
           await supabase
             .from("atlas_entries")
             .select(
@@ -221,17 +231,23 @@ export async function buildCurrentUserAtlasExport(): Promise<
             .is("deleted_at", null)
             .order("created_at", { ascending: true })
             .range(from, to),
-        ) as Promise<EntryRow[]>,
-        fetchAllPages("Atlas worlds", async (from, to) =>
+      ) as Promise<EntryRow[]>,
+      fetchAllPages(
+        "Atlas worlds",
+        async (from, to) =>
           await supabase
             .from("atlas_worlds")
-            .select("id,title,description,icon_name,accent_color,cover_url,visibility,metadata")
+            .select(
+              "id,title,description,icon_name,accent_color,cover_url,visibility,metadata",
+            )
             .eq("user_id", userId)
             .is("deleted_at", null)
             .order("created_at", { ascending: true })
             .range(from, to),
-        ) as Promise<WorldRow[]>,
-        fetchAllPages("Atlas collections", async (from, to) =>
+      ) as Promise<WorldRow[]>,
+      fetchAllPages(
+        "Atlas collections",
+        async (from, to) =>
           await supabase
             .from("atlas_collections")
             .select("id,title,description,icon_name,accent_color,metadata")
@@ -239,8 +255,10 @@ export async function buildCurrentUserAtlasExport(): Promise<
             .is("deleted_at", null)
             .order("created_at", { ascending: true })
             .range(from, to),
-        ) as Promise<CollectionRow[]>,
-        fetchAllPages("Atlas lorebooks", async (from, to) =>
+      ) as Promise<CollectionRow[]>,
+      fetchAllPages(
+        "Atlas lorebooks",
+        async (from, to) =>
           await supabase
             .from("atlas_lorebooks")
             .select(
@@ -250,8 +268,10 @@ export async function buildCurrentUserAtlasExport(): Promise<
             .is("deleted_at", null)
             .order("created_at", { ascending: true })
             .range(from, to),
-        ) as Promise<LorebookRow[]>,
-        fetchAllPages("Atlas relations", async (from, to) =>
+      ) as Promise<LorebookRow[]>,
+      fetchAllPages(
+        "Atlas relations",
+        async (from, to) =>
           await supabase
             .from("atlas_relations")
             .select(
@@ -260,16 +280,18 @@ export async function buildCurrentUserAtlasExport(): Promise<
             .eq("user_id", userId)
             .order("created_at", { ascending: true })
             .range(from, to),
-        ) as Promise<RelationRow[]>,
-        fetchAllPages("Atlas property definitions", async (from, to) =>
+      ) as Promise<RelationRow[]>,
+      fetchAllPages(
+        "Atlas property definitions",
+        async (from, to) =>
           await supabase
             .from("atlas_property_definitions")
             .select("id,world_id,key,name,value_type,options,sort_order")
             .eq("user_id", userId)
             .order("sort_order", { ascending: true })
             .range(from, to),
-        ) as Promise<PropertyDefinitionRow[]>,
-      ]);
+      ) as Promise<PropertyDefinitionRow[]>,
+    ]);
 
     const entryIds = entries.map((row) => row.id);
     const worldIds = worlds.map((row) => row.id);
@@ -357,34 +379,43 @@ export async function buildCurrentUserAtlasExport(): Promise<
 
     const worldEntriesByWorld = new Map<string, WorldEntryRow[]>();
     const worldBotsByWorld = new Map<string, WorldBotRow[]>();
-    const collectionEntriesByCollection = new Map<string, CollectionEntryRow[]>();
+    const collectionEntriesByCollection = new Map<
+      string,
+      CollectionEntryRow[]
+    >();
     const lorebookEntriesByLorebook = new Map<string, LorebookEntryRow[]>();
     const propertyValuesByEntry = new Map<string, PropertyValueRow[]>();
     const entryBotsByEntry = new Map<string, EntryBotRow[]>();
 
-    for (const row of worldEntries) pushGrouped(worldEntriesByWorld, row.world_id, row);
-    for (const row of worldBots) pushGrouped(worldBotsByWorld, row.world_id, row);
+    for (const row of worldEntries)
+      pushGrouped(worldEntriesByWorld, row.world_id, row);
+    for (const row of worldBots)
+      pushGrouped(worldBotsByWorld, row.world_id, row);
     for (const row of collectionEntries)
       pushGrouped(collectionEntriesByCollection, row.collection_id, row);
     for (const row of lorebookEntries)
       pushGrouped(lorebookEntriesByLorebook, row.lorebook_id, row);
     for (const row of propertyValues)
       pushGrouped(propertyValuesByEntry, row.entry_id, row);
-    for (const row of entryBots) pushGrouped(entryBotsByEntry, row.entry_id, row);
+    for (const row of entryBots)
+      pushGrouped(entryBotsByEntry, row.entry_id, row);
 
     const propertyDefinitionById = new Map(
       propertyDefinitions.map((row) => [row.id, row] as const),
     );
 
     const fkfEntries: ForgeKnowledgeEntry[] = entries.map((entry) => {
-      const botIds = sortByOrder(entryBotsByEntry.get(entry.id)).map((row) => row.bot_id);
+      const botIds = sortByOrder(entryBotsByEntry.get(entry.id)).map(
+        (row) => row.bot_id,
+      );
       const sourceMetadata = asObject(entry.source_metadata);
       const metadata = asObject(entry.metadata);
 
       const extensions: JsonObject = {};
       if (Object.keys(metadata).length > 0) extensions.metadata = metadata;
       if (entry.source_format) extensions.sourceFormat = entry.source_format;
-      if (Object.keys(sourceMetadata).length > 0) extensions.sourceMetadata = sourceMetadata;
+      if (Object.keys(sourceMetadata).length > 0)
+        extensions.sourceMetadata = sourceMetadata;
       if (botIds.length > 0) extensions.botIds = botIds;
 
       return {
@@ -404,9 +435,9 @@ export async function buildCurrentUserAtlasExport(): Promise<
     });
 
     const fkfWorlds: ForgeKnowledgeWorld[] = worlds.map((world) => {
-      const entryIdsForWorld = sortByOrder(worldEntriesByWorld.get(world.id)).map(
-        (row) => row.entry_id,
-      );
+      const entryIdsForWorld = sortByOrder(
+        worldEntriesByWorld.get(world.id),
+      ).map((row) => row.entry_id);
       const botIdsForWorld = sortByOrder(worldBotsByWorld.get(world.id)).map(
         (row) => row.bot_id,
       );
@@ -429,23 +460,27 @@ export async function buildCurrentUserAtlasExport(): Promise<
       };
     });
 
-    const fkfCollections: ForgeKnowledgeCollection[] = collections.map((collection) => {
-      const extensions: JsonObject = {};
-      if (collection.icon_name) extensions.iconName = collection.icon_name;
-      if (collection.accent_color) extensions.accentColor = collection.accent_color;
-      if (collection.metadata && Object.keys(collection.metadata).length > 0)
-        extensions.metadata = collection.metadata;
+    const fkfCollections: ForgeKnowledgeCollection[] = collections.map(
+      (collection) => {
+        const extensions: JsonObject = {};
+        if (collection.icon_name) extensions.iconName = collection.icon_name;
+        if (collection.accent_color)
+          extensions.accentColor = collection.accent_color;
+        if (collection.metadata && Object.keys(collection.metadata).length > 0)
+          extensions.metadata = collection.metadata;
 
-      return {
-        id: collection.id,
-        title: collection.title,
-        description: collection.description ?? undefined,
-        entryIds: sortByOrder(collectionEntriesByCollection.get(collection.id)).map(
-          (row) => row.entry_id,
-        ),
-        extensions: Object.keys(extensions).length > 0 ? extensions : undefined,
-      };
-    });
+        return {
+          id: collection.id,
+          title: collection.title,
+          description: collection.description ?? undefined,
+          entryIds: sortByOrder(
+            collectionEntriesByCollection.get(collection.id),
+          ).map((row) => row.entry_id),
+          extensions:
+            Object.keys(extensions).length > 0 ? extensions : undefined,
+        };
+      },
+    );
 
     const fkfLorebooks: ForgeKnowledgeLorebook[] = lorebooks.map((lorebook) => {
       const extensions: JsonObject = {};
@@ -453,55 +488,64 @@ export async function buildCurrentUserAtlasExport(): Promise<
         extensions.atlasFormatVersion = lorebook.format_version;
       if (lorebook.metadata && Object.keys(lorebook.metadata).length > 0)
         extensions.metadata = lorebook.metadata;
-      if (lorebook.source_format) extensions.sourceFormat = lorebook.source_format;
-      if (lorebook.source_metadata && Object.keys(lorebook.source_metadata).length > 0)
+      if (lorebook.source_format)
+        extensions.sourceFormat = lorebook.source_format;
+      if (
+        lorebook.source_metadata &&
+        Object.keys(lorebook.source_metadata).length > 0
+      )
         extensions.sourceMetadata = lorebook.source_metadata;
 
       return {
         id: lorebook.id,
         title: lorebook.title,
         description: lorebook.description ?? lorebook.summary ?? undefined,
-        entries: sortByOrder(lorebookEntriesByLorebook.get(lorebook.id)).map((link) => {
-          const activation = asObject(link.activation);
-          const insertion = asObject(link.insertion);
+        entries: sortByOrder(lorebookEntriesByLorebook.get(lorebook.id)).map(
+          (link) => {
+            const activation = asObject(link.activation);
+            const insertion = asObject(link.insertion);
 
-          return {
-            entryId: link.entry_id,
-            enabled: link.enabled,
-            activation: {
-              mode: normalizeActivationMode(activation.mode),
-              primaryKeys: asStringArray(activation.primaryKeys),
-              secondaryKeys: asStringArray(activation.secondaryKeys),
-              caseSensitive: activation.caseSensitive === true,
-              matchWholeWords: activation.matchWholeWords === true,
-            },
-            insertion: {
-              priority: asFiniteNumber(insertion.priority, 0),
-              ...(insertion.depth == null
+            return {
+              entryId: link.entry_id,
+              enabled: link.enabled,
+              activation: {
+                mode: normalizeActivationMode(activation.mode),
+                primaryKeys: asStringArray(activation.primaryKeys),
+                secondaryKeys: asStringArray(activation.secondaryKeys),
+                caseSensitive: activation.caseSensitive === true,
+                matchWholeWords: activation.matchWholeWords === true,
+              },
+              insertion: {
+                priority: asFiniteNumber(insertion.priority, 0),
+                ...(insertion.depth == null
+                  ? {}
+                  : { depth: asFiniteNumber(insertion.depth, 0) }),
+              },
+              ...(link.probability == null
                 ? {}
-                : { depth: asFiniteNumber(insertion.depth, 0) }),
-            },
-            ...(link.probability == null
-              ? {}
-              : { probability: asFiniteNumber(link.probability, 100) }),
-            ...(link.adapter_metadata && Object.keys(link.adapter_metadata).length > 0
-              ? { adapterMetadata: link.adapter_metadata }
-              : {}),
-          };
-        }),
+                : { probability: asFiniteNumber(link.probability, 100) }),
+              ...(link.adapter_metadata &&
+              Object.keys(link.adapter_metadata).length > 0
+                ? { adapterMetadata: link.adapter_metadata }
+                : {}),
+            };
+          },
+        ),
         extensions: Object.keys(extensions).length > 0 ? extensions : undefined,
       };
     });
 
-    const fkfRelations: ForgeKnowledgeRelation[] = relations.map((relation) => ({
-      id: relation.id,
-      sourceEntryId: relation.source_entry_id,
-      targetEntryId: relation.target_entry_id,
-      type: relation.relation_type,
-      label: relation.label ?? undefined,
-      inverseLabel: relation.inverse_label ?? undefined,
-      metadata: relation.metadata ?? undefined,
-    }));
+    const fkfRelations: ForgeKnowledgeRelation[] = relations.map(
+      (relation) => ({
+        id: relation.id,
+        sourceEntryId: relation.source_entry_id,
+        targetEntryId: relation.target_entry_id,
+        type: relation.relation_type,
+        label: relation.label ?? undefined,
+        inverseLabel: relation.inverse_label ?? undefined,
+        metadata: relation.metadata ?? undefined,
+      }),
+    );
 
     const packageExtensions: JsonObject = {
       atlas: {
@@ -523,7 +567,7 @@ export async function buildCurrentUserAtlasExport(): Promise<
       metadata: {
         title: "Atlas workspace export",
         createdAt: new Date().toISOString(),
-        generator: "Janitor Forge Atlas",
+        generator: "Forgeworks Atlas",
       },
       entries: fkfEntries,
       worlds: fkfWorlds,

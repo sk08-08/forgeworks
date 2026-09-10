@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Shared Bot Card List (compact)
+// Forgeworks - Shared Bot Card List (compact)
 // ============================================================================
 
 "use client";

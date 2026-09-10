@@ -1,5 +1,5 @@
 // ============================================================================
-// JanitorForge - Bot Detail Modal
+// Forgeworks - Bot Detail Modal
 // Shared modal for viewing bot details across the app
 // ============================================================================
 
