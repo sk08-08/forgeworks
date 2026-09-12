@@ -2214,24 +2214,12 @@ export function SectionRenderer({
       });
       const imgSrc = safeImage.valid && safeImage.href ? safeImage.href : "";
 
-      const imgAlt = (cfg.alt as string) || section.title;
-      const imgSize = (cfg.size as string) || "medium";
-      const useCustomWidth =
-        cfg.stickerUseCustomWidth === true ||
-        cfg.stickerUseCustomWidth === "true";
-      const customWidth = Math.max(
-        48,
-        Math.min(1200, Number(cfg.stickerWidth ?? 256)),
-      );
+      if (!imgSrc) return null;
 
-      const imgRounded = (cfg.rounded as string) || "md";
-      const imgAlign = (cfg.alignment as string) || "center";
-      const positionMode = (cfg.positionMode as string) || "static";
-      const posX = (cfg.posX as string) || "0px";
-      const posY = (cfg.posY as string) || "0px";
+      const imgAlt = (cfg.alt as string) || section.title;
+      const imgRounded = String(cfg.rounded || "md");
       const rotation = Number(cfg.rotation) || 0;
       const opacity = Math.max(0, Math.min(100, Number(cfg.opacity ?? 100)));
-      const zIndex = Math.max(0, Math.min(100, Number(cfg.zIndex ?? 10)));
       const shadow = String(cfg.stickerShadow || "soft");
       const hoverMotion = String(cfg.stickerHoverMotion || "none");
 
@@ -2241,33 +2229,6 @@ export function SectionRenderer({
         Math.min(12, Number(cfg.stickerBorderWidth ?? 1)),
       );
       const borderColor = (cfg.stickerBorderColor as string) || themeColor;
-
-      const entrance = String(cfg.stickerEntranceAnimation || "none");
-      const motionDuration = Math.max(
-        150,
-        Math.min(2500, Number(cfg.stickerMotionDuration ?? 500)),
-      );
-      const motionDelay = Math.max(
-        0,
-        Math.min(2500, Number(cfg.stickerMotionDelay ?? 0)),
-      );
-
-      if (!imgSrc) return null;
-
-      const presetWidth =
-        imgSize === "small"
-          ? "128px"
-          : imgSize === "large"
-            ? "384px"
-            : imgSize === "full"
-              ? "100%"
-              : "256px";
-
-      const resolvedWidth = useCustomWidth
-        ? `${customWidth}px`
-        : positionMode === "absolute" && imgSize === "full"
-          ? "256px"
-          : presetWidth;
 
       const radiusMap: Record<string, string> = {
         none: "rounded-none",
@@ -2302,56 +2263,220 @@ export function SectionRenderer({
           ? `${motionStyles.hoverBase} ${motionStyles.imageWiggle}`
           : creatorHoverClass(hoverMotion, false);
 
-      const entranceClass = "";
+      interface StickerResponsiveLayout {
+        positionMode: string;
+        size: string;
+        alignment: string;
+        useCustomWidth: boolean;
+        width: number;
+        anchor: string;
+        posX: string;
+        posY: string;
+        zIndex: number;
+      }
 
-      const imageClass = `${radiusMap[imgRounded]} block h-auto`;
+      const desktopLayout: StickerResponsiveLayout = {
+        positionMode: String(cfg.positionMode || "static"),
+        size: String(cfg.size || "medium"),
+        alignment: String(cfg.alignment || "center"),
+        useCustomWidth:
+          cfg.stickerUseCustomWidth === true ||
+          cfg.stickerUseCustomWidth === "true",
+        width: Math.max(48, Math.min(1200, Number(cfg.stickerWidth ?? 256))),
+        anchor: String(cfg.stickerAnchor || "left"),
+        posX: String(cfg.posX || "0px"),
+        posY: String(cfg.posY || "0px"),
+        zIndex: Math.max(0, Math.min(100, Number(cfg.zIndex ?? 10))),
+      };
 
-      const image = (
-        <div className={cn("inline-block max-w-full", hoverClass)}>
-          <img
-            src={imgSrc}
-            alt={imgAlt}
-            loading="lazy"
-            decoding="async"
-            className={imageClass}
+      const tabletOverride =
+        cfg.stickerTabletOverride === true ||
+        cfg.stickerTabletOverride === "true";
+
+      const tabletLayout: StickerResponsiveLayout = tabletOverride
+        ? {
+            positionMode: String(
+              cfg.stickerTabletPositionMode || desktopLayout.positionMode,
+            ),
+            size: String(cfg.stickerTabletSize || desktopLayout.size),
+            alignment: String(
+              cfg.stickerTabletAlignment || desktopLayout.alignment,
+            ),
+            useCustomWidth:
+              cfg.stickerTabletUseCustomWidth === true ||
+              cfg.stickerTabletUseCustomWidth === "true",
+            width: Math.max(
+              48,
+              Math.min(
+                1200,
+                Number(cfg.stickerTabletWidth ?? desktopLayout.width),
+              ),
+            ),
+            anchor: String(cfg.stickerTabletAnchor || desktopLayout.anchor),
+            posX: String(cfg.stickerTabletPosX || desktopLayout.posX),
+            posY: String(cfg.stickerTabletPosY || desktopLayout.posY),
+            zIndex: Math.max(
+              0,
+              Math.min(
+                100,
+                Number(cfg.stickerTabletZIndex ?? desktopLayout.zIndex),
+              ),
+            ),
+          }
+        : desktopLayout;
+
+      const mobileOverride =
+        cfg.stickerMobileOverride === true ||
+        cfg.stickerMobileOverride === "true";
+
+      const mobileLayout: StickerResponsiveLayout = mobileOverride
+        ? {
+            positionMode: String(
+              cfg.stickerMobilePositionMode || tabletLayout.positionMode,
+            ),
+            size: String(cfg.stickerMobileSize || tabletLayout.size),
+            alignment: String(
+              cfg.stickerMobileAlignment || tabletLayout.alignment,
+            ),
+            useCustomWidth:
+              cfg.stickerMobileUseCustomWidth === true ||
+              cfg.stickerMobileUseCustomWidth === "true",
+            width: Math.max(
+              48,
+              Math.min(
+                1200,
+                Number(cfg.stickerMobileWidth ?? tabletLayout.width),
+              ),
+            ),
+            anchor: String(cfg.stickerMobileAnchor || tabletLayout.anchor),
+            posX: String(cfg.stickerMobilePosX || tabletLayout.posX),
+            posY: String(cfg.stickerMobilePosY || tabletLayout.posY),
+            zIndex: Math.max(
+              0,
+              Math.min(
+                100,
+                Number(cfg.stickerMobileZIndex ?? tabletLayout.zIndex),
+              ),
+            ),
+          }
+        : tabletLayout;
+
+      const renderResponsiveImage = (
+        layout: StickerResponsiveLayout,
+        visibilityClass: string,
+      ) => {
+        const presetWidth =
+          layout.size === "small"
+            ? "128px"
+            : layout.size === "large"
+              ? "384px"
+              : layout.size === "full"
+                ? "100%"
+                : "256px";
+
+        const resolvedWidth = layout.useCustomWidth
+          ? `${layout.width}px`
+          : layout.positionMode === "absolute" && layout.size === "full"
+            ? "256px"
+            : presetWidth;
+
+        const safeWidth =
+          resolvedWidth === "100%" ? "100%" : `min(100%, ${resolvedWidth})`;
+
+        const image = (
+          <div
+            className={cn("min-w-0 max-w-full", hoverClass)}
             style={{
-              width: resolvedWidth,
-              maxWidth:
-                positionMode === "absolute" ? "min(90vw, 1200px)" : "100%",
-              transform: rotation ? `rotate(${rotation}deg)` : undefined,
-              opacity: opacity / 100,
-              filter: shadowFilter,
-              border: borderStyleValue,
+              width: safeWidth,
+              maxWidth: "100%",
             }}
-          />
-        </div>
-      );
-
-      if (positionMode === "absolute") {
-        return (
-          <div className="relative" style={{ height: 0, overflow: "visible" }}>
-            <div
+          >
+            <img
+              src={imgSrc}
+              alt={imgAlt}
+              loading="lazy"
+              decoding="async"
+              className={`${radiusMap[imgRounded]} block h-auto w-full max-w-full`}
               style={{
-                position: "absolute",
-                left: posX,
-                top: posY,
-                zIndex,
+                transform: rotation ? `rotate(${rotation}deg)` : undefined,
+                transformOrigin: "center",
+                opacity: opacity / 100,
+                filter: shadowFilter,
+                border: borderStyleValue,
               }}
+            />
+          </div>
+        );
+
+        if (layout.positionMode === "absolute") {
+          const anchor = layout.anchor;
+          const positionStyle: React.CSSProperties =
+            anchor === "right"
+              ? {
+                  right: `clamp(0px, ${layout.posX}, calc(100% - ${safeWidth}))`,
+                  top: layout.posY,
+                }
+              : anchor === "center"
+                ? {
+                    left: "50%",
+                    top: layout.posY,
+                    transform: `translateX(calc(-50% + ${layout.posX}))`,
+                  }
+                : {
+                    left: `clamp(0px, ${layout.posX}, calc(100% - ${safeWidth}))`,
+                    top: layout.posY,
+                  };
+
+          return (
+            <div
+              className={cn(
+                visibilityClass,
+                "relative h-0 w-full min-w-0 max-w-full overflow-visible",
+              )}
             >
+              <div
+                className="absolute min-w-0 max-w-full"
+                style={{
+                  ...positionStyle,
+                  zIndex: layout.zIndex,
+                  width: safeWidth,
+                  maxWidth: "100%",
+                }}
+              >
+                {image}
+              </div>
+            </div>
+          );
+        }
+
+        const justifyClass =
+          layout.alignment === "left"
+            ? "justify-start"
+            : layout.alignment === "right"
+              ? "justify-end"
+              : "justify-center";
+
+        return (
+          <div
+            className={cn(
+              visibilityClass,
+              "w-full min-w-0 max-w-full overflow-x-clip",
+            )}
+          >
+            <div className={cn("flex w-full min-w-0 max-w-full", justifyClass)}>
               {image}
             </div>
           </div>
         );
-      }
+      };
 
-      const justifyClass =
-        imgAlign === "left"
-          ? "justify-start"
-          : imgAlign === "right"
-            ? "justify-end"
-            : "justify-center";
-
-      return <div className={`flex w-full ${justifyClass}`}>{image}</div>;
+      return (
+        <>
+          {renderResponsiveImage(desktopLayout, "hidden lg:block")}
+          {renderResponsiveImage(tabletLayout, "hidden sm:block lg:hidden")}
+          {renderResponsiveImage(mobileLayout, "block sm:hidden")}
+        </>
+      );
     }
 
     // ========================== LOREBOOK GALLERY V3 ==========================

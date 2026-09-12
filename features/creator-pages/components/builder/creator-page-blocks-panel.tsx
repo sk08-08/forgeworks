@@ -1,27 +1,47 @@
 "use client";
 
 import type { DragEvent } from "react";
+import { useState } from "react";
 import {
+  ArrowDown,
+  ArrowUp,
   Blocks,
   Copy,
   ExternalLink,
   Globe,
+  GripVertical,
   Image,
   Layout,
   LayoutGrid,
   Layers,
   MessageCircle,
   Minus,
+  MoreHorizontal,
   Plus,
   Share2,
   SlidersHorizontal,
   Sparkles,
   Trash2,
   Type,
-  GripVertical,
 } from "lucide-react";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -77,6 +97,7 @@ interface CreatorPageBlocksPanelProps {
   onSelectSection: (section: PageSection) => void;
   onDuplicateSection: (section: PageSection) => void;
   onDeleteSection: (sectionId: string) => void;
+  onMoveSection: (sectionId: string, direction: "up" | "down") => void;
   onDragStart: (event: DragEvent<HTMLDivElement>, index: number) => void;
   onDragEnd: (event: DragEvent<HTMLDivElement>) => void;
   onDragOver: (event: DragEvent<HTMLDivElement>, index: number) => void;
@@ -99,22 +120,25 @@ export function CreatorPageBlocksPanel({
   onSelectSection,
   onDuplicateSection,
   onDeleteSection,
+  onMoveSection,
   onDragStart,
   onDragEnd,
   onDragOver,
   onDragLeave,
   onDrop,
 }: CreatorPageBlocksPanelProps) {
+  const [pendingDelete, setPendingDelete] = useState<PageSection | null>(null);
+
   return (
-    <aside className="border-b border-border/70 bg-muted/[0.08] xl:border-b-0 xl:border-r">
-      <div className="sticky top-[73px] max-h-[calc(100vh-73px)] overflow-y-auto p-3 sm:p-4">
+    <aside className="h-full min-h-0 min-w-0 overflow-hidden bg-muted/[0.08] xl:border-r xl:border-border/70">
+      <div className="h-full min-h-0 overflow-y-auto overscroll-contain p-3 sm:p-4">
         <div className="mb-4 grid grid-cols-2 rounded-xl bg-muted/50 p-1">
           <Button
             type="button"
             variant="ghost"
             size="sm"
             className={cn(
-              "cursor-pointer rounded-lg text-xs",
+              "h-10 cursor-pointer rounded-lg text-xs xl:h-9",
               panel === "blocks" && "bg-background shadow-sm",
             )}
             onClick={() => onPanelChange("blocks")}
@@ -128,7 +152,7 @@ export function CreatorPageBlocksPanel({
             variant="ghost"
             size="sm"
             className={cn(
-              "cursor-pointer rounded-lg text-xs",
+              "h-10 cursor-pointer rounded-lg text-xs xl:h-9",
               panel === "page" && "bg-background shadow-sm",
             )}
             onClick={() => onPanelChange("page")}
@@ -144,7 +168,7 @@ export function CreatorPageBlocksPanel({
               <div>
                 <p className="text-sm font-semibold">Page blocks</p>
                 <p className="text-[11px] text-muted-foreground">
-                  Drag to reorder. Click to edit.
+                  Drag on desktop or use the actions menu to reorder.
                 </p>
               </div>
 
@@ -152,7 +176,7 @@ export function CreatorPageBlocksPanel({
                 type="button"
                 size="icon"
                 variant="outline"
-                className="h-8 w-8 shrink-0 cursor-pointer rounded-full"
+                className="h-10 w-10 shrink-0 cursor-pointer rounded-full xl:h-8 xl:w-8"
                 onClick={onAddBlock}
               >
                 <Plus className="h-4 w-4" />
@@ -163,6 +187,7 @@ export function CreatorPageBlocksPanel({
               <div className="space-y-2">
                 {sections.map((section, index) => {
                   const Icon = sectionKindIcons[section.kind] || Layout;
+                  const title = getSectionDisplayTitle(section);
 
                   return (
                     <div
@@ -174,53 +199,81 @@ export function CreatorPageBlocksPanel({
                       onDragLeave={onDragLeave}
                       onDrop={(event) => onDrop(event, index)}
                       className={cn(
-                        "group flex cursor-pointer items-center gap-2 rounded-xl border bg-background/70 p-2.5 transition-all hover:bg-background",
+                        "group flex min-w-0 cursor-pointer items-center gap-2 rounded-xl border bg-background/70 p-2.5 transition-all hover:bg-background",
                         selectedSectionId === section.id
                           ? "border-primary/50 bg-primary/[0.045] shadow-sm shadow-primary/5"
                           : "border-border/60 hover:border-primary/35",
                       )}
                       onClick={() => onSelectSection(section)}
                     >
-                      <GripVertical className="h-4 w-4 shrink-0 text-muted-foreground/60" />
+                      <GripVertical className="hidden h-4 w-4 shrink-0 text-muted-foreground/60 xl:block" />
 
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 xl:h-8 xl:w-8">
                         <Icon className="h-4 w-4 text-primary" />
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-xs font-medium">
-                          {getSectionDisplayTitle(section)}
-                        </p>
+                        <p className="truncate text-xs font-medium">{title}</p>
                         <p className="truncate text-[10px] text-muted-foreground">
                           {sectionKindLabels[section.kind]}
                         </p>
                       </div>
 
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 shrink-0 cursor-pointer opacity-70 group-hover:opacity-100"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          onDuplicateSection(section);
-                        }}
-                      >
-                        <Copy className="h-3.5 w-3.5" />
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-10 w-10 shrink-0 cursor-pointer rounded-lg text-muted-foreground xl:h-8 xl:w-8"
+                            aria-label={`Actions for ${title}`}
+                            onClick={(event) => event.stopPropagation()}
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
 
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 shrink-0 cursor-pointer text-destructive opacity-70 hover:text-destructive group-hover:opacity-100"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          onDeleteSection(section.id);
-                        }}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
+                        <DropdownMenuContent
+                          align="end"
+                          sideOffset={4}
+                          className="z-[120] w-44"
+                          onClick={(event) => event.stopPropagation()}
+                        >
+                          <DropdownMenuItem
+                            disabled={index === 0}
+                            className="cursor-pointer text-xs"
+                            onSelect={() => onMoveSection(section.id, "up")}
+                          >
+                            <ArrowUp className="mr-2 h-3.5 w-3.5" />
+                            Move up
+                          </DropdownMenuItem>
+
+                          <DropdownMenuItem
+                            disabled={index === sections.length - 1}
+                            className="cursor-pointer text-xs"
+                            onSelect={() => onMoveSection(section.id, "down")}
+                          >
+                            <ArrowDown className="mr-2 h-3.5 w-3.5" />
+                            Move down
+                          </DropdownMenuItem>
+
+                          <DropdownMenuItem
+                            className="cursor-pointer text-xs"
+                            onSelect={() => onDuplicateSection(section)}
+                          >
+                            <Copy className="mr-2 h-3.5 w-3.5" />
+                            Duplicate
+                          </DropdownMenuItem>
+
+                          <DropdownMenuItem
+                            className="cursor-pointer text-xs text-destructive focus:text-destructive"
+                            onSelect={() => setPendingDelete(section)}
+                          >
+                            <Trash2 className="mr-2 h-3.5 w-3.5" />
+                            Delete block
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   );
                 })}
@@ -232,7 +285,9 @@ export function CreatorPageBlocksPanel({
                 className="flex w-full cursor-pointer flex-col items-center rounded-2xl border border-dashed border-border/70 px-4 py-8 text-center transition-colors hover:border-primary/40 hover:bg-primary/[0.025]"
               >
                 <Plus className="mb-2 h-5 w-5 text-primary" />
-                <span className="text-sm font-medium">Add your first block</span>
+                <span className="text-sm font-medium">
+                  Add your first block
+                </span>
                 <span className="mt-1 text-[11px] text-muted-foreground">
                   Start with a Hero, text, bots, gallery, or anything else.
                 </span>
@@ -242,7 +297,7 @@ export function CreatorPageBlocksPanel({
             <Button
               type="button"
               variant="outline"
-              className="mt-3 w-full cursor-pointer rounded-xl"
+              className="mt-3 h-10 w-full cursor-pointer rounded-xl"
               onClick={onAddBlock}
             >
               <Plus className="mr-2 h-4 w-4" />
@@ -261,7 +316,7 @@ export function CreatorPageBlocksPanel({
             <div className="space-y-2">
               <Label className="text-xs">Canvas width</Label>
               <Select value={canvasWidth} onValueChange={onCanvasWidthChange}>
-                <SelectTrigger className="h-9 w-full">
+                <SelectTrigger className="h-10 w-full xl:h-9">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -276,7 +331,7 @@ export function CreatorPageBlocksPanel({
             <div className="space-y-2">
               <Label className="text-xs">Section spacing</Label>
               <Select value={sectionGap} onValueChange={onSectionGapChange}>
-                <SelectTrigger className="h-9 w-full">
+                <SelectTrigger className="h-10 w-full xl:h-9">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -290,7 +345,7 @@ export function CreatorPageBlocksPanel({
             <div className="space-y-2">
               <Label className="text-xs">Page padding</Label>
               <Select value={pagePadding} onValueChange={onPagePaddingChange}>
-                <SelectTrigger className="h-9 w-full">
+                <SelectTrigger className="h-10 w-full xl:h-9">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -303,6 +358,49 @@ export function CreatorPageBlocksPanel({
           </div>
         )}
       </div>
+
+      <AlertDialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPendingDelete(null);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete block?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingDelete
+                ? `This will permanently remove "${getSectionDisplayTitle(
+                    pendingDelete,
+                  )}" from this Creator Page.`
+                : "This block will be removed."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel className="cursor-pointer">
+              Cancel
+            </AlertDialogCancel>
+
+            <AlertDialogAction
+              className="cursor-pointer bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (!pendingDelete) {
+                  return;
+                }
+
+                onDeleteSection(pendingDelete.id);
+                setPendingDelete(null);
+              }}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </aside>
   );
 }

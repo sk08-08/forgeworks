@@ -85,7 +85,7 @@ export function CreatorPageCanvas({
   return (
     <main
       className={cn(
-        "creator-page-canvas relative min-h-screen overflow-x-clip",
+        "creator-page-canvas relative min-h-dvh min-w-0 max-w-full overflow-x-clip",
         getBackgroundClass(config),
         getFontClass(config),
         className,
@@ -112,12 +112,14 @@ export function CreatorPageCanvas({
 
       <div
         className={cn(
-          "relative mx-auto w-full",
+          "relative mx-auto w-full min-w-0 max-w-full",
           WIDTH_CLASS[width],
           PADDING_CLASS[padding],
         )}
       >
-        <div className={GAP_CLASS[sectionGap]}>{children}</div>
+        <div className={cn("min-w-0 max-w-full", GAP_CLASS[sectionGap])}>
+          {children}
+        </div>
       </div>
     </main>
   );

@@ -5,12 +5,32 @@
 
 "use client";
 
-import { useEffect, useState, useCallback, type DragEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type DragEvent,
+} from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { getCurrentUserAccess } from "@/lib/access";
 import { checkSlugAvailability } from "@/features/creator-pages/actions/slug-check";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Loader2, RefreshCcw } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { getCreatorSectionAnchor } from "@/features/creator-pages/lib/creator-page-links";
 import { stripMarkdownToText } from "@/features/markdown/lib/markdown";
 
@@ -19,7 +39,10 @@ import { UnavailableCreatorPageEditorStatusPage } from "@/components/shared/stat
 import { CreatorPageAddSectionDialog } from "@/features/creator-pages/components/builder/creator-page-add-section-dialog";
 import { CreatorPageBlockInspector } from "@/features/creator-pages/components/builder/creator-page-block-inspector";
 import { CreatorPageBlocksPanel } from "@/features/creator-pages/components/builder/creator-page-blocks-panel";
-import { CreatorPageBuilderHeader } from "@/features/creator-pages/components/builder/creator-page-builder-header";
+import {
+  CreatorPageBuilderHeader,
+  type CreatorBuilderWorkspaceView,
+} from "@/features/creator-pages/components/builder/creator-page-builder-header";
 import { CreatorPageCanvasPreview } from "@/features/creator-pages/components/builder/creator-page-canvas-preview";
 import { CreatorPagePageInspector } from "@/features/creator-pages/components/builder/creator-page-page-inspector";
 import {
@@ -54,6 +77,81 @@ import {
 } from "@/features/creator-pages/types/creator-page-types";
 
 // ---------------------------------------------------------------------------
+// Builder snapshots
+// ---------------------------------------------------------------------------
+
+interface CreatorPageEditorValues {
+  title: string;
+  slug: string;
+  description: string;
+  accentColor: string;
+  backgroundStyle: CreatorPageBackgroundStyle;
+  fontStyle: CreatorPageFontStyle;
+  canvasWidth: CreatorPageCanvasWidth;
+  sectionGap: CreatorPageSectionGap;
+  pagePadding: CreatorPagePadding;
+}
+
+function resolvePageEditorValues(page: CreatorPage): CreatorPageEditorValues {
+  const cfg = page.config || {};
+
+  return {
+    title: page.title || "",
+    slug: page.slug || "",
+    description: page.description || "",
+    accentColor:
+      typeof cfg.accentColor === "string" && cfg.accentColor.trim()
+        ? cfg.accentColor
+        : "#7c3aed",
+    backgroundStyle:
+      cfg.bgStyle === "dark" ||
+      cfg.bgStyle === "ambient" ||
+      cfg.bgStyle === "minimal"
+        ? cfg.bgStyle
+        : "default",
+    fontStyle:
+      cfg.fontStyle === "serif" ||
+      cfg.fontStyle === "mono" ||
+      cfg.fontStyle === "display"
+        ? cfg.fontStyle
+        : "default",
+    canvasWidth:
+      cfg.canvasWidth === "narrow" ||
+      cfg.canvasWidth === "wide" ||
+      cfg.canvasWidth === "full"
+        ? cfg.canvasWidth
+        : "standard",
+    sectionGap:
+      cfg.sectionGap === "compact" || cfg.sectionGap === "relaxed"
+        ? cfg.sectionGap
+        : "normal",
+    pagePadding:
+      cfg.pagePadding === "compact" || cfg.pagePadding === "spacious"
+        ? cfg.pagePadding
+        : "normal",
+  };
+}
+
+function getPageSnapshot(values: CreatorPageEditorValues) {
+  return JSON.stringify(values);
+}
+
+interface CreatorBlockEditorSnapshotInput {
+  title: string;
+  config: Record<string, string>;
+  formId: string;
+  links: CreatorSocialLinkItem[];
+  images: CreatorGalleryImageItem[];
+  selectedBotIds: string[];
+  selectedWorldIds: string[];
+  selectedLorebookIds: string[];
+}
+
+function getBlockSnapshot(input: CreatorBlockEditorSnapshotInput) {
+  return JSON.stringify(input);
+}
+
+// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
@@ -61,6 +159,7 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
   const router = useRouter();
   const [sections, setSections] = useState<PageSection[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   // Editor state
@@ -85,8 +184,16 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
     useState<CreatorBuilderViewport>("desktop");
   const [builderPanel, setBuilderPanel] =
     useState<CreatorBuilderPanel>("blocks");
+  const [workspaceView, setWorkspaceView] =
+    useState<CreatorBuilderWorkspaceView>("blocks");
 
   const [saving, setSaving] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
+  const [savedPageSnapshot, setSavedPageSnapshot] = useState("");
+
+  const [blockSaving, setBlockSaving] = useState(false);
+  const [blockJustSaved, setBlockJustSaved] = useState(false);
+  const [savedBlockSnapshot, setSavedBlockSnapshot] = useState("");
 
   // Slug availability checking
   const [slugStatus, setSlugStatus] = useState<
@@ -100,9 +207,26 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
     useState<SectionKind>("bot_showcase");
   const [newSectionTitle, setNewSectionTitle] = useState("");
 
+  const [discardDialogOpen, setDiscardDialogOpen] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<
+    | { type: "back" }
+    | { type: "browser-back" }
+    | { type: "href"; href: string }
+    | null
+  >(null);
+
+  const [blockDiscardDialogOpen, setBlockDiscardDialogOpen] = useState(false);
+  const [pendingBlockNavigation, setPendingBlockNavigation] = useState<
+    { type: "section"; section: PageSection } | { type: "done" } | null
+  >(null);
+
+  const historyGuardActiveRef = useRef(false);
+  const allowHistoryNavigationRef = useRef(false);
+
   // Load the one page owned by the signed-in user.
   const loadData = useCallback(async () => {
     setLoading(true);
+    setLoadError(null);
 
     try {
       const supabase = createClient();
@@ -145,54 +269,36 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
       }
 
       const page = pageData as CreatorPage;
-      const cfg = page.config || {};
-
       setCurrentUserId(access.user.id);
       setEditingPage(page);
       setSections((sectionData || []) as PageSection[]);
 
-      setEditTitle(page.title);
-      setEditSlug(page.slug);
-      setEditDescription(page.description);
-      setEditAccentColor(
-        typeof cfg.accentColor === "string" && cfg.accentColor.trim()
-          ? cfg.accentColor
-          : "#7c3aed",
-      );
-      setEditBgStyle(
-        cfg.bgStyle === "dark" ||
-          cfg.bgStyle === "ambient" ||
-          cfg.bgStyle === "minimal"
-          ? cfg.bgStyle
-          : "default",
-      );
-      setEditFontStyle(
-        cfg.fontStyle === "serif" ||
-          cfg.fontStyle === "mono" ||
-          cfg.fontStyle === "display"
-          ? cfg.fontStyle
-          : "default",
-      );
-      setEditCanvasWidth(
-        cfg.canvasWidth === "narrow" ||
-          cfg.canvasWidth === "wide" ||
-          cfg.canvasWidth === "full"
-          ? cfg.canvasWidth
-          : "standard",
-      );
-      setEditSectionGap(
-        cfg.sectionGap === "compact" || cfg.sectionGap === "relaxed"
-          ? cfg.sectionGap
-          : "normal",
-      );
-      setEditPagePadding(
-        cfg.pagePadding === "compact" || cfg.pagePadding === "spacious"
-          ? cfg.pagePadding
-          : "normal",
-      );
+      const editorValues = resolvePageEditorValues(page);
+
+      setEditTitle(editorValues.title);
+      setEditSlug(editorValues.slug);
+      setEditDescription(editorValues.description);
+      setEditAccentColor(editorValues.accentColor);
+      setEditBgStyle(editorValues.backgroundStyle);
+      setEditFontStyle(editorValues.fontStyle);
+      setEditCanvasWidth(editorValues.canvasWidth);
+      setEditSectionGap(editorValues.sectionGap);
+      setEditPagePadding(editorValues.pagePadding);
+
+      setSavedPageSnapshot(getPageSnapshot(editorValues));
+      setSavedBlockSnapshot("");
+      setEditingSection(null);
       setBuilderPanel("blocks");
+      setWorkspaceView("blocks");
     } catch (error) {
       console.error("Failed to load Creator Page builder:", error);
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Could not load this Creator Page";
+
+      setLoadError(message);
       toast.error("Could not load this Creator Page");
       setEditingPage(null);
       setSections([]);
@@ -205,9 +311,34 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
     void loadData();
   }, [loadData]);
 
-  const closeEditor = () => {
-    router.back();
-  };
+  const currentPageSnapshot = useMemo(
+    () =>
+      getPageSnapshot({
+        title: editTitle,
+        slug: editSlug,
+        description: editDescription,
+        accentColor: editAccentColor,
+        backgroundStyle: editBgStyle,
+        fontStyle: editFontStyle,
+        canvasWidth: editCanvasWidth,
+        sectionGap: editSectionGap,
+        pagePadding: editPagePadding,
+      }),
+    [
+      editAccentColor,
+      editBgStyle,
+      editCanvasWidth,
+      editDescription,
+      editFontStyle,
+      editPagePadding,
+      editSectionGap,
+      editSlug,
+      editTitle,
+    ],
+  );
+
+  const pageIsDirty =
+    Boolean(savedPageSnapshot) && currentPageSnapshot !== savedPageSnapshot;
 
   // Debounced slug availability check for editor
   useEffect(() => {
@@ -254,7 +385,7 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
 
   // Save page
   const handleSavePage = async () => {
-    if (!editingPage || !currentUserId) return;
+    if (!editingPage || !currentUserId || saving || !pageIsDirty) return;
     if (slugStatus === "taken") {
       toast.error(
         "Please choose a different URL slug — this one conflicts with an existing profile or page",
@@ -265,7 +396,13 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
       toast.error("Please wait while we verify the URL slug");
       return;
     }
+    const normalizedTitle = editTitle.trim() || "Untitled";
+    const normalizedSlug = editSlug.trim() || editingPage.slug;
+    const normalizedDescription = editDescription.trim();
+
     setSaving(true);
+    setJustSaved(false);
+
     try {
       const supabase = createClient();
 
@@ -282,9 +419,9 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
       const { error } = await supabase
         .from("creator_pages")
         .update({
-          title: editTitle.trim() || "Untitled",
-          slug: editSlug.trim() || editingPage.slug,
-          description: editDescription.trim(),
+          title: normalizedTitle,
+          slug: normalizedSlug,
+          description: normalizedDescription,
           config: pageConfig,
         })
         .eq("id", editingPage.id)
@@ -294,13 +431,32 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
 
       const updated: CreatorPage = {
         ...editingPage,
-        title: editTitle.trim() || "Untitled",
-        slug: editSlug.trim() || editingPage.slug,
-        description: editDescription.trim(),
+        title: normalizedTitle,
+        slug: normalizedSlug,
+        description: normalizedDescription,
         config: pageConfig,
         updated_at: new Date().toISOString(),
       };
       setEditingPage(updated);
+      setEditTitle(normalizedTitle);
+      setEditSlug(normalizedSlug);
+      setEditDescription(normalizedDescription);
+
+      setSavedPageSnapshot(
+        getPageSnapshot({
+          title: normalizedTitle,
+          slug: normalizedSlug,
+          description: normalizedDescription,
+          accentColor: editAccentColor || "#7c3aed",
+          backgroundStyle: editBgStyle || "default",
+          fontStyle: editFontStyle || "default",
+          canvasWidth: editCanvasWidth,
+          sectionGap: editSectionGap,
+          pagePadding: editPagePadding,
+        }),
+      );
+
+      setJustSaved(true);
       toast.success("Page saved");
     } catch (error: any) {
       toast.error(error.message || "Failed to save page");
@@ -355,9 +511,13 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
         .single();
 
       if (error) throw error;
-      setSections((prev) => [...prev, data as PageSection]);
+
+      const createdSection = data as PageSection;
+
+      setSections((prev) => [...prev, createdSection]);
       setAddSectionOpen(false);
       setNewSectionTitle("");
+      applySectionEditor(createdSection);
       toast.success("Section added");
     } catch (error: any) {
       toast.error(error.message || "Failed to add section");
@@ -390,7 +550,11 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
         .single();
 
       if (error) throw error;
-      setSections((prev) => [...prev, data as PageSection]);
+
+      const duplicatedSection = data as PageSection;
+
+      setSections((prev) => [...prev, duplicatedSection]);
+      applySectionEditor(duplicatedSection);
       toast.success("Section duplicated");
     } catch (error: any) {
       toast.error(error.message || "Failed to duplicate section");
@@ -441,6 +605,37 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
   const [availableLorebooks, setAvailableLorebooks] = useState<
     CreatorLorebookInspectorItem[]
   >([]);
+
+  const currentBlockSnapshot = useMemo(
+    () =>
+      getBlockSnapshot({
+        title: sectionTitleEdit,
+        config: sectionConfigEdit,
+        formId: editingFormId,
+        links: editingLinks,
+        images: editingImages,
+        selectedBotIds: editingSelectedBotIds,
+        selectedWorldIds: editingSelectedWorldIds,
+        selectedLorebookIds: editingSelectedLorebookIds,
+      }),
+    [
+      editingFormId,
+      editingImages,
+      editingLinks,
+      editingSelectedBotIds,
+      editingSelectedLorebookIds,
+      editingSelectedWorldIds,
+      sectionConfigEdit,
+      sectionTitleEdit,
+    ],
+  );
+
+  const blockIsDirty =
+    Boolean(editingSection) &&
+    Boolean(savedBlockSnapshot) &&
+    currentBlockSnapshot !== savedBlockSnapshot;
+
+  const hasUnsavedChanges = pageIsDirty || blockIsDirty;
 
   const loadAvailableForms = async () => {
     try {
@@ -614,39 +809,99 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
     }
   };
 
-  const openSectionEditor = (section: PageSection) => {
-    const hydrated = hydrateCreatorSectionEditor(section);
+  const applySectionEditor = useCallback(
+    (section: PageSection) => {
+      const hydrated = hydrateCreatorSectionEditor(section);
 
-    setEditingSection(section);
-    setBlockInspectorTab("content");
-    setSectionTitleEdit(getSectionDisplayTitle(section));
-    setSectionConfigEdit(hydrated.config);
+      setEditingSection(section);
+      setBlockInspectorTab("content");
+      setSectionTitleEdit(getSectionDisplayTitle(section));
+      setSectionConfigEdit(hydrated.config);
 
-    setEditingFormId(hydrated.collections.formId);
-    setEditingLinks(hydrated.collections.links);
-    setEditingImages(hydrated.collections.images);
-    setEditingSelectedBotIds(hydrated.collections.selectedBotIds);
-    setEditingSelectedWorldIds(hydrated.collections.selectedWorldIds);
-    setEditingSelectedLorebookIds(hydrated.collections.selectedLorebookIds);
+      setEditingFormId(hydrated.collections.formId);
+      setEditingLinks(hydrated.collections.links);
+      setEditingImages(hydrated.collections.images);
+      setEditingSelectedBotIds(hydrated.collections.selectedBotIds);
+      setEditingSelectedWorldIds(hydrated.collections.selectedWorldIds);
+      setEditingSelectedLorebookIds(hydrated.collections.selectedLorebookIds);
 
-    const resources = getCreatorPageBlockDefinition(section.kind).resources;
+      setSavedBlockSnapshot(
+        getBlockSnapshot({
+          title: getSectionDisplayTitle(section),
+          config: hydrated.config,
+          formId: hydrated.collections.formId,
+          links: hydrated.collections.links,
+          images: hydrated.collections.images,
+          selectedBotIds: hydrated.collections.selectedBotIds,
+          selectedWorldIds: hydrated.collections.selectedWorldIds,
+          selectedLorebookIds: hydrated.collections.selectedLorebookIds,
+        }),
+      );
 
-    if (resources.includes("bots")) {
-      void loadAvailableBots();
+      setBlockJustSaved(false);
+      setWorkspaceView("edit");
+
+      const resources = getCreatorPageBlockDefinition(section.kind).resources;
+
+      if (resources.includes("bots")) {
+        void loadAvailableBots();
+      }
+
+      if (resources.includes("worlds")) {
+        void loadAvailableWorlds();
+      }
+
+      if (resources.includes("lorebooks")) {
+        void loadAvailableLorebooks();
+      }
+
+      if (resources.includes("forms")) {
+        void loadAvailableForms();
+      }
+    },
+    [
+      loadAvailableBots,
+      loadAvailableForms,
+      loadAvailableLorebooks,
+      loadAvailableWorlds,
+    ],
+  );
+
+  const requestOpenSection = useCallback(
+    (section: PageSection) => {
+      if (editingSection?.id === section.id) {
+        setWorkspaceView("edit");
+        return;
+      }
+
+      if (blockIsDirty) {
+        setPendingBlockNavigation({
+          type: "section",
+          section,
+        });
+        setBlockDiscardDialogOpen(true);
+        return;
+      }
+
+      applySectionEditor(section);
+    },
+    [applySectionEditor, blockIsDirty, editingSection?.id],
+  );
+
+  const handleDoneBlock = useCallback(() => {
+    if (blockIsDirty) {
+      setPendingBlockNavigation({
+        type: "done",
+      });
+      setBlockDiscardDialogOpen(true);
+      return;
     }
 
-    if (resources.includes("worlds")) {
-      void loadAvailableWorlds();
-    }
-
-    if (resources.includes("lorebooks")) {
-      void loadAvailableLorebooks();
-    }
-
-    if (resources.includes("forms")) {
-      void loadAvailableForms();
-    }
-  };
+    setEditingSection(null);
+    setSavedBlockSnapshot("");
+    setBlockJustSaved(false);
+    setWorkspaceView("edit");
+  }, [blockIsDirty]);
 
   const getEditingSectionConfigInput = () => {
     if (!editingSection) return null;
@@ -676,8 +931,8 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
     return input ? validateCreatorSectionConfig(input) : null;
   };
 
-  const handleSaveSection = async () => {
-    if (!editingSection) return;
+  const handleSaveSection = useCallback(async () => {
+    if (!editingSection || blockSaving || !blockIsDirty) return;
 
     const linkError = validateEditingSectionLinks();
 
@@ -685,6 +940,9 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
       toast.error(linkError);
       return;
     }
+
+    setBlockSaving(true);
+    setBlockJustSaved(false);
 
     try {
       const supabase = createClient();
@@ -707,20 +965,52 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
             : s,
         ),
       );
+      const savedTitle = sectionTitleEdit.trim() || editingSection.title;
+
       setEditingSection((current) =>
         current
           ? {
               ...current,
-              title: sectionTitleEdit.trim() || current.title,
+              title: savedTitle,
               config,
             }
           : current,
       );
+
+      setSectionTitleEdit(savedTitle);
+      setSavedBlockSnapshot(
+        getBlockSnapshot({
+          title: savedTitle,
+          config: sectionConfigEdit,
+          formId: editingFormId,
+          links: editingLinks,
+          images: editingImages,
+          selectedBotIds: editingSelectedBotIds,
+          selectedWorldIds: editingSelectedWorldIds,
+          selectedLorebookIds: editingSelectedLorebookIds,
+        }),
+      );
+
+      setBlockJustSaved(true);
       toast.success("Block saved");
     } catch (error: any) {
       toast.error(error.message || "Failed to update section");
+    } finally {
+      setBlockSaving(false);
     }
-  };
+  }, [
+    blockIsDirty,
+    blockSaving,
+    editingFormId,
+    editingImages,
+    editingLinks,
+    editingSection,
+    editingSelectedBotIds,
+    editingSelectedLorebookIds,
+    editingSelectedWorldIds,
+    sectionConfigEdit,
+    sectionTitleEdit,
+  ]);
 
   // Delete section
   const handleDeleteSection = async (sectionId: string) => {
@@ -735,6 +1025,8 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
       setSections((prev) => prev.filter((s) => s.id !== sectionId));
       if (editingSection?.id === sectionId) {
         setEditingSection(null);
+        setSavedBlockSnapshot("");
+        setBlockJustSaved(false);
       }
       toast.success("Section removed");
     } catch (error: any) {
@@ -786,16 +1078,261 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
         .sort((a, b) => a.position - b.position)
     : [];
 
+  useEffect(() => {
+    if (pageIsDirty) {
+      setJustSaved(false);
+    }
+  }, [pageIsDirty]);
+
+  useEffect(() => {
+    if (blockIsDirty) {
+      setBlockJustSaved(false);
+    }
+  }, [blockIsDirty]);
+
+  useEffect(() => {
+    if (!justSaved) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setJustSaved(false);
+    }, 1800);
+
+    return () => window.clearTimeout(timeout);
+  }, [justSaved]);
+
+  useEffect(() => {
+    if (!blockJustSaved) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setBlockJustSaved(false);
+    }, 1800);
+
+    return () => window.clearTimeout(timeout);
+  }, [blockJustSaved]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const isSaveShortcut =
+        (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s";
+
+      if (!isSaveShortcut) {
+        return;
+      }
+
+      event.preventDefault();
+
+      if (event.repeat) {
+        return;
+      }
+
+      if (editingSection && blockIsDirty && !blockSaving) {
+        void handleSaveSection();
+        return;
+      }
+
+      if (pageIsDirty && !saving) {
+        void handleSavePage();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown, true);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown, true);
+    };
+  }, [
+    blockIsDirty,
+    blockSaving,
+    editingSection,
+    handleSaveSection,
+    pageIsDirty,
+    saving,
+  ]);
+
+  useEffect(() => {
+    if (!hasUnsavedChanges || saving || blockSaving) {
+      if (historyGuardActiveRef.current) {
+        historyGuardActiveRef.current = false;
+      }
+
+      return;
+    }
+
+    if (!historyGuardActiveRef.current) {
+      window.history.pushState(
+        {
+          ...(window.history.state || {}),
+          forgeworksCreatorPageBuilderGuard: true,
+        },
+        "",
+        window.location.href,
+      );
+
+      historyGuardActiveRef.current = true;
+    }
+
+    const handlePopState = () => {
+      if (allowHistoryNavigationRef.current) {
+        allowHistoryNavigationRef.current = false;
+        return;
+      }
+
+      window.history.pushState(
+        {
+          ...(window.history.state || {}),
+          forgeworksCreatorPageBuilderGuard: true,
+        },
+        "",
+        window.location.href,
+      );
+
+      historyGuardActiveRef.current = true;
+
+      setPendingNavigation({
+        type: "browser-back",
+      });
+      setDiscardDialogOpen(true);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [blockSaving, hasUnsavedChanges, saving]);
+
+  useEffect(() => {
+    if (!hasUnsavedChanges || saving || blockSaving) {
+      return;
+    }
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [blockSaving, hasUnsavedChanges, saving]);
+
+  useEffect(() => {
+    if (!hasUnsavedChanges || saving || blockSaving) {
+      return;
+    }
+
+    const handleDocumentClick = (event: MouseEvent) => {
+      if (
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      ) {
+        return;
+      }
+
+      const target = event.target;
+
+      if (!(target instanceof Element)) {
+        return;
+      }
+
+      const anchor = target.closest<HTMLAnchorElement>("a[href]");
+
+      if (!anchor) {
+        return;
+      }
+
+      if (anchor.target && anchor.target !== "_self") {
+        return;
+      }
+
+      if (anchor.hasAttribute("download")) {
+        return;
+      }
+
+      const url = new URL(anchor.href, window.location.href);
+
+      if (url.origin !== window.location.origin) {
+        return;
+      }
+
+      const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      const destination = `${url.pathname}${url.search}${url.hash}`;
+
+      if (destination === current) {
+        return;
+      }
+
+      event.preventDefault();
+
+      setPendingNavigation({
+        type: "href",
+        href: destination,
+      });
+      setDiscardDialogOpen(true);
+    };
+
+    document.addEventListener("click", handleDocumentClick, true);
+
+    return () => {
+      document.removeEventListener("click", handleDocumentClick, true);
+    };
+  }, [blockSaving, hasUnsavedChanges, saving]);
+
+  const handleBack = useCallback(() => {
+    if (!hasUnsavedChanges || saving || blockSaving) {
+      router.back();
+      return;
+    }
+
+    setPendingNavigation({
+      type: "back",
+    });
+    setDiscardDialogOpen(true);
+  }, [blockSaving, hasUnsavedChanges, router, saving]);
+
   // -------------------------------------------------------------------------
   // RENDER: Loading
   // -------------------------------------------------------------------------
 
   if (loading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center p-6">
+      <div className="flex min-h-dvh items-center justify-center bg-background p-6">
         <div className="flex flex-col items-center gap-3 text-muted-foreground">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          <p className="text-sm">Loading your pages…</p>
+          <Loader2 className="h-7 w-7 animate-spin" />
+          <p className="text-sm">Loading Creator Page builder…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-background p-6">
+        <div className="w-full max-w-md rounded-2xl border border-border/70 bg-card p-6 text-center shadow-sm">
+          <p className="text-base font-semibold">Could not load Creator Page</p>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            {loadError}
+          </p>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="mt-5 cursor-pointer rounded-full"
+            onClick={() => void loadData()}
+          >
+            <RefreshCcw className="mr-2 h-4 w-4" />
+            Try again
+          </Button>
         </div>
       </div>
     );
@@ -817,20 +1354,6 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
       pagePadding: editPagePadding,
     };
 
-    const previewWidthClass =
-      builderViewport === "mobile"
-        ? "w-[390px]"
-        : builderViewport === "tablet"
-          ? "w-[768px]"
-          : "w-full";
-
-    const previewScaleLabel =
-      builderViewport === "mobile"
-        ? "390px"
-        : builderViewport === "tablet"
-          ? "768px"
-          : "Responsive";
-
     const liveSections = editingPageSections.map((section) => {
       if (!editingSection || section.id !== editingSection.id) return section;
 
@@ -851,112 +1374,144 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
     });
 
     return (
-      <div className="flex min-h-[calc(100vh-1rem)] flex-col bg-background">
+      <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-background">
         <CreatorPageBuilderHeader
           page={editingPage}
           title={editTitle}
           slug={editSlug}
           viewport={builderViewport}
+          workspaceView={workspaceView}
           saving={saving}
+          isDirty={pageIsDirty}
+          canSave={pageIsDirty}
+          justSaved={justSaved}
           onViewportChange={setBuilderViewport}
-          onBack={closeEditor}
+          onWorkspaceViewChange={setWorkspaceView}
+          onBack={handleBack}
           onTogglePublish={() => void handleTogglePublish(editingPage)}
           onSave={() => void handleSavePage()}
         />
 
-        <div className="mx-auto grid w-full flex-1 grid-cols-1 xl:grid-cols-[18rem_minmax(0,1fr)_20rem]">
-          <CreatorPageBlocksPanel
-            panel={builderPanel}
-            sections={editingPageSections}
-            selectedSectionId={editingSection?.id || null}
-            canvasWidth={editCanvasWidth}
-            sectionGap={editSectionGap}
-            pagePadding={editPagePadding}
-            onPanelChange={setBuilderPanel}
-            onCanvasWidthChange={setEditCanvasWidth}
-            onSectionGapChange={setEditSectionGap}
-            onPagePaddingChange={setEditPagePadding}
-            onAddBlock={() => setAddSectionOpen(true)}
-            onSelectSection={openSectionEditor}
-            onDuplicateSection={(section) =>
-              void handleDuplicateSection(section)
-            }
-            onDeleteSection={(sectionId) => void handleDeleteSection(sectionId)}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-          />
-
-          <CreatorPageCanvasPreview
-            viewport={builderViewport}
-            sections={liveSections}
-            bots={availableBots}
-            worlds={availableWorlds}
-            lorebooks={availableLorebooks}
-            forms={availableForms}
-            pageConfig={livePageConfig}
-            selectedSectionId={editingSection?.id || null}
-            onSectionSelect={(sectionId) => {
-              if (editingSection?.id === sectionId) return;
-
-              const nextSection = editingPageSections.find(
-                (section) => section.id === sectionId,
-              );
-
-              if (nextSection) {
-                openSectionEditor(nextSection);
+        <div className="mx-auto min-h-0 w-full flex-1 overflow-hidden xl:grid xl:grid-cols-[18rem_minmax(0,1fr)_20rem]">
+          <div
+            className={cn(
+              "h-full min-h-0 min-w-0 xl:block",
+              workspaceView === "blocks" ? "block" : "hidden",
+            )}
+          >
+            <CreatorPageBlocksPanel
+              panel={builderPanel}
+              sections={editingPageSections}
+              selectedSectionId={editingSection?.id || null}
+              canvasWidth={editCanvasWidth}
+              sectionGap={editSectionGap}
+              pagePadding={editPagePadding}
+              onPanelChange={setBuilderPanel}
+              onCanvasWidthChange={setEditCanvasWidth}
+              onSectionGapChange={setEditSectionGap}
+              onPagePaddingChange={setEditPagePadding}
+              onAddBlock={() => setAddSectionOpen(true)}
+              onSelectSection={requestOpenSection}
+              onDuplicateSection={(section) =>
+                void handleDuplicateSection(section)
               }
-            }}
-          />
+              onDeleteSection={(sectionId) =>
+                void handleDeleteSection(sectionId)
+              }
+              onMoveSection={(sectionId, direction) =>
+                void handleReorderSection(sectionId, direction)
+              }
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            />
+          </div>
 
-          <CreatorPageBlockInspector
-            section={editingSection}
-            title={sectionTitleEdit}
-            config={sectionConfigEdit}
-            tab={blockInspectorTab}
-            anchorOptions={anchorOptions}
-            availableBots={availableBots}
-            availableWorlds={availableWorlds}
-            availableLorebooks={availableLorebooks}
-            availableForms={availableForms}
-            editingFormId={editingFormId}
-            editingLinks={editingLinks}
-            editingImages={editingImages}
-            editingSelectedBotIds={editingSelectedBotIds}
-            editingSelectedWorldIds={editingSelectedWorldIds}
-            editingSelectedLorebookIds={editingSelectedLorebookIds}
-            setTitle={setSectionTitleEdit}
-            setConfig={setSectionConfigEdit}
-            setTab={setBlockInspectorTab}
-            setEditingFormId={setEditingFormId}
-            setEditingLinks={setEditingLinks}
-            setEditingImages={setEditingImages}
-            setEditingSelectedBotIds={setEditingSelectedBotIds}
-            setEditingSelectedWorldIds={setEditingSelectedWorldIds}
-            setEditingSelectedLorebookIds={setEditingSelectedLorebookIds}
-            onDone={() => setEditingSection(null)}
-            onSave={() => void handleSaveSection()}
-            pageInspector={
-              <CreatorPagePageInspector
-                title={editTitle}
-                slug={editSlug}
-                description={editDescription}
-                accentColor={editAccentColor}
-                backgroundStyle={editBgStyle}
-                fontStyle={editFontStyle}
-                slugStatus={slugStatus}
-                slugMessage={slugMessage}
-                onTitleChange={setEditTitle}
-                onSlugChange={setEditSlug}
-                onDescriptionChange={setEditDescription}
-                onAccentColorChange={setEditAccentColor}
-                onBackgroundStyleChange={setEditBgStyle}
-                onFontStyleChange={setEditFontStyle}
-              />
-            }
-          />
+          <div
+            className={cn(
+              "h-full min-h-0 min-w-0 xl:block",
+              workspaceView === "preview" ? "block" : "hidden",
+            )}
+          >
+            <CreatorPageCanvasPreview
+              viewport={builderViewport}
+              sections={liveSections}
+              bots={availableBots}
+              worlds={availableWorlds}
+              lorebooks={availableLorebooks}
+              forms={availableForms}
+              pageConfig={livePageConfig}
+              selectedSectionId={editingSection?.id || null}
+              onSectionSelect={(sectionId) => {
+                const nextSection = editingPageSections.find(
+                  (section) => section.id === sectionId,
+                );
+
+                if (nextSection) {
+                  requestOpenSection(nextSection);
+                }
+              }}
+            />
+          </div>
+
+          <div
+            className={cn(
+              "h-full min-h-0 min-w-0 xl:block",
+              workspaceView === "edit" ? "block" : "hidden",
+            )}
+          >
+            <CreatorPageBlockInspector
+              section={editingSection}
+              title={sectionTitleEdit}
+              config={sectionConfigEdit}
+              tab={blockInspectorTab}
+              anchorOptions={anchorOptions}
+              availableBots={availableBots}
+              availableWorlds={availableWorlds}
+              availableLorebooks={availableLorebooks}
+              availableForms={availableForms}
+              editingFormId={editingFormId}
+              editingLinks={editingLinks}
+              editingImages={editingImages}
+              editingSelectedBotIds={editingSelectedBotIds}
+              editingSelectedWorldIds={editingSelectedWorldIds}
+              editingSelectedLorebookIds={editingSelectedLorebookIds}
+              setTitle={setSectionTitleEdit}
+              setConfig={setSectionConfigEdit}
+              setTab={setBlockInspectorTab}
+              setEditingFormId={setEditingFormId}
+              setEditingLinks={setEditingLinks}
+              setEditingImages={setEditingImages}
+              setEditingSelectedBotIds={setEditingSelectedBotIds}
+              setEditingSelectedWorldIds={setEditingSelectedWorldIds}
+              setEditingSelectedLorebookIds={setEditingSelectedLorebookIds}
+              onDone={handleDoneBlock}
+              onSave={() => void handleSaveSection()}
+              isDirty={blockIsDirty}
+              saving={blockSaving}
+              justSaved={blockJustSaved}
+              pageInspector={
+                <CreatorPagePageInspector
+                  title={editTitle}
+                  slug={editSlug}
+                  description={editDescription}
+                  accentColor={editAccentColor}
+                  backgroundStyle={editBgStyle}
+                  fontStyle={editFontStyle}
+                  slugStatus={slugStatus}
+                  slugMessage={slugMessage}
+                  onTitleChange={setEditTitle}
+                  onSlugChange={setEditSlug}
+                  onDescriptionChange={setEditDescription}
+                  onAccentColorChange={setEditAccentColor}
+                  onBackgroundStyleChange={setEditBgStyle}
+                  onFontStyleChange={setEditFontStyle}
+                />
+              }
+            />
+          </div>
         </div>
 
         <CreatorPageAddSectionDialog
@@ -968,6 +1523,116 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
           onTitleChange={setNewSectionTitle}
           onAdd={() => void handleAddSection()}
         />
+
+        <AlertDialog
+          open={blockDiscardDialogOpen}
+          onOpenChange={(open) => {
+            setBlockDiscardDialogOpen(open);
+
+            if (!open) {
+              setPendingBlockNavigation(null);
+            }
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Discard block changes?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This block has changes that have not been saved yet. Switching
+                blocks will discard them.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+
+            <AlertDialogFooter>
+              <AlertDialogCancel className="cursor-pointer">
+                Keep editing
+              </AlertDialogCancel>
+
+              <AlertDialogAction
+                className="cursor-pointer"
+                onClick={() => {
+                  const target = pendingBlockNavigation;
+
+                  setPendingBlockNavigation(null);
+                  setBlockDiscardDialogOpen(false);
+
+                  if (!target) {
+                    return;
+                  }
+
+                  if (target.type === "section") {
+                    applySectionEditor(target.section);
+                    return;
+                  }
+
+                  setEditingSection(null);
+                  setSavedBlockSnapshot("");
+                  setBlockJustSaved(false);
+                  setWorkspaceView("edit");
+                }}
+              >
+                Discard changes
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog
+          open={discardDialogOpen}
+          onOpenChange={(open) => {
+            setDiscardDialogOpen(open);
+
+            if (!open) {
+              setPendingNavigation(null);
+            }
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Discard unsaved changes?</AlertDialogTitle>
+              <AlertDialogDescription>
+                You have changes that have not been saved yet. Leaving the
+                builder will discard them.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+
+            <AlertDialogFooter>
+              <AlertDialogCancel className="cursor-pointer">
+                Keep editing
+              </AlertDialogCancel>
+
+              <AlertDialogAction
+                className="cursor-pointer"
+                onClick={() => {
+                  const target = pendingNavigation;
+
+                  setPendingNavigation(null);
+                  setDiscardDialogOpen(false);
+
+                  if (!target) {
+                    return;
+                  }
+
+                  if (target.type === "browser-back") {
+                    allowHistoryNavigationRef.current = true;
+                    historyGuardActiveRef.current = false;
+                    window.history.go(-2);
+                    return;
+                  }
+
+                  if (target.type === "back") {
+                    router.back();
+                    return;
+                  }
+
+                  router.push(target.href);
+                }}
+              >
+                Leave builder
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     );
   }

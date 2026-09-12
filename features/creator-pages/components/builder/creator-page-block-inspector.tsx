@@ -1,7 +1,7 @@
 "use client";
 
 import type { Dispatch, ReactNode, SetStateAction } from "react";
-import { Save } from "lucide-react";
+import { Check, Loader2, Save } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,6 +66,9 @@ interface CreatorPageBlockInspectorProps {
   setEditingSelectedLorebookIds: Dispatch<SetStateAction<string[]>>;
   onDone: () => void;
   onSave: () => void;
+  isDirty: boolean;
+  saving: boolean;
+  justSaved: boolean;
   pageInspector: ReactNode;
 }
 
@@ -96,11 +99,14 @@ export function CreatorPageBlockInspector({
   setEditingSelectedLorebookIds,
   onDone,
   onSave,
+  isDirty,
+  saving,
+  justSaved,
   pageInspector,
 }: CreatorPageBlockInspectorProps) {
   return (
-    <aside className="border-t border-border/70 bg-background xl:border-l xl:border-t-0">
-      <div className="sticky top-[73px] max-h-[calc(100vh-73px)] overflow-y-auto p-4">
+    <aside className="h-full min-h-0 min-w-0 overflow-hidden bg-background xl:border-l xl:border-border/70">
+      <div className="h-full min-h-0 overflow-y-auto overscroll-contain p-4 sm:p-5">
         {section ? (
           <>
             <div className="mb-4 flex items-start justify-between gap-3">
@@ -301,18 +307,28 @@ export function CreatorPageBlockInspector({
                 />
               )}
 
-              <div className="sticky -bottom-4 -mx-4 mt-5 border-t border-border/70 bg-background/95 px-4 pb-1 pt-4 backdrop-blur">
+              <div className="sticky -bottom-5 -mx-5 mt-5 border-t border-border/70 bg-background/95 px-5 pb-1 pt-4 backdrop-blur">
                 <Button
                   type="button"
                   className="w-full cursor-pointer rounded-xl"
                   onClick={onSave}
+                  disabled={saving || !isDirty}
                 >
-                  <Save className="mr-2 h-3.5 w-3.5" />
-                  Save block
+                  {saving ? (
+                    <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                  ) : justSaved ? (
+                    <Check className="mr-2 h-3.5 w-3.5" />
+                  ) : (
+                    <Save className="mr-2 h-3.5 w-3.5" />
+                  )}
+
+                  {saving ? "Saving..." : justSaved ? "Saved" : "Save block"}
                 </Button>
 
                 <p className="mt-2 text-center text-[10px] text-muted-foreground">
-                  Inspector changes preview instantly. Save persists them.
+                  {isDirty
+                    ? "Unsaved block changes · Preview updates instantly."
+                    : "Block changes are saved."}
                 </p>
               </div>
             </div>
