@@ -160,16 +160,18 @@ export function ImageCropDialog({
       }}
     >
       <DialogContent
+        overlayClassName="z-[100]"
         className="
-          flex
-          max-h-[90vh]
-          w-[calc(100vw-2rem)]
-          max-w-3xl
-          flex-col
-          overflow-hidden
-          p-0
-          sm:max-w-3xl
-        "
+        z-101
+        flex
+        max-h-[90vh]
+        w-[calc(100vw-2rem)]
+        max-w-3xl
+        flex-col
+        overflow-hidden
+        p-0
+        sm:max-w-3xl
+      "
       >
         <DialogHeader className="shrink-0 border-b px-5 py-4 pr-12 sm:px-6">
           <DialogTitle>{title}</DialogTitle>

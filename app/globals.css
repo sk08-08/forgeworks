@@ -1468,6 +1468,1320 @@ html::-webkit-scrollbar-thumb:hover {
   }
 
   /* =========================================================
+   Forms — Public Link
+   ========================================================= */
+
+  /*
+ * Outer shell deliberately stays overflow: visible.
+ * The visual surface below handles its own clipping.
+ */
+  .form-share-shell {
+    position: relative;
+    isolation: isolate;
+    overflow: visible;
+    z-index: 0;
+  }
+
+  .form-share-shell-copied {
+    z-index: 20;
+  }
+
+  /* =========================================================
+   Surface
+   ========================================================= */
+
+  .form-share-surface {
+    position: relative;
+
+    background: linear-gradient(
+      145deg,
+      color-mix(in oklch, var(--card) 97%, var(--primary) 3%),
+      color-mix(in oklch, var(--card) 98%, var(--chart-5) 2%)
+    );
+
+    border-color: color-mix(in oklch, var(--border) 88%, var(--primary) 12%);
+
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.025),
+      0 8px 24px -18px rgb(0 0 0 / 0.18);
+
+    transition:
+      border-color 620ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 620ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .form-share-surface-copied {
+    border-color: color-mix(in oklch, var(--primary) 42%, var(--border));
+
+    box-shadow:
+      0 0 0 1px color-mix(in oklch, var(--primary) 8%, transparent),
+      0 10px 36px -18px color-mix(in oklch, var(--primary) 42%, transparent),
+      0 4px 18px -12px color-mix(in oklch, var(--chart-4) 26%, transparent);
+  }
+
+  /* =========================================================
+   Ambient color
+   ========================================================= */
+
+  .form-share-aurora {
+    position: absolute;
+    pointer-events: none;
+    border-radius: 999px;
+    filter: blur(28px);
+    opacity: 0.52;
+  }
+
+  .form-share-aurora-purple {
+    width: 8rem;
+    height: 8rem;
+    right: -3.5rem;
+    top: -4.5rem;
+
+    background: radial-gradient(
+      circle,
+      color-mix(in oklch, var(--primary) 17%, transparent),
+      transparent 68%
+    );
+  }
+
+  .form-share-aurora-pink {
+    width: 6.5rem;
+    height: 6.5rem;
+    left: 16%;
+    bottom: -4.5rem;
+
+    background: radial-gradient(
+      circle,
+      color-mix(in oklch, var(--chart-4) 11%, transparent),
+      transparent 70%
+    );
+  }
+
+  .form-share-aurora-blue {
+    width: 7rem;
+    height: 7rem;
+    right: 20%;
+    bottom: -5rem;
+
+    background: radial-gradient(
+      circle,
+      color-mix(in oklch, var(--chart-5) 10%, transparent),
+      transparent 70%
+    );
+  }
+
+  .form-share-surface-copied .form-share-aurora-purple {
+    animation: jf-form-share-aurora-purple 1200ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .form-share-surface-copied .form-share-aurora-pink {
+    animation: jf-form-share-aurora-pink 1250ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .form-share-surface-copied .form-share-aurora-blue {
+    animation: jf-form-share-aurora-blue 1300ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* =========================================================
+   Subtle grid
+   ========================================================= */
+
+  .form-share-grid {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+
+    opacity: 0.055;
+
+    background-image:
+      linear-gradient(to right, var(--foreground) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--foreground) 1px, transparent 1px);
+
+    background-size: 18px 18px;
+
+    mask-image: linear-gradient(
+      135deg,
+      transparent 10%,
+      black 48%,
+      transparent 92%
+    );
+  }
+
+  .dark .form-share-grid {
+    opacity: 0.04;
+  }
+
+  /* =========================================================
+   Successful copy — internal card effects
+   ========================================================= */
+
+  .form-share-card-flash {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+
+    background:
+      radial-gradient(
+        circle at 22% 78%,
+        color-mix(in oklch, var(--primary) 15%, transparent),
+        transparent 34%
+      ),
+      radial-gradient(
+        circle at 76% 24%,
+        color-mix(in oklch, var(--chart-4) 10%, transparent),
+        transparent 38%
+      ),
+      radial-gradient(
+        circle at 72% 88%,
+        color-mix(in oklch, var(--chart-5) 9%, transparent),
+        transparent 36%
+      );
+
+    opacity: 0;
+
+    animation: jf-form-share-card-flash 1050ms ease-out forwards;
+  }
+
+  .form-share-sweep {
+    position: absolute;
+    z-index: 2;
+
+    top: -70%;
+    left: -40%;
+
+    width: 22%;
+    height: 240%;
+
+    pointer-events: none;
+
+    transform: rotate(19deg);
+
+    background: linear-gradient(
+      to right,
+      transparent,
+      rgb(255 255 255 / 0.54),
+      color-mix(in oklch, var(--primary) 16%, transparent),
+      transparent
+    );
+
+    filter: blur(2px);
+
+    animation: jf-form-share-card-sweep 880ms 90ms cubic-bezier(0.16, 1, 0.3, 1)
+      forwards;
+  }
+
+  /* =========================================================
+   Main icon
+   ========================================================= */
+
+  .form-share-icon {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+
+    color: var(--primary);
+
+    border-color: color-mix(in oklch, var(--primary) 16%, var(--border));
+
+    background: color-mix(in oklch, var(--primary) 6%, var(--background));
+
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.025);
+
+    transition:
+      color 580ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 580ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 580ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .form-share-icon::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    pointer-events: none;
+
+    background: linear-gradient(
+      145deg,
+      var(--primary),
+      color-mix(in oklch, var(--primary) 72%, var(--chart-4))
+    );
+
+    opacity: 0;
+
+    transition: opacity 620ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .form-share-icon-copied {
+    color: var(--primary-foreground);
+
+    border-color: color-mix(in oklch, var(--primary) 64%, transparent);
+
+    box-shadow:
+      0 0 0 4px color-mix(in oklch, var(--primary) 11%, transparent),
+      0 6px 16px -6px color-mix(in oklch, var(--primary) 48%, transparent);
+
+    animation: jf-form-share-icon-pop 720ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .form-share-icon-copied::before {
+    opacity: 1;
+  }
+
+  .form-share-icon-settling {
+    color: var(--primary);
+
+    border-color: color-mix(in oklch, var(--primary) 16%, var(--border));
+
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.025);
+
+    animation: none;
+  }
+
+  .form-share-icon-settling::before {
+    opacity: 0;
+  }
+
+  .form-share-header {
+    min-height: 2.5rem;
+  }
+
+  .form-share-icon > .form-share-header-icon {
+    position: absolute;
+    z-index: 1;
+
+    left: 50%;
+    top: 50%;
+
+    transition:
+      opacity 420ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .form-share-header-icon-link {
+    opacity: 1;
+
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+  }
+
+  .form-share-header-icon-link-hidden {
+    opacity: 0;
+
+    transform: translate(-50%, -50%) scale(0.68) rotate(14deg);
+  }
+
+  .form-share-header-icon-check {
+    opacity: 0;
+
+    transform: translate(-50%, -50%) scale(0.5) rotate(-18deg);
+  }
+
+  .form-share-header-icon-check-visible {
+    opacity: 1;
+
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+  }
+
+  .form-share-header-icon-check-settling {
+    opacity: 0;
+
+    transform: translate(-50%, -50%) scale(0.76) rotate(9deg);
+  }
+
+  .form-share-check {
+    stroke-width: 3;
+
+    animation: jf-form-share-check 560ms 70ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* =========================================================
+   Copied badge
+   ========================================================= */
+
+  .form-share-copied-badge {
+    display: inline-flex;
+    align-items: center;
+
+    border-radius: 999px;
+    padding: 0.12rem 0.4rem;
+
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+
+    color: color-mix(in oklch, var(--primary) 88%, var(--foreground));
+
+    border: 1px solid color-mix(in oklch, var(--primary) 22%, transparent);
+
+    background: color-mix(in oklch, var(--primary) 8%, transparent);
+
+    opacity: 0;
+    transform: translateY(-2px) scale(0.92);
+
+    transition:
+      opacity 380ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 440ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .form-share-copied-badge-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  .form-share-copied-badge-settling {
+    opacity: 0;
+    transform: translateY(-2px) scale(0.96);
+  }
+
+  /* =========================================================
+   URL pill
+   ========================================================= */
+
+  .form-share-url {
+    position: relative;
+    overflow: hidden;
+
+    border-color: color-mix(in oklch, var(--border) 88%, var(--primary) 12%);
+
+    background: color-mix(in oklch, var(--background) 76%, transparent);
+
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.025);
+
+    transition:
+      border-color 620ms cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 620ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 620ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .form-share-url-copied {
+    border-color: color-mix(in oklch, var(--primary) 30%, var(--border));
+
+    background: color-mix(in oklch, var(--primary) 4%, var(--background));
+
+    box-shadow: inset 0 0 0 1px
+      color-mix(in oklch, var(--primary) 5%, transparent);
+  }
+
+  .form-share-url-shine {
+    position: absolute;
+
+    inset: 0 auto 0 -28%;
+
+    width: 22%;
+
+    pointer-events: none;
+
+    transform: skewX(-18deg);
+
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklch, var(--primary) 20%, transparent),
+      color-mix(in oklch, var(--chart-4) 15%, transparent),
+      transparent
+    );
+
+    filter: blur(1px);
+
+    animation: jf-form-share-url-shine 960ms 130ms cubic-bezier(0.16, 1, 0.3, 1)
+      forwards;
+  }
+
+  /* =========================================================
+   Copy button
+   ========================================================= */
+
+  .form-share-copy-button {
+    isolation: isolate;
+
+    transition:
+      color 580ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 580ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 580ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /*
+   * Keep the Forgeworks gradient on an opacity layer.
+   * Opacity interpolates cleanly, while gradient -> flat background does not.
+   */
+  .form-share-copy-button::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    pointer-events: none;
+
+    background: linear-gradient(
+      110deg,
+      var(--primary),
+      color-mix(in oklch, var(--primary) 76%, var(--chart-4))
+    );
+
+    opacity: 0;
+
+    transition: opacity 620ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .form-share-copy-button-copied {
+    color: var(--primary-foreground);
+
+    border-color: color-mix(in oklch, var(--primary) 60%, transparent);
+
+    box-shadow: 0 5px 18px -7px
+      color-mix(in oklch, var(--primary) 55%, transparent);
+
+    animation: jf-form-share-button 720ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .form-share-copy-button-copied::before {
+    opacity: 1;
+  }
+
+  .form-share-copy-button-settling {
+    color: var(--secondary-foreground);
+    border-color: transparent;
+    box-shadow: none;
+    animation: none;
+  }
+
+  .form-share-copy-button-settling::before {
+    opacity: 0;
+  }
+
+  .form-share-copy-state {
+    opacity: 0;
+    transform: translateY(3px) scale(0.985);
+
+    transition:
+      opacity 360ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .form-share-copy-state-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  /*
+   * During settling the normal label fades in while the success
+   * label fades out, both occupying the same grid cell.
+   */
+  .form-share-copy-state-returning {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  .form-share-copy-state-success {
+    color: var(--primary-foreground);
+  }
+
+  .form-share-copy-state-success-settling {
+    opacity: 0;
+    transform: translateY(-2px) scale(0.985);
+  }
+
+  .form-share-copy-success-icon {
+    color: var(--primary);
+    background-color: color-mix(in oklch, white 88%, var(--primary));
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+
+    transition:
+      background-color 420ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 420ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .form-share-button-icon {
+    transition:
+      color 560ms cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 560ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 560ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 560ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .form-share-button-icon-copied {
+    color: var(--primary);
+
+    background-color: color-mix(in oklch, white 88%, var(--primary));
+
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+
+    animation: jf-form-share-button-icon 620ms 80ms
+      cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .form-share-button-icon-settling {
+    color: currentColor;
+    background-color: transparent;
+    box-shadow: none;
+    animation: none;
+  }
+
+  .form-share-copy-label {
+    animation: jf-form-share-copy-label 480ms 100ms
+      cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .form-share-copy-label-settling {
+    animation: jf-form-share-copy-label-settle 540ms
+      cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .form-share-button-sheen {
+    position: absolute;
+    z-index: 1;
+
+    top: -100%;
+    left: -35%;
+
+    width: 26%;
+    height: 300%;
+
+    pointer-events: none;
+
+    transform: rotate(16deg);
+
+    background: linear-gradient(
+      to right,
+      transparent,
+      rgb(255 255 255 / 0.52),
+      transparent
+    );
+
+    animation: jf-form-share-button-sheen 760ms 160ms
+      cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* =========================================================
+   Open button
+   ========================================================= */
+
+  .form-share-open-button {
+    transition:
+      color 220ms ease,
+      border-color 220ms ease,
+      background-color 220ms ease,
+      transform 220ms ease;
+  }
+
+  .form-share-open-button:hover {
+    color: var(--primary);
+
+    border-color: color-mix(in oklch, var(--primary) 28%, var(--border));
+
+    background: color-mix(in oklch, var(--primary) 6%, var(--background));
+
+    transform: translateY(-1px) rotate(-2deg);
+  }
+
+  /* =========================================================
+   EXTERNAL celebration
+   ========================================================= */
+
+  .form-share-celebration {
+    position: absolute;
+
+    inset: -1.15rem;
+
+    z-index: 30;
+
+    pointer-events: none;
+
+    overflow: visible;
+  }
+
+  /* Rings */
+
+  .form-share-ring {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: calc(100% - 0.8rem);
+    height: calc(100% - 0.8rem);
+
+    border-radius: 1.35rem;
+
+    border: 1.5px solid color-mix(in oklch, var(--primary) 48%, transparent);
+
+    opacity: 0;
+
+    transform: translate(-50%, -50%) scale(0.94);
+  }
+
+  .form-share-ring-a {
+    animation: jf-form-share-ring 900ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .form-share-ring-b {
+    border-color: color-mix(in oklch, var(--chart-4) 30%, transparent);
+
+    animation: jf-form-share-ring 1050ms 100ms cubic-bezier(0.16, 1, 0.3, 1)
+      forwards;
+  }
+
+  /* Rays */
+
+  .form-share-ray {
+    position: absolute;
+
+    width: 1.5px;
+    height: 13px;
+
+    border-radius: 999px;
+
+    opacity: 0;
+
+    background: linear-gradient(
+      to bottom,
+      color-mix(in oklch, var(--primary) 85%, white),
+      transparent
+    );
+
+    box-shadow: 0 0 8px color-mix(in oklch, var(--primary) 48%, transparent);
+  }
+
+  .form-share-ray-1 {
+    left: 18%;
+    top: 1%;
+    transform: rotate(-16deg);
+
+    animation: jf-form-share-ray-up 740ms 80ms ease-out forwards;
+  }
+
+  .form-share-ray-2 {
+    right: 13%;
+    top: 8%;
+    transform: rotate(21deg);
+
+    animation: jf-form-share-ray-up 780ms 150ms ease-out forwards;
+  }
+
+  .form-share-ray-3 {
+    left: 10%;
+    bottom: 10%;
+    transform: rotate(205deg);
+
+    animation: jf-form-share-ray-down 760ms 120ms ease-out forwards;
+  }
+
+  .form-share-ray-4 {
+    right: 19%;
+    bottom: 1%;
+    transform: rotate(178deg);
+
+    animation: jf-form-share-ray-down 820ms 190ms ease-out forwards;
+  }
+
+  /* Stars */
+
+  .form-share-star {
+    --share-star-x: 0rem;
+    --share-star-y: 0rem;
+    --share-star-delay: 0ms;
+
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 7px;
+    height: 7px;
+
+    opacity: 0;
+
+    background: color-mix(in oklch, var(--primary) 84%, white);
+
+    clip-path: polygon(
+      50% 0%,
+      61% 38%,
+      100% 50%,
+      61% 62%,
+      50% 100%,
+      39% 62%,
+      0% 50%,
+      39% 38%
+    );
+
+    filter: drop-shadow(
+      0 0 4px color-mix(in oklch, var(--primary) 52%, transparent)
+    );
+
+    animation: jf-form-share-star 900ms var(--share-star-delay)
+      cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .form-share-star-1 {
+    --share-star-x: -8.5rem;
+    --share-star-y: -4.8rem;
+  }
+
+  .form-share-star-2 {
+    --share-star-x: -4.8rem;
+    --share-star-y: -6.2rem;
+    --share-star-delay: 55ms;
+
+    width: 5px;
+    height: 5px;
+
+    background: var(--chart-4);
+  }
+
+  .form-share-star-3 {
+    --share-star-x: 6.2rem;
+    --share-star-y: -5.5rem;
+    --share-star-delay: 85ms;
+  }
+
+  .form-share-star-4 {
+    --share-star-x: 8.4rem;
+    --share-star-y: -2.1rem;
+    --share-star-delay: 30ms;
+
+    width: 5px;
+    height: 5px;
+
+    background: var(--chart-5);
+  }
+
+  .form-share-star-5 {
+    --share-star-x: 7rem;
+    --share-star-y: 5rem;
+    --share-star-delay: 110ms;
+
+    background: var(--chart-4);
+  }
+
+  .form-share-star-6 {
+    --share-star-x: -7.2rem;
+    --share-star-y: 5.2rem;
+    --share-star-delay: 75ms;
+
+    width: 5px;
+    height: 5px;
+  }
+
+  /* Dots */
+
+  .form-share-dot {
+    --share-dot-x: 0rem;
+    --share-dot-y: 0rem;
+    --share-dot-delay: 0ms;
+
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 4px;
+    height: 4px;
+
+    border-radius: 999px;
+
+    opacity: 0;
+
+    background: var(--primary);
+
+    box-shadow: 0 0 7px color-mix(in oklch, var(--primary) 50%, transparent);
+
+    animation: jf-form-share-dot 820ms var(--share-dot-delay)
+      cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .form-share-dot-1 {
+    --share-dot-x: -9rem;
+    --share-dot-y: -1rem;
+  }
+
+  .form-share-dot-2 {
+    --share-dot-x: -6rem;
+    --share-dot-y: -5.7rem;
+    --share-dot-delay: 80ms;
+
+    background: var(--chart-5);
+  }
+
+  .form-share-dot-3 {
+    --share-dot-x: 3rem;
+    --share-dot-y: -6.4rem;
+    --share-dot-delay: 25ms;
+
+    width: 3px;
+    height: 3px;
+  }
+
+  .form-share-dot-4 {
+    --share-dot-x: 9rem;
+    --share-dot-y: 1rem;
+    --share-dot-delay: 100ms;
+
+    background: var(--chart-4);
+  }
+
+  .form-share-dot-5 {
+    --share-dot-x: 3.8rem;
+    --share-dot-y: 6.2rem;
+    --share-dot-delay: 55ms;
+  }
+
+  .form-share-dot-6 {
+    --share-dot-x: -4.8rem;
+    --share-dot-y: 6rem;
+    --share-dot-delay: 120ms;
+
+    background: var(--chart-4);
+  }
+
+  /* =========================================================
+   Empty state
+   ========================================================= */
+
+  .form-share-empty {
+    background: linear-gradient(
+      145deg,
+      color-mix(in oklch, var(--card) 98%, var(--primary) 2%),
+      var(--card)
+    );
+  }
+
+  /* =========================================================
+   Keyframes
+   ========================================================= */
+
+  @keyframes jf-form-share-icon-pop {
+    0% {
+      transform: scale(0.72) rotate(-14deg);
+    }
+
+    48% {
+      transform: scale(1.18) rotate(5deg);
+    }
+
+    72% {
+      transform: scale(0.96) rotate(-1deg);
+    }
+
+    100% {
+      transform: scale(1) rotate(0);
+    }
+  }
+
+  @keyframes jf-form-share-check {
+    0% {
+      opacity: 0;
+
+      transform: scale(0.25) rotate(-20deg);
+    }
+
+    55% {
+      opacity: 1;
+
+      transform: scale(1.2) rotate(4deg);
+    }
+
+    100% {
+      opacity: 1;
+
+      transform: scale(1) rotate(0);
+    }
+  }
+
+  @keyframes jf-form-share-badge {
+    0% {
+      opacity: 0;
+
+      transform: translateX(-4px) scale(0.85);
+    }
+
+    100% {
+      opacity: 1;
+
+      transform: translateX(0) scale(1);
+    }
+  }
+
+  @keyframes jf-form-share-button {
+    0% {
+      transform: scale(1);
+    }
+
+    18% {
+      transform: scale(0.95);
+    }
+
+    46% {
+      transform: scale(1.025) translateY(-1px);
+    }
+
+    72% {
+      transform: scale(0.993);
+    }
+
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  @keyframes jf-form-share-button-icon {
+    0% {
+      opacity: 0;
+
+      transform: scale(0.35) rotate(-18deg);
+    }
+
+    55% {
+      opacity: 1;
+
+      transform: scale(1.16) rotate(4deg);
+    }
+
+    100% {
+      opacity: 1;
+
+      transform: scale(1) rotate(0);
+    }
+  }
+
+  @keyframes jf-form-share-copy-label {
+    from {
+      opacity: 0;
+      transform: translateY(3px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes jf-form-share-button-sheen {
+    0% {
+      left: -35%;
+      opacity: 0;
+    }
+
+    22% {
+      opacity: 1;
+    }
+
+    100% {
+      left: 125%;
+      opacity: 0;
+    }
+  }
+
+  @keyframes jf-form-share-url-shine {
+    0% {
+      left: -28%;
+      opacity: 0;
+    }
+
+    22% {
+      opacity: 1;
+    }
+
+    100% {
+      left: 125%;
+      opacity: 0;
+    }
+  }
+
+  @keyframes jf-form-share-card-flash {
+    0% {
+      opacity: 0;
+    }
+
+    25% {
+      opacity: 1;
+    }
+
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes jf-form-share-card-sweep {
+    0% {
+      left: -40%;
+      opacity: 0;
+    }
+
+    18% {
+      opacity: 1;
+    }
+
+    100% {
+      left: 125%;
+      opacity: 0;
+    }
+  }
+
+  @keyframes jf-form-share-ring {
+    0% {
+      opacity: 0;
+
+      transform: translate(-50%, -50%) scale(0.94);
+    }
+
+    20% {
+      opacity: 0.62;
+    }
+
+    100% {
+      opacity: 0;
+
+      transform: translate(-50%, -50%) scale(1.09);
+    }
+  }
+
+  @keyframes jf-form-share-star {
+    0% {
+      opacity: 0;
+
+      transform: translate(-50%, -50%) scale(0) rotate(0deg);
+    }
+
+    20% {
+      opacity: 1;
+
+      transform: translate(-50%, -50%) scale(1.25) rotate(20deg);
+    }
+
+    100% {
+      opacity: 0;
+
+      transform: translate(
+          calc(-50% + var(--share-star-x)),
+          calc(-50% + var(--share-star-y))
+        )
+        scale(0.35) rotate(100deg);
+    }
+  }
+
+  @keyframes jf-form-share-dot {
+    0% {
+      opacity: 0;
+
+      transform: translate(-50%, -50%) scale(0.3);
+    }
+
+    18% {
+      opacity: 0.95;
+
+      transform: translate(-50%, -50%) scale(1.2);
+    }
+
+    100% {
+      opacity: 0;
+
+      transform: translate(
+          calc(-50% + var(--share-dot-x)),
+          calc(-50% + var(--share-dot-y))
+        )
+        scale(0.15);
+    }
+  }
+
+  @keyframes jf-form-share-ray-up {
+    0% {
+      opacity: 0;
+
+      translate: 0 6px;
+      scale: 0.7;
+    }
+
+    22% {
+      opacity: 0.9;
+    }
+
+    100% {
+      opacity: 0;
+
+      translate: 0 -18px;
+      scale: 0.25;
+    }
+  }
+
+  @keyframes jf-form-share-ray-down {
+    0% {
+      opacity: 0;
+
+      translate: 0 -5px;
+      scale: 0.7;
+    }
+
+    22% {
+      opacity: 0.8;
+    }
+
+    100% {
+      opacity: 0;
+
+      translate: 0 18px;
+      scale: 0.25;
+    }
+  }
+
+  @keyframes jf-form-share-aurora-purple {
+    0% {
+      opacity: 0.45;
+      transform: scale(0.8);
+    }
+
+    48% {
+      opacity: 0.9;
+      transform: scale(1.2);
+    }
+
+    100% {
+      opacity: 0.52;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes jf-form-share-aurora-pink {
+    0% {
+      opacity: 0.3;
+
+      transform: translateX(-6px) scale(0.85);
+    }
+
+    52% {
+      opacity: 0.68;
+
+      transform: translateX(3px) scale(1.16);
+    }
+
+    100% {
+      opacity: 0.52;
+
+      transform: translateX(0) scale(1);
+    }
+  }
+
+  @keyframes jf-form-share-aurora-blue {
+    0% {
+      opacity: 0.28;
+
+      transform: translateY(5px) scale(0.9);
+    }
+
+    55% {
+      opacity: 0.62;
+
+      transform: translateY(-2px) scale(1.14);
+    }
+
+    100% {
+      opacity: 0.52;
+
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  /* =========================================================
+   Reduced motion
+   ========================================================= */
+
+  @media (prefers-reduced-motion: reduce) {
+    .form-share-surface-copied,
+    .form-share-surface-copied .form-share-aurora,
+    .form-share-card-flash,
+    .form-share-sweep,
+    .form-share-icon-copied,
+    .form-share-check,
+    .form-share-copied-badge,
+    .form-share-url-shine,
+    .form-share-copy-button-copied,
+    .form-share-button-icon-copied,
+    .form-share-copy-label,
+    .form-share-button-sheen,
+    .form-share-ring,
+    .form-share-ray,
+    .form-share-star,
+    .form-share-dot {
+      animation: none !important;
+    }
+  }
+
+  /* =========================================================
+   Forms — Public Link graceful settle
+   ========================================================= */
+
+  /*
+   * The JSX keeps the copied visual mounted for 680ms in "settling".
+   * These rules override the copied state while the base transitions
+   * interpolate back to the normal Forgeworks appearance.
+   */
+
+  .form-share-surface-settling {
+    border-color: color-mix(in oklch, var(--border) 88%, var(--primary) 12%);
+
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.025),
+      0 8px 24px -18px rgb(0 0 0 / 0.18);
+
+    animation: none;
+  }
+
+  .form-share-url-settling {
+    border-color: color-mix(in oklch, var(--border) 88%, var(--primary) 12%);
+
+    background: color-mix(in oklch, var(--background) 76%, transparent);
+
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.025);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .form-share-surface,
+    .form-share-icon,
+    .form-share-icon::before,
+    .form-share-url,
+    .form-share-copy-button,
+    .form-share-copy-button::before,
+    .form-share-button-icon,
+    .form-share-header-icon,
+    .form-share-copied-badge,
+    .form-share-copy-state {
+      transition: none !important;
+    }
+  }
+
+  /* =========================================================
+   Forms — Public link live status dot
+   ========================================================= */
+
+  .form-share-live-dot {
+    animation: jf-form-share-live-dot 2.4s ease-in-out infinite;
+  }
+
+  @keyframes jf-form-share-live-dot {
+    0%,
+    100% {
+      opacity: 1;
+
+      box-shadow: 0 0 6px color-mix(in oklch, var(--primary) 48%, transparent);
+    }
+
+    50% {
+      opacity: 0.78;
+
+      box-shadow: 0 0 11px color-mix(in oklch, var(--primary) 72%, transparent);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .form-share-live-dot {
+      animation: none !important;
+    }
+  }
+
+  /* =========================================================
      Profiles Hub
      ========================================================= */
 

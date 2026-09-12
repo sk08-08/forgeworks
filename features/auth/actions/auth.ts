@@ -207,22 +207,34 @@ export async function changePin(
 }
 
 export async function getSession() {
-  const cookieStore = await cookies();
-  const session = cookieStore.get("forgeworks_session");
+  const supabase = await createClient();
 
-  if (!session?.value) {
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
     return null;
   }
 
-  try {
-    return JSON.parse(session.value) as {
-      userId: string;
-      username: string;
-      loggedInAt: string;
-    };
-  } catch {
-    return null;
-  }
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("username")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const username =
+    profile?.username ||
+    user.user_metadata?.username ||
+    user.email?.split("@")[0] ||
+    "user";
+
+  return {
+    userId: user.id,
+    username,
+    loggedInAt: user.last_sign_in_at || user.created_at,
+  };
 }
 
 export async function registerUser(username: string, pin: string) {

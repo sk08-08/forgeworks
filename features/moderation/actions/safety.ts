@@ -13,6 +13,14 @@ import {
   type SensitivityLevel,
 } from "@/features/moderation/lib/content-filter";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import type { FormSection } from "@/features/forms/types/form-types";
+
+import {
+  sanitizeVisibleResponses,
+  validateFormValues,
+} from "@/features/forms/lib/form-runtime";
+
+import { stripMarkdownToText } from "@/features/markdown/lib/markdown";
 
 type SupabaseClientType = Awaited<ReturnType<typeof createClient>>;
 
@@ -544,16 +552,82 @@ export async function submitPublicFormRequest(
   error?: string;
 }> {
   const supabase = await createClient();
+
   const requestHeaders = await headers();
   const clientIp = getClientIp(requestHeaders);
 
-  // Check if IP is blocked BEFORE processing submission
+  /*
+   * Never trust form structure, ownership,
+   * labels or visibility sent by the browser.
+   *
+   * Load the canonical form first.
+   */
+  const { data: canonicalForm, error: formError } = await supabase
+    .from("request_forms")
+    .select(
+      `
+        id,
+        user_id,
+        title,
+        sections,
+        is_active
+      `,
+    )
+    .eq("id", formId)
+    .is("deleted_at", null)
+    .maybeSingle();
+
+  if (formError || !canonicalForm) {
+    return {
+      success: false,
+      error: "Form not found",
+    };
+  }
+
+  if (canonicalForm.is_active === false) {
+    return {
+      success: false,
+      error: "This form is not accepting submissions.",
+    };
+  }
+
+  const sections = Array.isArray(canonicalForm.sections)
+    ? (canonicalForm.sections as FormSection[])
+    : [];
+
+  /*
+   * Remove unknown fields and values belonging
+   * to fields that are currently hidden by
+   * conditional logic.
+   */
+  const { responses: sanitizedResponses, labels: sanitizedLabels } =
+    sanitizeVisibleResponses(sections, responses);
+
+  /*
+   * Validate the canonical form rules server-side.
+   * Client validation is only UX and cannot be trusted.
+   */
+  const validationErrors = validateFormValues(sections, sanitizedResponses);
+
+  const firstValidationError = Object.values(validationErrors)[0];
+
+  if (firstValidationError) {
+    return {
+      success: false,
+      isFlagged: false,
+      riskLevel: "safe",
+      error: firstValidationError,
+    };
+  }
+
+  // Check if IP is blocked BEFORE processing submission.
   if (clientIp) {
     try {
       const { data: blockedIp } = await supabase.rpc("is_ip_blocked_for_form", {
         p_form_id: formId,
         p_ip_address: clientIp,
       });
+
       if (blockedIp) {
         return {
           success: false,
@@ -564,13 +638,17 @@ export async function submitPublicFormRequest(
         };
       }
     } catch {
-      // Non-fatal: if IP check fails, continue with other validations
+      // Non-fatal: continue with other validation.
     }
   }
 
+  /*
+   * Moderation should only inspect responses
+   * that are actually allowed to be submitted.
+   */
   const securityCheck = await validateFormSubmission(
     formId,
-    responses,
+    sanitizedResponses,
     clientIp,
   );
 
@@ -584,19 +662,41 @@ export async function submitPublicFormRequest(
     };
   }
 
-  if (!formOwnerId) {
-    return { success: false, error: "Missing form owner" };
-  }
+  /*
+   * Determine submitter name from the canonical
+   * labels, not browser-provided label metadata.
+   */
+  const submitterNameFieldId = Object.keys(sanitizedLabels).find((fieldId) => {
+    const label = stripMarkdownToText(sanitizedLabels[fieldId] || "")
+      .toLowerCase()
+      .trim();
+
+    return label === "name" || label === "submitter name";
+  });
+
+  const canonicalSubmitterName =
+    submitterNameFieldId &&
+    typeof sanitizedResponses[submitterNameFieldId] === "string"
+      ? (sanitizedResponses[submitterNameFieldId] as string)
+      : null;
 
   const requestId = crypto.randomUUID();
+
   const payload = {
     id: requestId,
     form_id: formId,
-    user_id: formOwnerId,
-    form_title: formTitle,
-    responses,
-    response_labels: responseLabels,
-    submitter_name: submitterName || null,
+
+    // Canonical DB values.
+    user_id: canonicalForm.user_id,
+
+    form_title: canonicalForm.title,
+
+    responses: sanitizedResponses,
+
+    response_labels: sanitizedLabels,
+
+    submitter_name: canonicalSubmitterName,
+
     ip_address: clientIp,
   };
 
@@ -604,6 +704,7 @@ export async function submitPublicFormRequest(
 
   if (error) {
     console.error("Failed to save request:", error);
+
     return {
       success: false,
       error: error.message,

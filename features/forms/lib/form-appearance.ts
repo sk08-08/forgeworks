@@ -268,18 +268,26 @@ function hexToRgba(hex: string, alpha: number) {
 export function getFormDensityClasses(density: FormDensity) {
   return density === "compact"
     ? {
-        formGap: "space-y-3",
-        sectionContent: "space-y-3",
-        fieldGroup: "space-y-1",
-        headerSpacing: "mb-3",
+        formGap: "space-y-3 sm:space-y-4",
+
+        sectionContent: "space-y-3 sm:space-y-4",
+
+        fieldGroup: "space-y-1.5",
+
+        headerSpacing: "mb-4 sm:mb-5",
+
         containerPadding: "py-4 sm:py-6",
       }
     : {
-        formGap: "space-y-8",
-        sectionContent: "space-y-8",
-        fieldGroup: "space-y-3",
-        headerSpacing: "mb-8 sm:mb-10",
-        containerPadding: "py-10 sm:py-14",
+        formGap: "space-y-5 sm:space-y-7 lg:space-y-8",
+
+        sectionContent: "space-y-5 sm:space-y-7 lg:space-y-8",
+
+        fieldGroup: "space-y-2 sm:space-y-3",
+
+        headerSpacing: "mb-6 sm:mb-8 lg:mb-10",
+
+        containerPadding: "py-5 sm:py-8 lg:py-10",
       };
 }
 
@@ -305,9 +313,9 @@ export function getFormPresetClasses(preset: FormPreset) {
         title: "tracking-tight text-balance text-xl font-semibold",
         wrapper: "",
         layout:
-          "mx-auto flex w-full max-w-7xl flex-col gap-6 md:grid md:grid-cols-[18rem_minmax(0,1fr)] lg:grid-cols-[22rem_minmax(0,1fr)] lg:items-start",
+          "mx-auto flex w-full min-w-0 max-w-7xl flex-col gap-5 sm:gap-6 md:grid md:grid-cols-[16rem_minmax(0,1fr)] lg:grid-cols-[20rem_minmax(0,1fr)] xl:grid-cols-[22rem_minmax(0,1fr)] md:items-start",
         sidebar:
-          "order-first w-full rounded-3xl border border-border/60 bg-background/80 p-5 lg:p-6 shadow-lg backdrop-blur md:sticky md:top-0 top-6 md:w-auto",
+          "order-first w-full min-w-0 rounded-2xl border border-border/60 bg-background/80 p-4 shadow-lg backdrop-blur sm:rounded-3xl sm:p-5 md:sticky md:top-4 md:w-auto lg:p-6",
         pageBg: "",
       };
     case "minimal":
@@ -356,7 +364,7 @@ export function getFormAppearanceClasses(
     preset,
     density,
     wrapper: cn(
-      "relative min-h-screen flex items-start justify-center overflow-hidden",
+      "relative min-h-dvh w-full min-w-0 overflow-x-hidden flex items-start justify-center",
       preset.wrapper,
       density.containerPadding,
       resolved.preset === "minimal" ? "bg-muted/20" : "bg-background",
@@ -365,11 +373,16 @@ export function getFormAppearanceClasses(
     wrapperStyle: {
       backgroundImage:
         resolved.preset === "minimal"
-          ? `radial-gradient(circle at top left, ${accent.glow}, transparent 42%), radial-gradient(circle at bottom right, ${accent.glow.replace("0.18", "0.08")}, transparent 34%)`
-          : `radial-gradient(circle at top left, ${accent.glow}, transparent 38%), radial-gradient(circle at top right, ${accent.glow.replace("0.18", "0.1")}, transparent 32%), linear-gradient(180deg, rgba(255,255,255,0.0), rgba(255,255,255,0.0))`,
-      backgroundAttachment: "fixed",
+          ? `radial-gradient(circle at top left, ${accent.glow}, transparent 42%), radial-gradient(circle at bottom right, ${accent.glow.replace(
+              "0.18",
+              "0.08",
+            )}, transparent 34%)`
+          : `radial-gradient(circle at top left, ${accent.glow}, transparent 38%), radial-gradient(circle at top right, ${accent.glow.replace(
+              "0.18",
+              "0.1",
+            )}, transparent 32%), linear-gradient(180deg, rgba(255,255,255,0.0), rgba(255,255,255,0.0))`,
     } as CSSProperties,
-    surface: cn("overflow-hidden", preset.shell),
+    surface: cn("min-w-0 max-w-full overflow-hidden", preset.shell),
     surfaceStyle:
       resolved.preset === "bold"
         ? ({
@@ -386,7 +399,11 @@ export function getFormAppearanceClasses(
             backgroundImage: `linear-gradient(90deg, transparent, ${topAccent}, transparent)`,
           } as CSSProperties)
         : undefined,
-    sectionCard: cn("transition-all border", preset.card, accent.border),
+    sectionCard: cn(
+      "min-w-0 max-w-full overflow-hidden border transition-all",
+      preset.card,
+      accent.border,
+    ),
     sectionCardStyle:
       resolved.preset === "editorial"
         ? ({

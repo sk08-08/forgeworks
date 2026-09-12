@@ -6,6 +6,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Plus,
   FileText,
@@ -48,17 +49,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { FormBuilder, ShareableLinkDisplay } from "./form-builder";
 import { useStore as useAppStore } from "@/features/app-shell/store/app-store";
 import {
-  createFormAction,
   updateFormAction,
   deleteFormAction,
 } from "@/features/forms/actions/forms";
@@ -294,16 +286,13 @@ function mapDbFormToRequestForm(r: any): RequestForm {
 export function FormManager() {
   const { forms, deleteForm, getRequestsByFormId, upsertForm } = useAppStore();
 
+  const router = useRouter();
+
   // UI State
-  const [isCreating, setIsCreating] = useState(false);
-  const [editingForm, setEditingForm] = useState<RequestForm | null>(null);
   const [deleteConfirmForm, setDeleteConfirmForm] =
     useState<RequestForm | null>(null);
   const [templates, setTemplates] = useState<FormTemplate[]>([]);
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<FormTemplate | null>(
-    null,
-  );
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [accessLoaded, setAccessLoaded] = useState(false);
 
@@ -375,8 +364,13 @@ export function FormManager() {
 
   const handleSelectTemplate = (template: FormTemplate | null) => {
     setShowTemplatePicker(false);
-    setSelectedTemplate(template);
-    setIsCreating(true);
+
+    if (template) {
+      router.push(`/forms/new?template=${encodeURIComponent(template.id)}`);
+      return;
+    }
+
+    router.push("/forms/new");
   };
 
   const ownedForms = currentUserId
@@ -384,47 +378,6 @@ export function FormManager() {
     : forms;
 
   // Handlers
-  const handleCreateForm = (
-    formData: Omit<
-      RequestForm,
-      "id" | "shareableLink" | "createdAt" | "updatedAt"
-    >,
-  ) => {
-    (async () => {
-      // Try to persist on server first
-      const res = await createFormAction(formData as any);
-      if (!res.success) {
-        console.error("createFormAction error:", res.error);
-        toast.error(res.error || "Failed to create form");
-        return;
-      }
-      upsertForm(mapDbFormToRequestForm(res.form));
-      setIsCreating(false);
-      toast.success("Form created successfully!");
-    })();
-  };
-
-  const handleUpdateForm = (
-    formData: Omit<
-      RequestForm,
-      "id" | "shareableLink" | "createdAt" | "updatedAt"
-    >,
-  ) => {
-    if (editingForm) {
-      (async () => {
-        const res = await updateFormAction(editingForm.id, formData as any);
-        if (!res.success) {
-          console.error("updateFormAction error:", res.error);
-          toast.error(res.error || "Failed to update form");
-          return;
-        }
-        upsertForm(mapDbFormToRequestForm(res.form));
-        setEditingForm(null);
-        toast.success("Form updated successfully!");
-      })();
-    }
-  };
-
   const handleDeleteForm = () => {
     if (deleteConfirmForm) {
       (async () => {
@@ -627,7 +580,7 @@ export function FormManager() {
                     form={form}
                     requestCount={getRequestsByFormId(form.id).length}
                     ownerLabel="Mine"
-                    onEdit={() => setEditingForm(form)}
+                    onEdit={() => router.push(`/forms/${form.id}/builder`)}
                     onDelete={() => setDeleteConfirmForm(form)}
                     onToggleActive={() => handleToggleActive(form)}
                     onEditDeactivation={() => handleEditDeactivation(form)}
@@ -649,67 +602,6 @@ export function FormManager() {
           <EmptyState onCreateNew={handleNewFormClick} />
         </Card>
       )}
-
-      {/* Create/Edit Sheet */}
-      <Sheet
-        open={isCreating || !!editingForm}
-        onOpenChange={(open) => {
-          if (!open) {
-            setIsCreating(false);
-            setEditingForm(null);
-          }
-        }}
-      >
-        <SheetContent className="w-full overflow-x-hidden overflow-y-auto sm:max-w-2xl">
-          <SheetHeader className="p-4 lg:p-6">
-            <SheetTitle>
-              {editingForm ? "Edit Form" : "Create New Form"}
-            </SheetTitle>
-            <SheetDescription>
-              {editingForm
-                ? "Update your form structure and settings"
-                : "Design a custom form to collect submissions"}
-            </SheetDescription>
-          </SheetHeader>
-          <div className="mt-6">
-            {editingForm && (
-              <div className="mb-6 px-4 lg:px-6">
-                <ShareableLinkDisplay
-                  formId={editingForm.id}
-                  shareableLink={editingForm.shareableLink}
-                  isActive={editingForm.isActive}
-                />
-              </div>
-            )}
-            <FormBuilder
-              initialForm={
-                editingForm ||
-                (selectedTemplate
-                  ? {
-                      id: "",
-                      title: selectedTemplate.name,
-                      description: selectedTemplate.description || "",
-                      sections: (selectedTemplate.sections ||
-                        []) as FormSection[],
-                      shareableLink: "",
-                      isActive: true,
-                      createdAt: new Date(),
-                      updatedAt: new Date(),
-                      appearance: selectedTemplate.appearance || undefined,
-                    }
-                  : undefined)
-              }
-              onSave={editingForm ? handleUpdateForm : handleCreateForm}
-              onCancel={() => {
-                setIsCreating(false);
-                setEditingForm(null);
-                setSelectedTemplate(null);
-              }}
-              isEditing={!!editingForm}
-            />
-          </div>
-        </SheetContent>
-      </Sheet>
 
       {/* Template Picker Dialog */}
       <Dialog open={showTemplatePicker} onOpenChange={setShowTemplatePicker}>

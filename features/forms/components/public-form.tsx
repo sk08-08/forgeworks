@@ -1,12 +1,16 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { submitPublicFormRequest } from "@/features/moderation/actions/safety";
 import {
   MarkdownRenderer,
   MarkdownInlineRenderer,
 } from "@/features/markdown/components/markdown-renderer";
-
+import {
+  getVisibleFieldIds,
+  sanitizeVisibleResponses,
+  validateFormValues,
+} from "@/features/forms/lib/form-runtime";
 import {
   Flame,
   Gem,
@@ -143,6 +147,7 @@ interface PublicFormProps {
     appearance?: FormAppearance | null;
     userId?: string | null;
   };
+
   feedbackContext?: {
     sourcePage?: string;
     sourceLabel?: string;
@@ -150,6 +155,8 @@ interface PublicFormProps {
     relatedId?: string;
     metadata?: Record<string, unknown>;
   };
+
+  preview?: boolean;
 }
 
 function FieldRenderer({ field, value, onChange, error, appearance }: any) {
@@ -161,15 +168,60 @@ function FieldRenderer({ field, value, onChange, error, appearance }: any) {
   const [otherActive, setOtherActive] = useState(false);
   const [otherValue, setOtherValue] = useState("");
 
+  const textValue = typeof value === "string" ? value : "";
+
+  const characterCount = textValue.length;
+
+  const hasLengthValidation =
+    field.minLength !== undefined || field.maxLength !== undefined;
+
+  const selectedValues = Array.isArray(value) ? value : [];
+
+  const selectionCount = selectedValues.length;
+
+  const hasSelectionValidation =
+    field.minSelections !== undefined || field.maxSelections !== undefined;
+
+  const selectionLimitReached =
+    field.maxSelections !== undefined && selectionCount >= field.maxSelections;
+
   useEffect(() => {
+    if (!field.allowOther) {
+      setOtherActive(false);
+      setOtherValue("");
+      return;
+    }
+
+    const options = Array.isArray(field.options) ? field.options : [];
+
+    /*
+     * Multiple Choice:
+     * Any selected string that is not one
+     * of the configured options is the
+     * custom "Other" value.
+     */
+    if (field.type === "checkbox" && Array.isArray(value)) {
+      const customValue = value.find(
+        (item) => typeof item === "string" && !options.includes(item),
+      );
+
+      if (customValue) {
+        setOtherActive(true);
+        setOtherValue(customValue);
+      } else {
+        setOtherActive(false);
+        setOtherValue("");
+      }
+
+      return;
+    }
+
+    /*
+     * Dropdown / Single Choice.
+     */
     const current = typeof value === "string" ? value : "";
 
-    const isOther = !!(
-      field.allowOther &&
-      current &&
-      Array.isArray(field.options) &&
-      !field.options.includes(current)
-    );
+    const isOther = !!current && !options.includes(current);
 
     if (isOther) {
       setOtherActive(true);
@@ -177,11 +229,9 @@ function FieldRenderer({ field, value, onChange, error, appearance }: any) {
       return;
     }
 
-    if (current && Array.isArray(field.options)) {
-      setOtherActive(false);
-      setOtherValue("");
-    }
-  }, [value, field]);
+    setOtherActive(false);
+    setOtherValue("");
+  }, [value, field.allowOther, field.options, field.type]);
 
   const addTag = () => {
     if (tagInput.trim() && Array.isArray(value)) {
@@ -199,22 +249,44 @@ function FieldRenderer({ field, value, onChange, error, appearance }: any) {
   switch (field.type) {
     case "text":
       return (
-        <Input
-          value={value as string}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={field.placeholder}
-          className={cn(error && "border-destructive", fieldFocus)}
-        />
+        <div className="space-y-1.5">
+          <Input
+            value={textValue}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={field.placeholder}
+            maxLength={field.maxLength}
+            className={cn(error && "border-destructive", fieldFocus)}
+          />
+
+          {hasLengthValidation && (
+            <FieldLengthFeedback
+              count={characterCount}
+              min={field.minLength}
+              max={field.maxLength}
+            />
+          )}
+        </div>
       );
     case "textarea":
       return (
-        <Textarea
-          value={value as string}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={field.placeholder}
-          rows={4}
-          className={cn(error && "border-destructive", fieldFocus)}
-        />
+        <div className="space-y-1.5">
+          <Textarea
+            value={textValue}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={field.placeholder}
+            maxLength={field.maxLength}
+            rows={4}
+            className={cn(error && "border-destructive", fieldFocus)}
+          />
+
+          {hasLengthValidation && (
+            <FieldLengthFeedback
+              count={characterCount}
+              min={field.minLength}
+              max={field.maxLength}
+            />
+          )}
+        </div>
       );
     case "select": {
       return (
@@ -234,7 +306,11 @@ function FieldRenderer({ field, value, onChange, error, appearance }: any) {
             }}
           >
             <SelectTrigger
-              className={cn(error && "border-destructive", fieldFocus)}
+              className={cn(
+                "w-full min-w-0",
+                error && "border-destructive",
+                fieldFocus,
+              )}
             >
               <SelectValue placeholder="Select an option..." />
             </SelectTrigger>
@@ -289,22 +365,30 @@ function FieldRenderer({ field, value, onChange, error, appearance }: any) {
             }}
           >
             {field.options?.map((option: string) => (
-              <div key={option} className="flex items-start gap-2">
-                <RadioGroupItem value={option} id={`${field.id}-${option}`} />
+              <div key={option} className="flex min-w-0 items-start gap-2">
+                <RadioGroupItem
+                  value={option}
+                  id={`${field.id}-${option}`}
+                  className="mt-0.5 shrink-0"
+                />
                 <Label
                   htmlFor={`${field.id}-${option}`}
-                  className="cursor-pointer wrap-break-word"
+                  className="min-w-0 flex-1 cursor-pointer [overflow-wrap:anywhere]"
                 >
                   {option}
                 </Label>
               </div>
             ))}
             {field.allowOther && (
-              <div className="flex items-start gap-2">
-                <RadioGroupItem value="__other__" id={`${field.id}-other`} />
+              <div className="flex min-w-0 items-start gap-2">
+                <RadioGroupItem
+                  value="__other__"
+                  id={`${field.id}-other`}
+                  className="mt-0.5 shrink-0"
+                />
                 <Label
                   htmlFor={`${field.id}-other`}
-                  className="cursor-pointer wrap-break-word"
+                  className="min-w-0 flex-1 cursor-pointer [overflow-wrap:anywhere]"
                 >
                   Other
                 </Label>
@@ -326,33 +410,156 @@ function FieldRenderer({ field, value, onChange, error, appearance }: any) {
         </div>
       );
     }
-    case "checkbox":
+    case "checkbox": {
+      const configuredOptions = Array.isArray(field.options)
+        ? field.options
+        : [];
+
+      const customSelectedValue =
+        selectedValues.find(
+          (item: string) => !configuredOptions.includes(item),
+        ) || "";
+
+      const otherSelected = field.allowOther && !!customSelectedValue;
+
+      const otherDisabled = !otherSelected && selectionLimitReached;
+
       return (
-        <div className="space-y-2">
-          {field.options?.map((option: string) => (
-            <div key={option} className="flex items-start gap-2">
-              <Checkbox
-                id={`${field.id}-${option}`}
-                checked={Array.isArray(value) && value.includes(option)}
-                onCheckedChange={(checked) => {
-                  const currentValues = Array.isArray(value) ? value : [];
-                  if (checked) {
-                    onChange([...currentValues, option]);
-                  } else {
-                    onChange(currentValues.filter((v: string) => v !== option));
-                  }
-                }}
-              />
-              <Label
-                htmlFor={`${field.id}-${option}`}
-                className="cursor-pointer wrap-break-word"
+        <div className="space-y-3">
+          <div className="space-y-2">
+            {configuredOptions.map((option: string) => {
+              const checked = selectedValues.includes(option);
+
+              const disabled = !checked && selectionLimitReached;
+
+              return (
+                <div
+                  key={option}
+                  className={cn(
+                    "flex min-w-0 items-start gap-2",
+                    disabled && "opacity-50",
+                  )}
+                >
+                  <Checkbox
+                    id={`${field.id}-${option}`}
+                    className="mt-0.5 shrink-0"
+                    checked={checked}
+                    disabled={disabled}
+                    onCheckedChange={(nextChecked) => {
+                      if (nextChecked) {
+                        if (selectionLimitReached) {
+                          return;
+                        }
+
+                        onChange([...selectedValues, option]);
+                      } else {
+                        onChange(
+                          selectedValues.filter(
+                            (current: string) => current !== option,
+                          ),
+                        );
+                      }
+                    }}
+                  />
+
+                  <Label
+                    htmlFor={`${field.id}-${option}`}
+                    className={cn(
+                      "min-w-0 flex-1 cursor-pointer [overflow-wrap:anywhere]",
+                      disabled && "cursor-not-allowed",
+                    )}
+                  >
+                    {option}
+                  </Label>
+                </div>
+              );
+            })}
+
+            {field.allowOther && (
+              <div
+                className={cn(
+                  "flex min-w-0 items-start gap-2",
+                  otherDisabled && "opacity-50",
+                )}
               >
-                {option}
-              </Label>
-            </div>
-          ))}
+                <Checkbox
+                  id={`${field.id}-other`}
+                  className="mt-0.5 shrink-0"
+                  checked={otherSelected}
+                  disabled={otherDisabled}
+                  onCheckedChange={(nextChecked) => {
+                    if (nextChecked) {
+                      if (selectionLimitReached) {
+                        return;
+                      }
+
+                      setOtherActive(true);
+
+                      return;
+                    }
+
+                    setOtherActive(false);
+                    setOtherValue("");
+
+                    if (customSelectedValue) {
+                      onChange(
+                        selectedValues.filter(
+                          (current: string) => current !== customSelectedValue,
+                        ),
+                      );
+                    }
+                  }}
+                />
+
+                <Label
+                  htmlFor={`${field.id}-other`}
+                  className={cn(
+                    "min-w-0 flex-1 cursor-pointer [overflow-wrap:anywhere]",
+                    otherDisabled && "cursor-not-allowed",
+                  )}
+                >
+                  Other
+                </Label>
+              </div>
+            )}
+
+            {field.allowOther && otherActive && (
+              <div className="ml-6 mt-2">
+                <Input
+                  placeholder="Please specify"
+                  value={otherValue}
+                  onChange={(event) => {
+                    const nextValue = event.target.value;
+
+                    const nextSelections = customSelectedValue
+                      ? selectedValues.filter(
+                          (current: string) => current !== customSelectedValue,
+                        )
+                      : selectedValues;
+
+                    setOtherValue(nextValue);
+
+                    if (nextValue.trim()) {
+                      onChange([...nextSelections, nextValue]);
+                    } else {
+                      onChange(nextSelections);
+                    }
+                  }}
+                />
+              </div>
+            )}
+          </div>
+
+          {hasSelectionValidation && (
+            <FieldSelectionFeedback
+              count={selectionCount}
+              min={field.minSelections}
+              max={field.maxSelections}
+            />
+          )}
         </div>
       );
+    }
     case "rating-type":
       return (
         <RadioGroup
@@ -403,15 +610,21 @@ function FieldRenderer({ field, value, onChange, error, appearance }: any) {
             </Button>
           </div>
           {Array.isArray(value) && value.length > 0 && (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex min-w-0 max-w-full flex-wrap gap-2">
               {value.map((tag: string) => (
                 <Badge
                   key={tag}
                   variant="outline"
-                  className="max-w-full cursor-pointer whitespace-normal wrap-break-word hover:bg-destructive hover:text-destructive-foreground"
+                  className="flex min-w-0 max-w-full transition-colors duration-200 cursor-pointer items-start whitespace-normal hover:bg-destructive hover:text-destructive-foreground"
                   onClick={() => removeTag(tag)}
                 >
-                  {tag} ×
+                  <span className="min-w-0 [overflow-wrap:anywhere]">
+                    {tag}
+                  </span>
+
+                  <span aria-hidden className="ml-1 shrink-0">
+                    ×
+                  </span>
                 </Badge>
               ))}
             </div>
@@ -423,20 +636,120 @@ function FieldRenderer({ field, value, onChange, error, appearance }: any) {
   }
 }
 
+function FieldLengthFeedback({
+  count,
+  min,
+  max,
+}: {
+  count: number;
+  min?: number;
+  max?: number;
+}) {
+  const belowMinimum = min !== undefined && count < min;
+
+  const atMaximum = max !== undefined && count >= max;
+
+  let message = "";
+
+  if (min !== undefined && max !== undefined) {
+    message =
+      count < min
+        ? `${count} characters · minimum ${min} · maximum ${max}`
+        : `${count} / ${max} characters`;
+  } else if (max !== undefined) {
+    message = `${count} / ${max} characters`;
+  } else if (min !== undefined) {
+    message =
+      count < min
+        ? `${count} characters · minimum ${min}`
+        : `${count} characters · minimum reached`;
+  }
+
+  return (
+    <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1">
+      <p
+        className={cn(
+          "min-w-0 text-[10px] leading-relaxed transition-colors",
+          belowMinimum
+            ? "text-muted-foreground"
+            : atMaximum
+              ? "text-amber-600 dark:text-amber-400"
+              : "text-muted-foreground",
+        )}
+      >
+        {message}
+      </p>
+
+      {min !== undefined && count >= min && (
+        <span className="shrink-0 text-[10px] text-emerald-600 dark:text-emerald-400">
+          Minimum reached
+        </span>
+      )}
+    </div>
+  );
+}
+
+function FieldSelectionFeedback({
+  count,
+  min,
+  max,
+}: {
+  count: number;
+  min?: number;
+  max?: number;
+}) {
+  const belowMinimum = min !== undefined && count < min;
+
+  const atMaximum = max !== undefined && count >= max;
+
+  let message = `${count} selected`;
+
+  if (min !== undefined && max !== undefined) {
+    message = `${count} selected · minimum ${min} · maximum ${max}`;
+  } else if (min !== undefined) {
+    message = `${count} selected · minimum ${min}`;
+  } else if (max !== undefined) {
+    message = `${count} / ${max} selected`;
+  }
+
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/60 bg-muted/[0.12] px-3 py-2">
+      <p className="text-[10px] leading-relaxed text-muted-foreground">
+        {message}
+      </p>
+
+      {atMaximum ? (
+        <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400">
+          Maximum reached
+        </span>
+      ) : !belowMinimum && min !== undefined ? (
+        <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+          Minimum reached
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
 function SectionRenderer({
   section,
   values,
   errors,
   onChange,
   appearance,
+  preview = false,
+  visibleFieldIds,
 }: any) {
   const [isOpen, setIsOpen] = useState(
     section?.custom?.defaultExpanded === true,
   );
-  const requiredCount = section.fields.filter(
+  const visibleFields = section.fields.filter((field: FormField) =>
+    visibleFieldIds.has(field.id),
+  );
+  const requiredCount = visibleFields.filter(
     (field: FormField) => field.required,
   ).length;
-  const completedCount = section.fields.filter((field: FormField) => {
+  const completedCount = visibleFields.filter((field: FormField) => {
     const value = values[field.id];
 
     if (Array.isArray(value)) {
@@ -447,8 +760,8 @@ function SectionRenderer({
   }).length;
 
   const progress =
-    section.fields.length > 0
-      ? Math.round((completedCount / section.fields.length) * 100)
+    visibleFields.length > 0
+      ? Math.round((completedCount / visibleFields.length) * 100)
       : 0;
   const sectionImageUrl = getFormAssetPublicUrl(
     section?.custom?.imageAssetPath,
@@ -456,11 +769,11 @@ function SectionRenderer({
   const externalSectionImageUrl = String(
     section?.custom?.imageUrl || "",
   ).trim();
-  const safeExternalSectionImageUrl = /^https?:\/\//i.test(
-    externalSectionImageUrl,
-  )
-    ? externalSectionImageUrl
-    : "";
+  const safeExternalSectionImageUrl =
+    /^https?:\/\//i.test(externalSectionImageUrl) ||
+    (preview && /^blob:/i.test(externalSectionImageUrl))
+      ? externalSectionImageUrl
+      : "";
   const resolvedSectionImageUrl =
     sectionImageUrl || safeExternalSectionImageUrl;
   const gifUrl = String(section?.custom?.gifUrl || "").trim();
@@ -480,7 +793,6 @@ function SectionRenderer({
         : "items-start";
   const fieldShellClass =
     "min-w-0 max-w-full overflow-hidden rounded-lg border border-border/60 bg-background/40 p-3 sm:p-4";
-  const hasRequiredFields = section.fields.some((f: any) => f.required);
 
   if (section?.custom?.collapsible) {
     return (
@@ -534,12 +846,16 @@ function SectionRenderer({
               </div>
 
               <div className="min-w-0 flex-1">
-                <div className={cn("min-w-0 font-semibold", alignClass)}>
-                  <MarkdownInlineRenderer content={section.title} />
-
-                  {hasRequiredFields && (
-                    <span className="text-destructive"> *</span>
+                <div
+                  className={cn(
+                    "min-w-0 font-semibold [overflow-wrap:anywhere]",
+                    alignClass,
                   )}
+                >
+                  <MarkdownInlineRenderer
+                    content={section.title}
+                    className="min-w-0 [overflow-wrap:anywhere]"
+                  />
                 </div>
 
                 <div
@@ -552,8 +868,8 @@ function SectionRenderer({
                   )}
                 >
                   <span>
-                    {section.fields.length}{" "}
-                    {section.fields.length === 1 ? "field" : "fields"}
+                    {visibleFields.length}{" "}
+                    {visibleFields.length === 1 ? "field" : "fields"}
                   </span>
 
                   {requiredCount > 0 && (
@@ -567,13 +883,13 @@ function SectionRenderer({
                     <>
                       <span>·</span>
                       <span>
-                        {completedCount}/{section.fields.length} completed
+                        {completedCount}/{visibleFields.length} completed
                       </span>
                     </>
                   )}
                 </div>
 
-                {section.fields.length > 0 && (
+                {visibleFields.length > 0 && (
                   <div className="mt-2 h-1 overflow-hidden rounded-full bg-muted">
                     <div
                       className="h-full rounded-full transition-[width] duration-300"
@@ -647,7 +963,7 @@ function SectionRenderer({
                   appearance.density.sectionContent,
                 )}
               >
-                {section.fields.map((field: any) => {
+                {visibleFields.map((field: any) => {
                   const fieldTextAlignClass =
                     field.textAlignment === "center"
                       ? "text-center"
@@ -669,20 +985,38 @@ function SectionRenderer({
                         appearance.density.fieldGroup,
                       )}
                     >
-                      <Label
-                        className={`flex w-full items-center gap-1 flex-nowrap ${fieldLabelJustifyClass}`}
-                      >
-                        <MarkdownInlineRenderer
-                          content={field.label}
-                          className={`inline min-w-0 whitespace-normal wrap-break-word ${fieldTextAlignClass}`}
-                        />
-                      </Label>
-                      {field.description && (
-                        <MarkdownRenderer
-                          content={field.description}
-                          className={`text-xs text-muted-foreground wrap-break-word ${fieldTextAlignClass} [&>*:last-child]:mb-0`}
-                        />
-                      )}
+                      <div className="space-y-1.5 pb-1">
+                        <Label
+                          className={cn(
+                            "flex w-full min-w-0 items-start gap-1",
+                            fieldLabelJustifyClass,
+                          )}
+                        >
+                          <MarkdownInlineRenderer
+                            content={field.label}
+                            className={cn(
+                              "min-w-0 whitespace-normal [overflow-wrap:anywhere]",
+                              fieldTextAlignClass,
+                            )}
+                          />
+
+                          {field.required && (
+                            <span
+                              aria-hidden
+                              className="shrink-0 text-destructive"
+                            >
+                              *
+                            </span>
+                          )}
+                        </Label>
+
+                        {field.description && (
+                          <MarkdownRenderer
+                            content={field.description}
+                            className={`text-xs text-muted-foreground wrap-break-word ${fieldTextAlignClass} [&>*:last-child]:mb-0`}
+                          />
+                        )}
+                      </div>
                       <FieldRenderer
                         field={field}
                         value={
@@ -721,9 +1055,11 @@ function SectionRenderer({
     >
       <CardHeader className="space-y-3 pb-4 sm:pb-5">
         <CardTitle className={`${alignClass} wrap-break-word`}>
-          <span className="text-sm sm:text-base font-semibold">
-            <MarkdownInlineRenderer content={section.title} />
-            {hasRequiredFields && <span className="text-destructive"> *</span>}
+          <span className="min-w-0 text-sm font-semibold [overflow-wrap:anywhere] sm:text-base">
+            <MarkdownInlineRenderer
+              content={section.title}
+              className="min-w-0 [overflow-wrap:anywhere]"
+            />
           </span>
         </CardTitle>
         {section.description && (
@@ -760,7 +1096,7 @@ function SectionRenderer({
           appearance.density.sectionContent,
         )}
       >
-        {section.fields.map((field: any) => {
+        {visibleFields.map((field: any) => {
           const fieldTextAlignClass =
             field.textAlignment === "center"
               ? "text-center"
@@ -779,20 +1115,35 @@ function SectionRenderer({
               key={field.id}
               className={cn(fieldShellClass, appearance.density.fieldGroup)}
             >
-              <Label
-                className={`flex w-full items-center gap-1 flex-nowrap ${fieldLabelJustifyClass}`}
-              >
-                <MarkdownInlineRenderer
-                  content={field.label}
-                  className={`inline min-w-0 whitespace-normal wrap-break-word ${fieldTextAlignClass}`}
-                />
-              </Label>
-              {field.description && (
-                <MarkdownRenderer
-                  content={field.description}
-                  className={`text-xs text-muted-foreground wrap-break-word ${fieldTextAlignClass} [&>*:last-child]:mb-0`}
-                />
-              )}
+              <div className="space-y-1.5 pb-1">
+                <Label
+                  className={cn(
+                    "flex w-full min-w-0 items-start gap-1",
+                    fieldLabelJustifyClass,
+                  )}
+                >
+                  <MarkdownInlineRenderer
+                    content={field.label}
+                    className={cn(
+                      "min-w-0 whitespace-normal [overflow-wrap:anywhere]",
+                      fieldTextAlignClass,
+                    )}
+                  />
+
+                  {field.required && (
+                    <span aria-hidden className="shrink-0 text-destructive">
+                      *
+                    </span>
+                  )}
+                </Label>
+
+                {field.description && (
+                  <MarkdownRenderer
+                    content={field.description}
+                    className={`text-xs text-muted-foreground wrap-break-word ${fieldTextAlignClass} [&>*:last-child]:mb-0`}
+                  />
+                )}
+              </div>
               <FieldRenderer
                 field={field}
                 value={
@@ -819,7 +1170,11 @@ function SectionRenderer({
   );
 }
 
-export default function PublicForm({ form, feedbackContext }: PublicFormProps) {
+export default function PublicForm({
+  form,
+  feedbackContext,
+  preview = false,
+}: PublicFormProps) {
   const appearance = getFormAppearanceClasses(form.appearance || null);
   const isEditorial = appearance.resolved.preset === "editorial";
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -827,6 +1182,10 @@ export default function PublicForm({ form, feedbackContext }: PublicFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const visibleFieldIds = useMemo(
+    () => getVisibleFieldIds(form.sections, values),
+    [form.sections, values],
+  );
   const formHeaderIconKey = String(
     (form as any)?.appearance?.headerIcon || "sparkles",
   ).trim() as keyof typeof headerIconMap;
@@ -853,11 +1212,17 @@ export default function PublicForm({ form, feedbackContext }: PublicFormProps) {
     formHeaderIconColor,
     isDarkMode,
   );
+
   const uploadedBannerUrl = getFormBannerPublicUrl(form.bannerAssetPath);
+
   const externalBannerUrl = String(form.bannerUrl || "").trim();
-  const safeExternalBannerUrl = /^https?:\/\//i.test(externalBannerUrl)
-    ? externalBannerUrl
-    : "";
+
+  const safeExternalBannerUrl =
+    /^https?:\/\//i.test(externalBannerUrl) ||
+    (preview && /^blob:/i.test(externalBannerUrl))
+      ? externalBannerUrl
+      : "";
+
   const resolvedBannerUrl = uploadedBannerUrl || safeExternalBannerUrl;
 
   useEffect(() => {
@@ -894,72 +1259,24 @@ export default function PublicForm({ form, feedbackContext }: PublicFormProps) {
   };
 
   const validate = () => {
-    const newErrors: Record<string, string> = {};
-    form.sections.forEach((section) => {
-      section.fields.forEach((field) => {
-        if (field.required) {
-          const value = values[field.id];
-          const isEmpty = Array.isArray(value)
-            ? value.length === 0
-            : String(value || "").trim().length === 0;
+    const newErrors = validateFormValues(form.sections, values);
 
-          if (isEmpty) {
-            newErrors[field.id] = "This field is required";
-          }
-        }
-      });
-    });
     setErrors(newErrors);
+
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (preview) {
+      return;
+    }
     if (!validate()) return;
     setIsSubmitting(true);
 
     try {
-      // Build a stable field-id to label map directly from form.sections
-      const labelMap: Record<string, string> = {};
-      let sections = form.sections;
-
-      // Handle case where sections might be a JSON string
-      if (typeof sections === "string") {
-        try {
-          sections = JSON.parse(sections);
-        } catch (e) {
-          console.error("Failed to parse sections:", e);
-          sections = [];
-        }
-      }
-
-      if (Array.isArray(sections)) {
-        sections.forEach((section: any) => {
-          if (Array.isArray(section.fields)) {
-            section.fields.forEach((field: any) => {
-              const hasFieldLabel =
-                stripMarkdownToText(field.label || "").trim().length > 0;
-
-              const hasSectionTitle =
-                stripMarkdownToText(section.title || "").trim().length > 0;
-
-              const label = hasFieldLabel
-                ? field.label
-                : section.fields.length === 1 && hasSectionTitle
-                  ? section.title
-                  : field.id;
-
-              labelMap[field.id] = label;
-            });
-          }
-        });
-      }
-
-      // Keep responses keyed by field id so repeated/blank labels never collide
-      const responsesByFieldId: Record<string, string | string[]> = {};
-      Object.entries(values).forEach(([fieldId, value]) => {
-        responsesByFieldId[fieldId] = value;
-      });
+      const { responses: responsesByFieldId, labels: labelMap } =
+        sanitizeVisibleResponses(form.sections, values);
 
       const submitterNameFieldId = Object.keys(labelMap).find((fieldId) => {
         const humanLabel = stripMarkdownToText(labelMap[fieldId] || "")
@@ -1011,7 +1328,7 @@ export default function PublicForm({ form, feedbackContext }: PublicFormProps) {
     }
   };
 
-  if (!form || !form.isActive) {
+  if (!form || (!form.isActive && !preview)) {
     return (
       <div className="min-h-screen bg-background flex items-start justify-center pt-12">
         <div className="container max-w-2xl py-8">
@@ -1061,7 +1378,12 @@ export default function PublicForm({ form, feedbackContext }: PublicFormProps) {
   }
 
   return (
-    <ScrollArea className="h-screen w-full">
+    <ScrollArea
+      className={cn(
+        "w-full min-w-0",
+        preview ? "h-full min-h-[72vh]" : "h-dvh",
+      )}
+    >
       <div className={appearance.wrapper} style={appearance.wrapperStyle}>
         {isEditorial && (
           <div
@@ -1072,7 +1394,7 @@ export default function PublicForm({ form, feedbackContext }: PublicFormProps) {
 
         <div
           className={cn(
-            "container min-w-0 px-4 sm:px-6",
+            "container w-full min-w-0 max-w-full px-3 sm:px-5 md:px-6",
             appearance.preset.layout,
           )}
         >
@@ -1194,8 +1516,11 @@ export default function PublicForm({ form, feedbackContext }: PublicFormProps) {
             </div>
           )}
 
-          <Card className={appearance.surface} style={appearance.surfaceStyle}>
-            <CardContent className="p-4 sm:p-6 md:p-8">
+          <Card
+            className={cn("min-w-0 max-w-full", appearance.surface)}
+            style={appearance.surfaceStyle}
+          >
+            <CardContent className="min-w-0 p-3 sm:p-5 md:p-8">
               <form
                 onSubmit={handleSubmit}
                 className={appearance.density.formGap}
@@ -1207,6 +1532,8 @@ export default function PublicForm({ form, feedbackContext }: PublicFormProps) {
                     values={values}
                     errors={errors}
                     appearance={appearance}
+                    preview={preview}
+                    visibleFieldIds={visibleFieldIds}
                     onChange={(id: string, label: string, v: any) =>
                       handleChange(id, label, v)
                     }
@@ -1214,13 +1541,14 @@ export default function PublicForm({ form, feedbackContext }: PublicFormProps) {
                 ))}
 
                 <Button
+                  type={preview ? "button" : "submit"}
                   className={cn(
                     "w-full cursor-pointer",
                     appearance.submitButton,
                   )}
                   style={appearance.submitButtonStyle}
                   size="lg"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting && !preview}
                 >
                   {isSubmitting ? (
                     <>Submitting...</>
@@ -1235,42 +1563,44 @@ export default function PublicForm({ form, feedbackContext }: PublicFormProps) {
             </CardContent>
           </Card>
 
-          <div
-            className={cn(
-              "mt-6 sm:mt-8 w-full",
-              isEditorial && "md:col-span-2",
-            )}
-          >
-            <Card
+          {!preview && (
+            <div
               className={cn(
-                "w-full border border-border/60 bg-card/90 shadow-sm",
-                appearance.surface,
+                "mt-6 sm:mt-8 w-full",
+                isEditorial && "md:col-span-2",
               )}
-              style={appearance.surfaceStyle}
             >
-              <CardContent className="p-4 sm:p-5 md:p-6">
-                <div className="mb-3 space-y-1">
-                  <p className="text-sm font-medium">
-                    Need to tell us something?
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Send a suggestion or report a bug without interrupting the
-                    form above.
-                  </p>
-                </div>
-                <FeedbackActions
-                  compact
-                  context={
-                    feedbackContext ?? {
-                      sourcePage: form.title,
-                      sourceLabel: "Public form",
-                      relatedId: form.id,
+              <Card
+                className={cn(
+                  "w-full border border-border/60 bg-card/90 shadow-sm",
+                  appearance.surface,
+                )}
+                style={appearance.surfaceStyle}
+              >
+                <CardContent className="p-4 sm:p-5 md:p-6">
+                  <div className="mb-3 space-y-1">
+                    <p className="text-sm font-medium">
+                      Need to tell us something?
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Send a suggestion or report a bug without interrupting the
+                      form above.
+                    </p>
+                  </div>
+                  <FeedbackActions
+                    compact
+                    context={
+                      feedbackContext ?? {
+                        sourcePage: form.title,
+                        sourceLabel: "Public form",
+                        relatedId: form.id,
+                      }
                     }
-                  }
-                />
-              </CardContent>
-            </Card>
-          </div>
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
           <div
             className={cn(

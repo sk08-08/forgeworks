@@ -33,6 +33,16 @@ interface CreatorPageBuilderHeaderProps {
   onSave: () => void;
 }
 
+const viewportOptions = [
+  ["desktop", Monitor],
+  ["tablet", Tablet],
+  ["mobile", Smartphone],
+] as const satisfies readonly [
+  readonly [CreatorBuilderViewport, typeof Monitor],
+  readonly [CreatorBuilderViewport, typeof Tablet],
+  readonly [CreatorBuilderViewport, typeof Smartphone],
+];
+
 export function CreatorPageBuilderHeader({
   page,
   title,
@@ -49,6 +59,7 @@ export function CreatorPageBuilderHeader({
       <div className="mx-auto flex w-full flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex min-w-0 items-center gap-3">
           <Button
+            type="button"
             variant="ghost"
             size="icon"
             className="shrink-0 cursor-pointer rounded-full"
@@ -75,15 +86,10 @@ export function CreatorPageBuilderHeader({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center rounded-full border border-border/70 bg-muted/25 p-1">
-            {(["desktop", "tablet", "mobile"] as const).map((value) => {
-              const Icon =
-                value === "desktop"
-                  ? Monitor
-                  : value === "tablet"
-                    ? Tablet
-                    : Smartphone;
+        <div className="flex flex-wrap items-center gap-2 xl:justify-end">
+          <div className="flex h-9 items-center rounded-full border border-border/70 bg-muted/25 p-1">
+            {viewportOptions.map(([value, Icon]) => {
+              const active = viewport === value;
 
               return (
                 <Button
@@ -91,9 +97,12 @@ export function CreatorPageBuilderHeader({
                   type="button"
                   variant="ghost"
                   size="icon"
+                  aria-pressed={active}
                   className={cn(
-                    "h-7 w-8 cursor-pointer rounded-full",
-                    viewport === value && "bg-background shadow-sm",
+                    "h-7 w-8 cursor-pointer rounded-full transition-colors",
+                    active
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
                   )}
                   onClick={() => onViewportChange(value)}
                   title={`${value[0].toUpperCase()}${value.slice(1)} preview`}
@@ -114,7 +123,7 @@ export function CreatorPageBuilderHeader({
                 type="button"
                 variant="outline"
                 size="sm"
-                className="cursor-pointer rounded-full"
+                className="h-9 cursor-pointer rounded-full px-3"
               >
                 <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
                 Public page
@@ -126,7 +135,7 @@ export function CreatorPageBuilderHeader({
             type="button"
             variant="outline"
             size="sm"
-            className="cursor-pointer rounded-full"
+            className="h-9 cursor-pointer rounded-full px-3"
             onClick={onTogglePublish}
           >
             {page.is_published ? (
@@ -145,7 +154,7 @@ export function CreatorPageBuilderHeader({
           <Button
             type="button"
             size="sm"
-            className="cursor-pointer rounded-full px-4"
+            className="h-9 cursor-pointer rounded-full px-4"
             onClick={onSave}
             disabled={saving}
           >

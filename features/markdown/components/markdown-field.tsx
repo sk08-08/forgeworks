@@ -280,6 +280,10 @@ export const MarkdownField = React.forwardRef<
 
   const imageInputRef = useRef<HTMLInputElement | null>(null);
 
+  const editorContainerRef = useRef<HTMLDivElement | null>(null);
+
+  const [compactToolbar, setCompactToolbar] = useState(false);
+
   const imageReplaceTargetPosRef = useRef<number | null>(null);
 
   const replacePendingImages = useCallback((next: MarkdownPendingImage[]) => {
@@ -625,6 +629,32 @@ export const MarkdownField = React.forwardRef<
       };
     },
   });
+
+  useEffect(() => {
+    if (!editor) return;
+
+    const element = editorContainerRef.current;
+
+    if (!element) return;
+
+    const updateToolbarMode = () => {
+      const width = element.getBoundingClientRect().width;
+
+      setCompactToolbar(width < 520);
+    };
+
+    updateToolbarMode();
+
+    const observer = new ResizeObserver(() => {
+      updateToolbarMode();
+    });
+
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [editor]);
 
   useEffect(() => {
     if (!editor) return;
@@ -980,8 +1010,9 @@ export const MarkdownField = React.forwardRef<
   return (
     <TooltipProvider delayDuration={300}>
       <div
+        ref={editorContainerRef}
         className={cn(
-          "relative w-full rounded-xl border border-input bg-background shadow-sm transition-colors duration-300",
+          "relative w-full min-w-0 rounded-xl border border-input bg-background shadow-sm transition-colors duration-300",
           "focus-within:border-ring focus-within:ring-[2px] focus-within:ring-ring/50",
           className,
         )}
@@ -1018,7 +1049,7 @@ export const MarkdownField = React.forwardRef<
             }
           }}
         >
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="w-[calc(100%-1rem)] sm:max-w-md">
             <DialogHeader>
               <DialogTitle>Insert link</DialogTitle>
               <DialogDescription>
@@ -1201,7 +1232,7 @@ export const MarkdownField = React.forwardRef<
         <div
           className={cn(
             "relative flex min-w-0 items-center gap-1",
-            "overflow-x-hidden",
+            "overflow-hidden",
             "border-b border-border/50 bg-muted/20 p-1.5",
             "transition-colors duration-200",
           )}
@@ -1240,9 +1271,8 @@ export const MarkdownField = React.forwardRef<
           {hasFeature("heading") && (
             <div
               className={cn(
-                "hidden shrink-0 items-center",
-                "border-r border-border/50 px-1",
-                "md:flex",
+                "shrink-0 items-center border-r border-border/50 px-1",
+                compactToolbar ? "hidden" : "hidden md:flex",
               )}
             >
               <Select
@@ -1311,7 +1341,12 @@ export const MarkdownField = React.forwardRef<
             )}
 
             {hasFeature("strike") && (
-              <div className="hidden sm:block">
+              <div
+                className={cn(
+                  "shrink-0",
+                  compactToolbar ? "hidden" : "hidden sm:block",
+                )}
+              >
                 <ToolbarButton
                   onClick={() => editor.chain().focus().toggleStrike().run()}
                   active={isFocused && toolbarState.strike}
@@ -1325,7 +1360,12 @@ export const MarkdownField = React.forwardRef<
             )}
 
             {hasFeature("code") && (
-              <div className="hidden sm:block">
+              <div
+                className={cn(
+                  "shrink-0",
+                  compactToolbar ? "hidden" : "hidden sm:block",
+                )}
+              >
                 <ToolbarButton
                   onClick={() => editor.chain().focus().toggleCode().run()}
                   active={isFocused && toolbarState.code}
@@ -1345,9 +1385,8 @@ export const MarkdownField = React.forwardRef<
           {hasFeature("link") && (
             <div
               className={cn(
-                "hidden shrink-0 items-center",
-                "border-l border-border/50 pl-1",
-                "sm:flex",
+                "shrink-0 items-center border-l border-border/50 pl-1",
+                compactToolbar ? "hidden" : "hidden sm:flex",
               )}
             >
               <ToolbarButton
@@ -1366,7 +1405,12 @@ export const MarkdownField = React.forwardRef<
       COLOR
   ====================================================== */}
           {hasFeature("color") && (
-            <div className="hidden shrink-0 sm:block">
+            <div
+              className={cn(
+                "shrink-0",
+                compactToolbar ? "block" : "hidden sm:block",
+              )}
+            >
               <Popover open={isColorPickerOpen} onOpenChange={handleOpenChange}>
                 <PopoverTrigger asChild>
                   <button
@@ -1394,13 +1438,17 @@ export const MarkdownField = React.forwardRef<
                 </PopoverTrigger>
 
                 <PopoverContent
-                  className="w-80 border-border/80 bg-popover p-4 shadow-xl"
-                  align="start"
+                  className="w-[20rem] max-w-[calc(100vw-1.5rem)] border-border/80 bg-popover p-4 shadow-xl"
+                  align="end"
+                  side="bottom"
                   sideOffset={8}
-                  avoidCollisions={false}
+                  collisionPadding={16}
+                  avoidCollisions
+                  sticky="always"
+                  hideWhenDetached
                 >
                   <div className="space-y-4">
-                    <div className="w-full overflow-hidden rounded-lg border border-border/50 shadow-inner">
+                    <div className="h-32 w-full overflow-hidden rounded-lg border border-border/50 shadow-inner sm:h-36">
                       <HexColorPicker
                         color={
                           tempHexColor.startsWith("#")
@@ -1410,7 +1458,7 @@ export const MarkdownField = React.forwardRef<
                         onChange={setTempHexColor}
                         style={{
                           width: "100%",
-                          height: "140px",
+                          height: "100%",
                         }}
                       />
                     </div>
@@ -1420,7 +1468,7 @@ export const MarkdownField = React.forwardRef<
                         Suggested colors
                       </p>
 
-                      <div className="grid grid-cols-4 gap-2">
+                      <div className="grid grid-cols-[repeat(auto-fit,minmax(3.75rem,1fr))] gap-2">
                         {COLOR_PRESETS.map((preset) => {
                           const isActive =
                             tempHexColor.toLowerCase() ===
@@ -1527,10 +1575,20 @@ export const MarkdownField = React.forwardRef<
       LISTS
   ====================================================== */}
           {(hasFeature("bulletList") || hasFeature("orderedList")) && (
-            <div className="mx-1 hidden h-5 w-px bg-border/50 md:block" />
+            <div
+              className={cn(
+                "mx-1 h-5 w-px bg-border/50",
+                compactToolbar ? "hidden" : "hidden md:block",
+              )}
+            />
           )}
 
-          <div className="hidden shrink-0 items-center gap-0.5 md:flex">
+          <div
+            className={cn(
+              "shrink-0 items-center gap-0.5",
+              compactToolbar ? "hidden" : "hidden md:flex",
+            )}
+          >
             {hasFeature("bulletList") && (
               <ToolbarButton
                 onClick={() => editor.chain().focus().toggleBulletList().run()}
@@ -1574,7 +1632,9 @@ export const MarkdownField = React.forwardRef<
             <div
               className={cn(
                 "shrink-0 items-center",
-                hasPersistentMoreItems ? "flex" : "flex sm:hidden",
+                compactToolbar || hasPersistentMoreItems
+                  ? "flex"
+                  : "flex sm:hidden",
               )}
             >
               <div className="mx-1 h-5 w-px bg-border/50" />
@@ -1612,7 +1672,10 @@ export const MarkdownField = React.forwardRef<
                   {hasFeature("heading") && (
                     <>
                       <DropdownMenuItem
-                        className="cursor-pointer md:hidden"
+                        className={cn(
+                          "cursor-pointer",
+                          !compactToolbar && "md:hidden",
+                        )}
                         onSelect={() =>
                           editor.chain().focus().setParagraph().run()
                         }
@@ -1622,7 +1685,8 @@ export const MarkdownField = React.forwardRef<
 
                       <DropdownMenuItem
                         className={cn(
-                          "cursor-pointer md:hidden",
+                          "cursor-pointer",
+                          !compactToolbar && "md:hidden",
                           toolbarState.h1 && "bg-primary/10 text-primary",
                         )}
                         onSelect={() =>
@@ -1640,7 +1704,8 @@ export const MarkdownField = React.forwardRef<
 
                       <DropdownMenuItem
                         className={cn(
-                          "cursor-pointer md:hidden",
+                          "cursor-pointer",
+                          !compactToolbar && "md:hidden",
                           toolbarState.h2 && "bg-primary/10 text-primary",
                         )}
                         onSelect={() =>
@@ -1658,7 +1723,8 @@ export const MarkdownField = React.forwardRef<
 
                       <DropdownMenuItem
                         className={cn(
-                          "cursor-pointer md:hidden",
+                          "cursor-pointer",
+                          !compactToolbar && "md:hidden",
                           toolbarState.h3 && "bg-primary/10 text-primary",
                         )}
                         onSelect={() =>
@@ -1674,13 +1740,16 @@ export const MarkdownField = React.forwardRef<
                         Heading 3
                       </DropdownMenuItem>
 
-                      <DropdownMenuSeparator className="md:hidden" />
+                      <DropdownMenuSeparator
+                        className={cn(!compactToolbar && "md:hidden")}
+                      />
                     </>
                   )}
                   {hasFeature("strike") && (
                     <DropdownMenuItem
                       className={cn(
-                        "cursor-pointer sm:hidden",
+                        "cursor-pointer",
+                        !compactToolbar && "sm:hidden",
                         toolbarState.strike && "bg-primary/10 text-primary",
                       )}
                       onSelect={() =>
@@ -1695,7 +1764,8 @@ export const MarkdownField = React.forwardRef<
                   {hasFeature("code") && (
                     <DropdownMenuItem
                       className={cn(
-                        "cursor-pointer sm:hidden",
+                        "cursor-pointer",
+                        !compactToolbar && "sm:hidden",
                         toolbarState.code && "bg-primary/10 text-primary",
                       )}
                       onSelect={() => editor.chain().focus().toggleCode().run()}
@@ -1706,7 +1776,10 @@ export const MarkdownField = React.forwardRef<
                   )}
                   {hasFeature("link") && (
                     <DropdownMenuItem
-                      className="cursor-pointer sm:hidden"
+                      className={cn(
+                        "cursor-pointer",
+                        !compactToolbar && "sm:hidden",
+                      )}
                       onSelect={() => {
                         requestAnimationFrame(openLinkDialog);
                       }}
@@ -1718,7 +1791,8 @@ export const MarkdownField = React.forwardRef<
                   {hasFeature("bulletList") && (
                     <DropdownMenuItem
                       className={cn(
-                        "cursor-pointer md:hidden",
+                        "cursor-pointer",
+                        !compactToolbar && "md:hidden",
                         toolbarState.bulletList && "bg-primary/10 text-primary",
                       )}
                       onSelect={() =>
@@ -1733,7 +1807,8 @@ export const MarkdownField = React.forwardRef<
                   {hasFeature("orderedList") && (
                     <DropdownMenuItem
                       className={cn(
-                        "cursor-pointer md:hidden",
+                        "cursor-pointer",
+                        !compactToolbar && "md:hidden",
                         toolbarState.orderedList &&
                           "bg-primary/10 text-primary",
                       )}

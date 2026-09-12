@@ -1,7 +1,6 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { cookies } from "next/headers";
 import type { RequestForm } from "@/features/forms/types/form-types";
 import { friendlySupabaseError, ensureShareableLink } from "@/lib/error-utils";
 import { v4 as uuidv4 } from "uuid";
@@ -124,6 +123,17 @@ const formPayloadSchema = z.object({
   shareableLink: z.string().max(100).optional(),
 
   appearance: z.any().optional(),
+
+  deactivatedMessage: z.string().max(10000).default(""),
+
+  deactivatedRedirectUrl: z.string().max(2000).default(""),
+
+  deactivatedRedirectLabel: z.string().max(100).default(""),
+
+  deactivatedAccentColor: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/, "Invalid accent color")
+    .default("#7c3aed"),
 });
 
 function validateFormStructure(sections: z.infer<typeof formSectionSchema>[]) {
@@ -132,6 +142,8 @@ function validateFormStructure(sections: z.infer<typeof formSectionSchema>[]) {
 
   let totalFields = 0;
 
+  // First pass:
+  // collect and validate all IDs.
   for (const section of sections) {
     if (sectionIds.has(section.id)) {
       return `Duplicate section id: ${section.id}`;
@@ -154,8 +166,34 @@ function validateFormStructure(sections: z.infer<typeof formSectionSchema>[]) {
     }
   }
 
+  // Second pass:
+  // validate field rules and dependencies.
   for (const section of sections) {
     for (const field of section.fields) {
+      if (
+        field.minLength !== undefined &&
+        field.maxLength !== undefined &&
+        field.minLength > field.maxLength
+      ) {
+        return `Minimum length cannot exceed maximum length`;
+      }
+
+      if (
+        field.minSelections !== undefined &&
+        field.maxSelections !== undefined &&
+        field.minSelections > field.maxSelections
+      ) {
+        return `Minimum selections cannot exceed maximum selections`;
+      }
+
+      if (field.pattern) {
+        try {
+          new RegExp(field.pattern);
+        } catch {
+          return `Invalid validation pattern`;
+        }
+      }
+
       for (const condition of field.conditions || []) {
         if (!fieldIds.has(condition.fieldId)) {
           return `Condition references a field that does not exist`;
@@ -164,7 +202,61 @@ function validateFormStructure(sections: z.infer<typeof formSectionSchema>[]) {
         if (condition.fieldId === field.id) {
           return `A field cannot depend on itself`;
         }
+
+        const requiresValue =
+          condition.operator === "equals" ||
+          condition.operator === "not_equals" ||
+          condition.operator === "contains";
+
+        if (requiresValue && !String(condition.value || "").trim()) {
+          return `Conditional rules using "${condition.operator}" require a value`;
+        }
       }
+    }
+  }
+
+  // Third pass:
+  // reject circular conditional dependencies.
+  const dependencies = new Map<string, string[]>();
+
+  for (const section of sections) {
+    for (const field of section.fields) {
+      dependencies.set(
+        field.id,
+        (field.conditions || []).map((condition) => condition.fieldId),
+      );
+    }
+  }
+
+  const visiting = new Set<string>();
+  const visited = new Set<string>();
+
+  const hasCycle = (fieldId: string): boolean => {
+    if (visiting.has(fieldId)) {
+      return true;
+    }
+
+    if (visited.has(fieldId)) {
+      return false;
+    }
+
+    visiting.add(fieldId);
+
+    for (const dependency of dependencies.get(fieldId) || []) {
+      if (hasCycle(dependency)) {
+        return true;
+      }
+    }
+
+    visiting.delete(fieldId);
+    visited.add(fieldId);
+
+    return false;
+  };
+
+  for (const fieldId of fieldIds) {
+    if (hasCycle(fieldId)) {
+      return `Conditional logic cannot contain circular dependencies`;
     }
   }
 
@@ -173,29 +265,157 @@ function validateFormStructure(sections: z.infer<typeof formSectionSchema>[]) {
 
 async function resolveUserIdForActions() {
   const supabase = await createClient();
-  let userId: string | undefined;
 
-  try {
-    const { data: userData } = await supabase.auth.getUser();
-    userId = userData?.user?.id || undefined;
-  } catch {
-    userId = undefined;
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    return {
+      supabase,
+      userId: undefined,
+    };
   }
 
-  if (!userId) {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("forgeworks_session")?.value;
-    if (session) {
-      try {
-        const parsed = JSON.parse(session);
-        userId = parsed?.userId;
-      } catch {
-        userId = undefined;
-      }
-    }
+  return {
+    supabase,
+    userId: user.id,
+  };
+}
+
+export async function getFormForBuilderAction(formId: string) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return {
+      success: false as const,
+      error: "Unauthenticated",
+    };
   }
 
-  return { supabase, userId };
+  const { data, error } = await supabase
+    .from("request_forms")
+    .select(
+      `
+        id,
+        user_id,
+        title,
+        description,
+        banner_asset_path,
+        banner_url,
+        sections,
+        appearance,
+        shareable_link,
+        is_active,
+        deactivated_message,
+        deactivated_redirect_url,
+        deactivated_redirect_label,
+        deactivated_accent_color,
+        created_at,
+        updated_at
+      `,
+    )
+    .eq("id", formId)
+    .eq("user_id", user.id)
+    .is("deleted_at", null)
+    .maybeSingle();
+
+  if (error) {
+    return {
+      success: false as const,
+      error: friendlySupabaseError(error, "Failed to load form"),
+    };
+  }
+
+  if (!data) {
+    return {
+      success: false as const,
+      error: "Form not found",
+    };
+  }
+
+  return {
+    success: true as const,
+    form: {
+      id: data.id,
+      ownerId: data.user_id,
+      title: data.title || "",
+      description: data.description || "",
+      bannerAssetPath: data.banner_asset_path || "",
+      bannerUrl: data.banner_url || "",
+      sections: data.sections || [],
+      appearance: resolveFormAppearance(data.appearance || null),
+      shareableLink: data.shareable_link || "",
+      isActive: data.is_active !== false,
+
+      deactivatedMessage: data.deactivated_message || "",
+      deactivatedRedirectUrl: data.deactivated_redirect_url || "",
+      deactivatedRedirectLabel: data.deactivated_redirect_label || "",
+      deactivatedAccentColor: data.deactivated_accent_color || "#7c3aed",
+
+      createdAt: data.created_at ? new Date(data.created_at) : new Date(),
+
+      updatedAt: data.updated_at ? new Date(data.updated_at) : new Date(),
+    } satisfies RequestForm,
+  };
+}
+
+export async function getFormTemplateForBuilderAction(templateId: string) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return {
+      success: false as const,
+      error: "Unauthenticated",
+    };
+  }
+
+  const { data, error } = await supabase
+    .from("form_templates")
+    .select(
+      `
+        id,
+        name,
+        description,
+        category,
+        icon,
+        sections,
+        appearance,
+        is_builtin
+      `,
+    )
+    .eq("id", templateId)
+    .maybeSingle();
+
+  if (error) {
+    return {
+      success: false as const,
+      error: friendlySupabaseError(error, "Failed to load template"),
+    };
+  }
+
+  if (!data) {
+    return {
+      success: false as const,
+      error: "Template not found",
+    };
+  }
+
+  return {
+    success: true as const,
+    template: data,
+  };
 }
 
 async function removeFormAssetsByPath(
@@ -404,16 +624,53 @@ export async function createFormAction(
 
   const safeForm = parsed.data;
 
+  const normalizedBannerUrl = safeForm.bannerUrl?.trim()
+    ? normalizeHttpUrl(safeForm.bannerUrl)
+    : "";
+
+  if (safeForm.bannerUrl?.trim() && !normalizedBannerUrl) {
+    return {
+      success: false,
+      error: "Invalid banner URL",
+    };
+  }
+
+  const normalizedRedirectUrl = safeForm.deactivatedRedirectUrl?.trim()
+    ? normalizeHttpUrl(safeForm.deactivatedRedirectUrl)
+    : "";
+
+  if (safeForm.deactivatedRedirectUrl?.trim() && !normalizedRedirectUrl) {
+    return {
+      success: false,
+      error: "Invalid redirect URL",
+    };
+  }
+
   const payload = {
     user_id: userId,
+
     title: safeForm.title,
     description: safeForm.description ?? "",
-    banner_asset_path: safeForm.bannerAssetPath ?? null,
-    banner_url: safeForm.bannerUrl ?? null,
+
+    banner_asset_path: safeForm.bannerAssetPath || null,
+
+    banner_url: normalizedBannerUrl || null,
+
     sections: safeForm.sections || [],
+
     appearance: resolveFormAppearance(safeForm.appearance ?? null),
+
     shareable_link: ensureShareableLink(safeForm.shareableLink),
+
     is_active: !!safeForm.isActive,
+
+    deactivated_message: safeForm.deactivatedMessage ?? "",
+
+    deactivated_redirect_url: normalizedRedirectUrl || "",
+
+    deactivated_redirect_label: safeForm.deactivatedRedirectLabel ?? "",
+
+    deactivated_accent_color: safeForm.deactivatedAccentColor || "#7c3aed",
   };
 
   const { data: inserted, error } = await supabase
@@ -433,18 +690,38 @@ export async function createFormAction(
 
 export async function updateFormAction(id: string, data: Partial<RequestForm>) {
   const { supabase, userId } = await resolveUserIdForActions();
-  if (!userId) return { success: false, error: "Unauthenticated" };
+
+  if (!userId) {
+    return {
+      success: false,
+      error: "Unauthenticated",
+    };
+  }
 
   const { data: existingForm, error: existingError } = await supabase
     .from("request_forms")
     .select("id, user_id, sections, banner_asset_path")
     .eq("id", id)
+    .eq("user_id", userId)
     .is("deleted_at", null)
-    .single();
+    .maybeSingle();
 
-  if (existingError || !existingForm) {
-    return { success: false, error: "Form not found" };
+  if (existingError) {
+    console.error("[updateFormAction] Failed to load form:", existingError);
+
+    return {
+      success: false,
+      error: existingError.message || "Failed to load form",
+    };
   }
+
+  if (!existingForm) {
+    return {
+      success: false,
+      error: "Form not found",
+    };
+  }
+
   if (existingForm.user_id !== userId) {
     return {
       success: false,

@@ -97,25 +97,27 @@ export function CustomColorPicker({
         </PopoverTrigger>
 
         <PopoverContent
-          className="w-[min(20rem,calc(100vw-2rem))] border-border/80 bg-popover p-4 shadow-xl"
-          align="start"
+          className="w-[20rem] border-border/80 bg-popover p-4 shadow-xl"
+          align="center"
+          side="bottom"
           sideOffset={8}
-          collisionPadding={12}
-          avoidCollisions
         >
           <div className="space-y-4">
-            <div className="w-full overflow-hidden rounded-lg border border-border/50 shadow-inner">
+            <div className="h-32 w-full overflow-hidden rounded-lg border border-border/50 shadow-inner sm:h-36">
               <HexColorPicker
                 color={normalized}
                 onChange={onChange}
-                style={{ width: "100%", height: "140px" }}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                }}
               />
             </div>
 
             <div>
               <p className="mb-2 text-sm font-medium">Suggested colors</p>
 
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(3.75rem,1fr))] gap-2">
                 {presets.map((preset) => (
                   <button
                     key={preset.value}
