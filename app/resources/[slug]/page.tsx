@@ -121,8 +121,8 @@ export default async function ResourcePage({ params }: PageProps) {
         <div className="absolute -right-52 top-[30rem] h-[28rem] w-[28rem] rounded-full bg-pink-500/[0.06] blur-[120px]" />
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 pb-20 pt-6 sm:px-6 lg:px-8">
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+      <div className="mx-auto w-full max-w-[92rem] px-3 pb-20 pt-5 sm:px-6 sm:pt-6 lg:px-8">
+        <nav className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
           <Link
             href="/resources"
             className="group inline-flex items-center gap-2 transition-colors hover:text-foreground"
@@ -134,12 +134,12 @@ export default async function ResourcePage({ params }: PageProps) {
           {section && (
             <>
               <span className="text-border">/</span>
-              <span className="truncate">{section.title}</span>
+              <span className="min-w-0 break-words">{section.title}</span>
             </>
           )}
         </nav>
 
-        <section className="dashboard-hero relative mt-7 isolate overflow-hidden rounded-[2rem] border border-border/70 px-6 py-10 shadow-xl shadow-black/5 dark:shadow-primary/10 sm:px-9 sm:py-12 lg:px-12">
+        <section className="dashboard-hero relative mt-6 isolate overflow-hidden rounded-[2rem] border border-border/70 px-4 py-8 shadow-xl shadow-black/5 dark:shadow-primary/10 sm:mt-7 sm:px-9 sm:py-12 lg:px-12">
           <div className="relative z-10 max-w-4xl">
             <div className="flex flex-wrap items-center gap-2">
               <Badge className="rounded-full" variant="secondary">
@@ -166,7 +166,7 @@ export default async function ResourcePage({ params }: PageProps) {
               )}
             </div>
 
-            <h1 className="mt-6 max-w-4xl text-balance text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+            <h1 className="mt-6 max-w-4xl break-words text-balance text-3xl font-bold tracking-tight sm:text-5xl xl:text-6xl">
               {entry.title}
             </h1>
 
@@ -189,11 +189,11 @@ export default async function ResourcePage({ params }: PageProps) {
               </div>
             )}
 
-            <div className="mt-7 flex flex-wrap items-center gap-4">
+            <div className="mt-7 flex min-w-0 flex-col items-start gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
               {contributor?.username ? (
                 <Link
                   href={`/profile/${contributor.username}`}
-                  className="group flex items-center gap-3"
+                  className="group flex min-w-0 items-center gap-3"
                 >
                   <div className="flex h-10 w-10 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-sm font-semibold text-primary shadow-sm">
                     {(contributor.display_name || contributor.username || "U")
@@ -201,8 +201,8 @@ export default async function ResourcePage({ params }: PageProps) {
                       .toUpperCase()}
                   </div>
 
-                  <div>
-                    <p className="text-sm font-medium transition-colors group-hover:text-primary">
+                  <div className="min-w-0">
+                    <p className="break-words text-sm font-medium transition-colors group-hover:text-primary">
                       {contributor.display_name || `@${contributor.username}`}
                     </p>
 
@@ -227,7 +227,7 @@ export default async function ResourcePage({ params }: PageProps) {
                 </div>
               )}
 
-              <div className="h-8 w-px bg-border/60" />
+              <div className="hidden h-8 w-px bg-border/60 sm:block" />
 
               <p className="text-xs text-muted-foreground">
                 Updated{" "}
@@ -241,17 +241,17 @@ export default async function ResourcePage({ params }: PageProps) {
           </div>
         </section>
 
-        <div className="mt-12 grid items-start gap-12 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <div className="mt-10 grid min-w-0 items-start gap-8 xl:mt-12 xl:grid-cols-[minmax(0,1fr)_18rem] xl:gap-12">
           <div className="min-w-0">
             <article className="min-w-0 px-1 sm:px-3">
               <MarkdownRenderer
                 content={entry.summary || "No content available."}
-                className="prose max-w-none dark:prose-invert prose-headings:scroll-mt-24 prose-headings:tracking-tight prose-p:leading-7 prose-li:leading-7"
+                className="prose max-w-none break-words dark:prose-invert prose-headings:scroll-mt-24 prose-headings:tracking-tight prose-p:leading-7 prose-li:leading-7 [&_a]:break-all [&_code]:break-words [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_table]:block [&_table]:max-w-full [&_table]:overflow-x-auto"
               />
             </article>
           </div>
 
-          <aside className="lg:sticky lg:top-6 lg:self-start">
+          <aside className="min-w-0 xl:sticky xl:top-6 xl:self-start">
             <div className="space-y-4">
               <div className="rounded-3xl border border-border/70 bg-card/80 p-5 shadow-md shadow-black/[0.04] backdrop-blur">
                 <div className="flex items-center gap-3">
@@ -281,7 +281,9 @@ export default async function ResourcePage({ params }: PageProps) {
                         Category
                       </dt>
 
-                      <dd className="mt-1.5 font-medium">{section.title}</dd>
+                      <dd className="mt-1.5 break-words font-medium">
+                        {section.title}
+                      </dd>
                     </div>
                   )}
 
@@ -290,7 +292,9 @@ export default async function ResourcePage({ params }: PageProps) {
                       Type
                     </dt>
 
-                    <dd className="mt-1.5 font-medium">{typeLabel}</dd>
+                    <dd className="mt-1.5 break-words font-medium">
+                      {typeLabel}
+                    </dd>
                   </div>
 
                   <div>
@@ -324,7 +328,7 @@ export default async function ResourcePage({ params }: PageProps) {
 
               <Link
                 href="/resources"
-                className="group flex items-center justify-between rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 text-sm text-muted-foreground shadow-sm transition-all duration-300 hover:border-primary/20 hover:bg-primary/5 hover:text-foreground"
+                className="group flex min-w-0 items-center justify-between gap-3 rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 text-sm text-muted-foreground shadow-sm transition-all duration-300 hover:border-primary/20 hover:bg-primary/5 hover:text-foreground"
               >
                 Browse all resources
                 <ArrowLeft className="h-4 w-4 rotate-180 transition-transform group-hover:translate-x-1" />
@@ -367,7 +371,7 @@ export default async function ResourcePage({ params }: PageProps) {
               </p>
             </div>
 
-            <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {related.map((item) => (
                 <Link
                   key={item.id}
@@ -384,7 +388,7 @@ export default async function ResourcePage({ params }: PageProps) {
                     }
                   </Badge>
 
-                  <h3 className="relative mt-4 font-semibold leading-snug tracking-tight transition-colors group-hover:text-primary">
+                  <h3 className="relative mt-4 break-words font-semibold leading-snug tracking-tight transition-colors group-hover:text-primary">
                     {item.title}
                   </h3>
 

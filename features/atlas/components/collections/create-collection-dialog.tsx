@@ -61,7 +61,7 @@ export function CreateCollectionDialog({
           New collection
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="max-h-[calc(100dvh-1.5rem)] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Create Collection</DialogTitle>
           <DialogDescription>

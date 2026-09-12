@@ -49,7 +49,12 @@ const organize = [
 
 type NavItem = (typeof primary)[number];
 
-function NavLinkContent({ href, label, icon: Icon }: NavItem) {
+function NavLinkContent({
+  href,
+  label,
+  icon: Icon,
+  onNavigate,
+}: NavItem & { onNavigate?: () => void }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -71,6 +76,7 @@ function NavLinkContent({ href, label, icon: Icon }: NavItem) {
   return (
     <Link
       href={href}
+      onClick={onNavigate}
       className={cn(
         "group flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition-colors",
         active
@@ -84,7 +90,7 @@ function NavLinkContent({ href, label, icon: Icon }: NavItem) {
   );
 }
 
-function NavLink(props: NavItem) {
+function NavLink(props: NavItem & { onNavigate?: () => void }) {
   return (
     <Suspense
       fallback={
@@ -102,25 +108,45 @@ function NavLink(props: NavItem) {
   );
 }
 
-function Section({ label, items }: { label: string; items: typeof primary }) {
+function Section({
+  label,
+  items,
+  onNavigate,
+}: {
+  label: string;
+  items: typeof primary;
+  onNavigate?: () => void;
+}) {
   return (
     <div className="space-y-1">
       <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">
         {label}
       </p>
       {items.map((item) => (
-        <NavLink key={item.href} {...item} />
+        <NavLink key={item.href} {...item} onNavigate={onNavigate} />
       ))}
     </div>
   );
 }
 
-export function AtlasSidebar() {
+export function AtlasSidebar({
+  className,
+  onNavigate,
+}: {
+  className?: string;
+  onNavigate?: () => void;
+} = {}) {
   return (
-    <aside className="flex h-full w-64 flex-col border-r border-border/60 bg-card/40">
+    <aside
+      className={cn(
+        "flex h-full w-64 flex-col border-r border-border/60 bg-card/40",
+        className,
+      )}
+    >
       <div className="border-b border-border/60 p-4">
         <Link
           href="/"
+          onClick={onNavigate}
           className="group inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
@@ -140,9 +166,9 @@ export function AtlasSidebar() {
       </div>
 
       <nav className="flex-1 space-y-6 overflow-y-auto p-3">
-        <Section label="Workspace" items={primary} />
-        <Section label="Library" items={library} />
-        <Section label="Organize" items={organize} />
+        <Section label="Workspace" items={primary} onNavigate={onNavigate} />
+        <Section label="Library" items={library} onNavigate={onNavigate} />
+        <Section label="Organize" items={organize} onNavigate={onNavigate} />
 
         <div className="space-y-1">
           <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">

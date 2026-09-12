@@ -491,10 +491,10 @@ export function BotForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="min-w-0 space-y-6 p-4 pb-24 lg:p-6 lg:pb-6"
+      className="min-w-0 space-y-5 p-3 pb-28 sm:space-y-6 sm:p-4 lg:p-6 lg:pb-6"
     >
       {/* Header Actions */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
         <input
           type="file"
           id="import-card"
@@ -506,7 +506,7 @@ export function BotForm({
           type="button"
           variant="outline"
           size="sm"
-          className="w-full cursor-pointer sm:w-auto"
+          className="w-full cursor-pointer justify-center"
           onClick={() => document.getElementById("import-card")?.click()}
         >
           <Upload className="mr-2 h-4 w-4" />
@@ -516,7 +516,7 @@ export function BotForm({
           type="button"
           variant="outline"
           size="sm"
-          className="w-full cursor-pointer sm:w-auto"
+          className="w-full cursor-pointer justify-center"
           onClick={handleExport}
           disabled={!name.trim()}
         >
@@ -526,13 +526,13 @@ export function BotForm({
       </div>
 
       {/* Markdown Help */}
-      <Collapsible>
+      {/* <Collapsible>
         <CollapsibleTrigger asChild>
           <button
             type="button"
-            className="flex w-full items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-4 py-3 text-left text-sm transition-colors hover:bg-muted/50 cursor-pointer"
+            className="flex min-w-0 w-full cursor-pointer items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/30 px-3 py-3 text-left text-sm transition-colors hover:bg-muted/50 sm:px-4"
           >
-            <span className="flex items-center gap-2 font-medium">
+            <span className="min-w-0 flex items-center gap-2 font-medium">
               <Info className="h-4 w-4 shrink-0 text-muted-foreground" />
               Markdown editor help
             </span>
@@ -540,8 +540,7 @@ export function BotForm({
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="mt-2 space-y-4 rounded-lg border border-border/60 bg-muted/20 p-4 text-sm">
-            {/* Editor basics */}
+          <div className="mt-2 min-w-0 space-y-4 rounded-xl border border-border/60 bg-muted/20 p-3 text-sm sm:p-4">
             <div className="space-y-2">
               <p className="font-medium">Editor basics</p>
 
@@ -550,7 +549,7 @@ export function BotForm({
                 toolbar or keyboard shortcuts for common formatting.
               </p>
 
-              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-2 sm:grid-cols-2">
                 <div className="rounded-md border bg-background/70 p-3">
                   <p className="text-xs text-muted-foreground">Bold</p>
                   <code className="mt-1 block text-xs">Ctrl/Cmd+B</code>
@@ -575,7 +574,6 @@ export function BotForm({
               </div>
             </div>
 
-            {/* Line breaks */}
             <div className="space-y-2 border-t border-border/60 pt-4">
               <p className="font-medium">Paragraphs and line breaks</p>
 
@@ -611,11 +609,10 @@ export function BotForm({
               </div>
             </div>
 
-            {/* Formatting */}
             <div className="space-y-2 border-t border-border/60 pt-4">
               <p className="font-medium">Formatting</p>
 
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-md border bg-background/70 p-3">
                   <p className="mb-1 flex items-center gap-2 font-medium">
                     <Bold className="h-4 w-4 text-muted-foreground" />
@@ -662,7 +659,6 @@ export function BotForm({
               </ul>
             </div>
 
-            {/* Bot-specific notes */}
             <div className="space-y-2 border-t border-border/60 pt-4">
               <p className="font-medium">Bot fields</p>
 
@@ -687,17 +683,17 @@ export function BotForm({
             </div>
           </div>
         </CollapsibleContent>
-      </Collapsible>
+      </Collapsible> */}
 
       {/* Basic Info */}
-      <Card>
-        <CardHeader>
+      <Card className="min-w-0 overflow-hidden">
+        <CardHeader className="pb-4">
           <CardTitle>Basic Information</CardTitle>
           <CardDescription>
             Core details about your bot character
           </CardDescription>
         </CardHeader>
-        <CardContent className="overflow-hidden space-y-4">
+        <CardContent className="min-w-0 space-y-4 overflow-hidden p-4 sm:p-6">
           {/* Name */}
           <div className="space-y-2">
             <Label htmlFor="name">Name *</Label>
@@ -738,7 +734,7 @@ export function BotForm({
             <RadioGroup
               value={rating}
               onValueChange={(v) => handleRatingChange(v as BotContentRating)}
-              className="flex gap-4"
+              className="flex flex-wrap gap-x-4 gap-y-2"
             >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="SFW" id="sfw" />
@@ -773,57 +769,78 @@ export function BotForm({
                 (optional)
               </span>
             </Label>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="cursor-pointer"
-                disabled={uploadingImage}
-                onClick={() =>
-                  document.getElementById("bot-image-upload")?.click()
-                }
-              >
-                {uploadingImage ? (
-                  <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <Upload className="mr-2 h-3.5 w-3.5" />
+            <div className="rounded-xl border border-border/60 bg-muted/15 p-3">
+              <div
+                className={cn(
+                  "grid min-w-0 gap-3",
+                  imageUrl.trim() && "sm:grid-cols-[5.5rem_minmax(0,1fr)]",
                 )}
-                {imageUrl.trim() ? "Replace image" : "Upload image"}
-              </Button>
-              {imageUrl.trim() && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="cursor-pointer text-destructive"
-                  onClick={handleRemoveImage}
-                >
-                  <Trash2 className="mr-2 h-3.5 w-3.5" /> Remove
-                </Button>
-              )}
-            </div>
-            <Input
-              id="image-url"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://example.com/bot-image.png"
-            />
-            <p className="text-xs text-muted-foreground">
-              You can upload directly or paste an external URL.
-            </p>
-            {imageUrl.trim() && (
-              <div className="mt-2 h-20 w-20 rounded-lg overflow-hidden border border-border/70">
-                <img
-                  src={imageUrl.trim()}
-                  alt="Bot preview"
-                  className="h-full w-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
-                />
+              >
+                {imageUrl.trim() && (
+                  <div className="h-22 w-22 overflow-hidden rounded-xl border border-border/70 bg-muted shadow-sm">
+                    <img
+                      src={imageUrl.trim()}
+                      alt="Bot preview"
+                      className="h-full w-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  </div>
+                )}
+
+                <div className="min-w-0 space-y-3">
+                  <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className={cn(
+                        "w-full cursor-pointer justify-center",
+                        !imageUrl.trim() && "col-span-2 sm:col-span-1",
+                      )}
+                      disabled={uploadingImage}
+                      onClick={() =>
+                        document.getElementById("bot-image-upload")?.click()
+                      }
+                    >
+                      {uploadingImage ? (
+                        <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Upload className="mr-2 h-3.5 w-3.5" />
+                      )}
+                      {imageUrl.trim() ? "Replace image" : "Upload image"}
+                    </Button>
+
+                    {imageUrl.trim() && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="w-full cursor-pointer justify-center border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                        onClick={handleRemoveImage}
+                      >
+                        <Trash2 className="mr-2 h-3.5 w-3.5" />
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Input
+                      id="image-url"
+                      value={imageUrl}
+                      onChange={(e) => setImageUrl(e.target.value)}
+                      placeholder="https://example.com/bot-image.png"
+                      className="min-w-0"
+                    />
+                    <p className="text-xs leading-5 text-muted-foreground">
+                      Upload an image or paste an external URL.
+                    </p>
+                  </div>
+                </div>
               </div>
-            )}
+            </div>
           </div>
 
           {/* Tags */}
@@ -841,7 +858,7 @@ export function BotForm({
       </Card>
 
       {/* Character Fields */}
-      <Card>
+      <Card className="min-w-0 overflow-hidden">
         <CardHeader>
           <CardTitle>Character Definition</CardTitle>
           <CardDescription>
@@ -849,10 +866,10 @@ export function BotForm({
             and {"{{user}}"} variables.
           </CardDescription>
         </CardHeader>
-        <CardContent className="overflow-hidden space-y-6">
+        <CardContent className="min-w-0 space-y-6 overflow-hidden p-4 sm:p-6">
           {/* Personality */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
+            <div className="flex min-w-0 flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
               <Label htmlFor="personality">Personality</Label>
               <TokenCounter text={personality} fieldName="Personality" />
             </div>
@@ -870,7 +887,7 @@ export function BotForm({
 
           {/* Scenario */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
+            <div className="flex min-w-0 flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
               <Label htmlFor="scenario">Scenario</Label>
               <TokenCounter text={scenario} fieldName="Scenario" />
             </div>
@@ -887,7 +904,7 @@ export function BotForm({
 
           {/* Initial Message */}
           <div className="space-y-2">
-            <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex min-w-0 flex-col gap-1.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-2">
               <Label>Initial Message(s)</Label>
               <TokenCounter
                 text={initialMessages[selectedInitialMessageIndex] || ""}
@@ -897,7 +914,7 @@ export function BotForm({
             <div className="space-y-3 rounded-lg border p-3">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap gap-2">
+                  <div className="-mx-1 flex min-w-0 gap-2 overflow-x-auto overscroll-x-contain px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     {initialMessages.map((_, index) => {
                       const isActive = index === selectedInitialMessageIndex;
 
@@ -907,7 +924,7 @@ export function BotForm({
                           type="button"
                           variant={isActive ? "secondary" : "outline"}
                           size="sm"
-                          className="h-8 cursor-pointer px-3"
+                          className="h-8 shrink-0 cursor-pointer px-3"
                           onClick={() => setSelectedInitialMessageIndex(index)}
                         >
                           Message {index + 1}
@@ -986,7 +1003,7 @@ export function BotForm({
 
           {/* Example Dialogues */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
+            <div className="flex min-w-0 flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
               <Label htmlFor="example-dialogues">Example Dialogues</Label>
               <TokenCounter
                 text={exampleDialogues}
@@ -1017,8 +1034,8 @@ export function BotForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between gap-4 rounded-lg border p-3">
-            <div className="space-y-1">
+          <div className="flex min-w-0 items-start justify-between gap-4 rounded-xl border p-3">
+            <div className="min-w-0 space-y-1">
               <Label className="text-sm font-medium">
                 Hide sensitive fields
               </Label>
@@ -1050,14 +1067,14 @@ export function BotForm({
           "sticky bottom-0 z-30",
           "-mx-4 flex flex-col gap-3",
           "border-t border-border/80",
-          "bg-background/95 px-4 py-3",
+          "bg-background/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]",
           "shadow-[0_-8px_24px_rgba(0,0,0,0.12)] backdrop-blur",
           "sm:flex-row sm:items-center sm:justify-between",
           "lg:-mx-6 lg:px-6",
         )}
       >
-        <div className="flex w-full gap-2 sm:w-auto">
-          {isEditing && onDelete && (
+        {isEditing && onDelete ? (
+          <div className="flex w-full gap-2 sm:w-auto">
             <Button
               type="button"
               variant="destructive"
@@ -1067,8 +1084,10 @@ export function BotForm({
               <Trash2 className="mr-2 h-4 w-4" />
               Delete Bot
             </Button>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="hidden sm:block" aria-hidden="true" />
+        )}
 
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
           <Button

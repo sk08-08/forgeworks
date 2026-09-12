@@ -60,23 +60,23 @@ export function BotDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100%-1rem)] sm:max-w-md max-h-[85vh] p-0 flex flex-col overflow-hidden">
+      <DialogContent className="flex max-h-[calc(100dvh-1rem)] min-h-0 w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-col overflow-hidden p-0 sm:max-w-lg">
         {/* Image container — fixed height, never overlaps text */}
         {imgSrc && (
-          <div className="w-full h-40 sm:h-48 bg-muted shrink-0 relative">
+          <div className="relative h-40 w-full shrink-0 bg-muted sm:h-52">
             <img
               src={imgSrc}
               alt={bot.name}
-              className="absolute inset-0 w-full h-full object-contain"
+              className="absolute inset-0 h-full w-full object-contain"
             />
           </div>
         )}
 
         {/* Content area — starts strictly below image, scrolls within remaining height */}
-        <div className="flex-1 overflow-y-auto px-5 pt-4 pb-5 space-y-4">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overflow-x-hidden px-4 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-4 sm:px-5 sm:pb-5">
           {/* Header */}
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-lg">
+          <DialogHeader className="min-w-0 text-left">
+            <DialogTitle className="flex min-w-0 flex-wrap items-center gap-2 break-words pr-6 text-lg">
               {bot.name}
               {bot.rating && (
                 <Badge
@@ -114,7 +114,7 @@ export function BotDetailModal({
             </p>
             <MarkdownRenderer
               content={description}
-              className="text-sm text-foreground/90 [&>*:last-child]:mb-0"
+              className="min-w-0 break-words text-sm text-foreground/90 [&>*:last-child]:mb-0 [&_a]:break-all [&_code]:break-words [&_pre]:max-w-full [&_pre]:overflow-x-auto"
             />
           </div>
 
@@ -126,7 +126,7 @@ export function BotDetailModal({
               </p>
               <MarkdownRenderer
                 content={bot.personality}
-                className="text-sm text-foreground/80 [&>*:last-child]:mb-0"
+                className="min-w-0 break-words text-sm text-foreground/80 [&>*:last-child]:mb-0 [&_a]:break-all [&_code]:break-words [&_pre]:max-w-full [&_pre]:overflow-x-auto"
               />
             </div>
           )}
@@ -138,7 +138,7 @@ export function BotDetailModal({
               </p>
               <MarkdownRenderer
                 content={bot.scenario}
-                className="text-sm text-foreground/80 [&>*:last-child]:mb-0"
+                className="min-w-0 break-words text-sm text-foreground/80 [&>*:last-child]:mb-0 [&_a]:break-all [&_code]:break-words [&_pre]:max-w-full [&_pre]:overflow-x-auto"
               />
             </div>
           )}
@@ -150,7 +150,7 @@ export function BotDetailModal({
               </p>
               <MarkdownRenderer
                 content={bot.firstMessage}
-                className="text-sm text-foreground/80 [&>*:last-child]:mb-0"
+                className="min-w-0 break-words text-sm text-foreground/80 [&>*:last-child]:mb-0 [&_a]:break-all [&_code]:break-words [&_pre]:max-w-full [&_pre]:overflow-x-auto"
               />
             </div>
           )}
@@ -165,7 +165,7 @@ export function BotDetailModal({
                 {alternateGreetings.map((message, index) => (
                   <div
                     key={index}
-                    className="rounded-lg border bg-muted/20 p-3"
+                    className="min-w-0 rounded-xl border bg-muted/20 p-3"
                   >
                     <p className="mb-1 text-[10px] font-medium text-muted-foreground">
                       Greeting {index + 2}
@@ -173,7 +173,7 @@ export function BotDetailModal({
 
                     <MarkdownRenderer
                       content={message}
-                      className="text-sm text-foreground/80 [&>*:last-child]:mb-0"
+                      className="min-w-0 break-words text-sm text-foreground/80 [&>*:last-child]:mb-0 [&_a]:break-all [&_code]:break-words [&_pre]:max-w-full [&_pre]:overflow-x-auto"
                     />
                   </div>
                 ))}
@@ -188,7 +188,7 @@ export function BotDetailModal({
               </p>
               <MarkdownRenderer
                 content={bot.exampleDialogues}
-                className="text-sm text-foreground/80 [&>*:last-child]:mb-0"
+                className="min-w-0 break-words text-sm text-foreground/80 [&>*:last-child]:mb-0 [&_a]:break-all [&_code]:break-words [&_pre]:max-w-full [&_pre]:overflow-x-auto"
               />
             </div>
           )}

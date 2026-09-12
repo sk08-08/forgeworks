@@ -723,7 +723,7 @@ export function CommunitySubmissionDialog({
         id="community-submission-dialog"
         className="flex max-h-[calc(100dvh-2rem)] flex-col overflow-visible sm:max-w-4xl"
       >
-        <DialogHeader>
+        <DialogHeader className="shrink-0 text-left">
           <DialogTitle className="flex items-center gap-2">
             {mode === "record_create" ? (
               <Archive className="h-5 w-5 text-primary" />
@@ -749,8 +749,8 @@ export function CommunitySubmissionDialog({
           <div className="space-y-6 py-1">
             {isRecordMode && (
               <>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2 sm:col-span-2">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="community-record-title">Title</Label>
 
                     <Input
@@ -775,7 +775,7 @@ export function CommunitySubmissionDialog({
                     </div>
                   </div>
 
-                  <div className="space-y-2 sm:col-span-2">
+                  <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="community-record-summary">Summary</Label>
 
                     <Textarea
@@ -960,7 +960,7 @@ export function CommunitySubmissionDialog({
             )}
 
             {mode === "record_create" && (
-              <section className="rounded-2xl border border-border/60 bg-muted/[0.12] p-4 sm:p-5">
+              <section className="rounded-2xl border border-border/60 bg-muted/[0.12] p-3 sm:p-4 sm:p-5">
                 <div className="mb-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-sm font-semibold">Primary source</p>
@@ -974,7 +974,7 @@ export function CommunitySubmissionDialog({
                   </p>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="community-source-name">Source name</Label>
 
@@ -1010,7 +1010,7 @@ export function CommunitySubmissionDialog({
                     </Select>
                   </div>
 
-                  <div className="space-y-2 sm:col-span-2">
+                  <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="community-source-url">Source URL</Label>
 
                     <Input
@@ -1051,7 +1051,7 @@ export function CommunitySubmissionDialog({
                     />
                   </div>
 
-                  <div className="space-y-2 sm:col-span-2">
+                  <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="community-source-note">
                       Why is this source useful?
                     </Label>
@@ -1071,7 +1071,7 @@ export function CommunitySubmissionDialog({
 
             {mode === "source" && (
               <>
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="community-source-name">Source name</Label>
 
@@ -1107,7 +1107,7 @@ export function CommunitySubmissionDialog({
                     </Select>
                   </div>
 
-                  <div className="space-y-2 sm:col-span-2">
+                  <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="community-source-url">Source URL</Label>
 
                     <Input
@@ -1148,7 +1148,7 @@ export function CommunitySubmissionDialog({
                     />
                   </div>
 
-                  <div className="space-y-2 sm:col-span-2">
+                  <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="community-source-note">
                       Why is this source useful?
                     </Label>
@@ -1168,7 +1168,7 @@ export function CommunitySubmissionDialog({
 
             {isTimelineMode && (
               <>
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="community-update-title">Update title</Label>
 
@@ -1294,7 +1294,7 @@ export function CommunitySubmissionDialog({
           <Button
             type="button"
             variant="outline"
-            className="cursor-pointer"
+            className="w-full cursor-pointer sm:w-auto"
             disabled={submitting}
             onClick={() => handleOpenChange(false)}
           >
@@ -1303,7 +1303,7 @@ export function CommunitySubmissionDialog({
 
           <Button
             type="button"
-            className="cursor-pointer"
+            className="w-full cursor-pointer sm:w-auto"
             disabled={submitting}
             onClick={handleSubmit}
           >

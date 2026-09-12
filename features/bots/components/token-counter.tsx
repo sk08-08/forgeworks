@@ -62,7 +62,12 @@ export function TokenCounter({
   };
 
   return (
-    <div className={cn("flex flex-wrap items-center gap-3 text-xs", className)}>
+    <div
+      className={cn(
+        "flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5 text-xs",
+        className,
+      )}
+    >
       {/* Token count */}
       <Tooltip>
         <TooltipTrigger asChild>
@@ -194,25 +199,33 @@ export function TokenSummary({
   };
 
   return (
-    <Card className={cn("transition-colors", getTotalColor())}>
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between">
+    <Card
+      className={cn(
+        "min-w-0 overflow-hidden transition-colors",
+        getTotalColor(),
+      )}
+    >
+      <CardContent className="p-3 sm:p-4">
+        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h3 className="text-sm font-medium">Total Token Count</h3>
             <p className="mt-1 text-2xl font-bold">
               {totals.total.toLocaleString()}
             </p>
           </div>
-          <div className="text-right">
+          <div className="min-w-0 sm:text-right">
             {totals.validation.isValid ? (
-              <Badge variant="outline" className="border-success text-success">
+              <Badge
+                variant="outline"
+                className="max-w-full whitespace-normal border-success text-success"
+              >
                 <CheckCircle className="mr-1 h-3 w-3" />
                 All Variables Valid
               </Badge>
             ) : (
               <Badge
                 variant="outline"
-                className="border-destructive text-destructive"
+                className="max-w-full whitespace-normal border-destructive text-destructive"
               >
                 <AlertCircle className="mr-1 h-3 w-3" />
                 {totals.validation.invalidVariables.length} Invalid Variable(s)
@@ -222,13 +235,15 @@ export function TokenSummary({
         </div>
 
         {/* Breakdown */}
-        <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+        <div className="mt-4 grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
           {totals.fieldCounts.map((field) => (
             <div
               key={field.name}
-              className="flex items-center justify-between rounded bg-background/50 px-2 py-1"
+              className="flex min-w-0 items-center justify-between gap-3 rounded-lg bg-background/50 px-2.5 py-2"
             >
-              <span className="text-muted-foreground">{field.name}</span>
+              <span className="min-w-0 break-words text-muted-foreground">
+                {field.name}
+              </span>
               <span className="font-medium">
                 {field.tokens.toLocaleString()}
               </span>
@@ -242,7 +257,7 @@ export function TokenSummary({
             {totals.validation.warnings.map((warning, i) => (
               <p
                 key={i}
-                className="flex items-center gap-1.5 text-xs text-muted-foreground"
+                className="flex min-w-0 items-start gap-1.5 break-words text-xs text-muted-foreground"
               >
                 <AlertCircle className="h-3 w-3 text-warning" />
                 {warning}

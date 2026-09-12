@@ -119,8 +119,8 @@ export function CommunityStaffControlsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden sm:max-w-2xl">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[calc(100dvh-1rem)] min-h-0 w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-col overflow-hidden sm:max-w-2xl">
+        <DialogHeader className="shrink-0 text-left">
           <DialogTitle className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-primary" />
             Staff controls
@@ -131,9 +131,9 @@ export function CommunityStaffControlsDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto pr-1">
+        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overflow-x-hidden pr-1">
           <section className="rounded-2xl border border-border/60 bg-muted/[0.12] p-4">
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label>Status</Label>
                 <Select
@@ -187,7 +187,7 @@ export function CommunityStaffControlsDialog({
                 </Select>
               </div>
 
-              <div className="space-y-2 sm:col-span-2">
+              <div className="space-y-2 md:col-span-2">
                 <Label>Impact</Label>
                 <Select
                   value={impact}
@@ -241,8 +241,8 @@ export function CommunityStaffControlsDialog({
             </p>
 
             <div className="mt-4 space-y-4">
-              <div className="flex items-center justify-between gap-4 rounded-xl border border-border/55 bg-background/40 p-3">
-                <div>
+              <div className="flex min-w-0 items-start justify-between gap-4 rounded-xl border border-border/55 bg-background/40 p-3">
+                <div className="min-w-0">
                   <p className="text-sm font-medium">Published</p>
                   <p className="mt-0.5 text-xs text-muted-foreground">
                     {status === "archived"
@@ -263,8 +263,8 @@ export function CommunityStaffControlsDialog({
                 />
               </div>
 
-              <div className="flex items-center justify-between gap-4 rounded-xl border border-border/55 bg-background/40 p-3">
-                <div>
+              <div className="flex min-w-0 items-start justify-between gap-4 rounded-xl border border-border/55 bg-background/40 p-3">
+                <div className="min-w-0">
                   <p className="text-sm font-medium">Featured</p>
                   <p className="mt-0.5 text-xs text-muted-foreground">
                     {published
@@ -298,13 +298,13 @@ export function CommunityStaffControlsDialog({
           </section>
         </div>
 
-        <DialogFooter className="shrink-0 border-t border-border/60 pt-4">
+        <DialogFooter className="shrink-0 border-t border-border/60 pt-4 sm:gap-2">
           <Button
             type="button"
             variant="outline"
             disabled={saving}
             onClick={() => onOpenChange(false)}
-            className="cursor-pointer"
+            className="w-full cursor-pointer sm:w-auto"
           >
             Cancel
           </Button>
@@ -312,7 +312,7 @@ export function CommunityStaffControlsDialog({
             type="button"
             disabled={saving}
             onClick={save}
-            className="cursor-pointer"
+            className="w-full cursor-pointer sm:w-auto"
           >
             {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Save controls

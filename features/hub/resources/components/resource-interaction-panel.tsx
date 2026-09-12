@@ -272,14 +272,14 @@ export function ResourceInteractionPanel({
 
   return (
     <>
-      <section className="relative rounded-3xl border border-primary/15 bg-primary/[0.045] p-5 sm:p-6">
+      <section className="relative min-w-0 overflow-hidden rounded-3xl border border-primary/15 bg-primary/[0.045] p-4 sm:p-6">
         <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]">
           <div className="absolute -right-20 -top-20 h-48 w-48 rounded-full bg-primary/10 blur-3xl" />
 
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_20%,hsl(var(--primary)/0.05),transparent_32%)]" />
         </div>
 
-        <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+        <div className="relative flex min-w-0 flex-col gap-5 md:flex-row md:items-center md:justify-between md:gap-6">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
@@ -296,7 +296,7 @@ export function ResourceInteractionPanel({
             </p>
           </div>
 
-          <div className="relative isolate w-full shrink-0 sm:w-auto">
+          <div className="relative isolate w-full shrink-0 md:w-auto">
             {helpfulAnimation === "liked" && (
               <div
                 aria-hidden="true"
@@ -317,7 +317,7 @@ export function ResourceInteractionPanel({
             <Button
               variant={helpful ? "default" : "outline"}
               className={cn(
-                "group/helpful relative z-10 w-full cursor-pointer overflow-hidden rounded-full px-5 sm:w-auto sm:min-w-[10.75rem]",
+                "group/helpful relative z-10 w-full cursor-pointer overflow-hidden rounded-full px-5 md:w-auto md:min-w-[10.75rem]",
                 "transition-[background-color,border-color,color,box-shadow,transform] duration-300",
                 "active:scale-[0.97]",
                 helpful && "shadow-lg shadow-primary/20",
@@ -360,7 +360,7 @@ export function ResourceInteractionPanel({
       </section>
 
       {userId && contributorUserId === userId && (
-        <section className="mt-4 flex flex-col gap-4 rounded-2xl border border-border/60 bg-card/70 p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <section className="mt-4 flex min-w-0 flex-col gap-4 rounded-2xl border border-border/60 bg-card/70 p-4 shadow-sm md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-sm font-medium">You contributed this resource</p>
 
@@ -371,7 +371,7 @@ export function ResourceInteractionPanel({
 
           <Button
             variant="outline"
-            className="cursor-pointer rounded-full"
+            className="w-full cursor-pointer rounded-full md:w-auto"
             onClick={() => setEditDialogOpen(true)}
           >
             <Pencil className="mr-2 h-4 w-4" />
@@ -380,13 +380,13 @@ export function ResourceInteractionPanel({
         </section>
       )}
 
-      <section className="mt-14">
-        <div className="flex items-center gap-3">
+      <section className="mt-10 min-w-0 sm:mt-14">
+        <div className="flex min-w-0 items-start gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <MessageCircle className="h-4 w-4" />
           </div>
 
-          <div>
+          <div className="min-w-0">
             <h2 className="text-xl font-semibold tracking-tight">Discussion</h2>
 
             <p className="text-sm text-muted-foreground">
@@ -395,7 +395,7 @@ export function ResourceInteractionPanel({
           </div>
         </div>
 
-        <div className="mt-6 rounded-3xl border border-border/70 bg-card/80 p-4 shadow-sm">
+        <div className="mt-6 min-w-0 rounded-3xl border border-border/70 bg-card/80 p-3 shadow-sm sm:p-4">
           <Textarea
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
@@ -409,9 +409,9 @@ export function ResourceInteractionPanel({
             className="resize-none border-0 bg-muted/30 shadow-none focus-visible:ring-1"
           />
 
-          <div className="mt-3 flex justify-end">
+          <div className="mt-3 flex justify-stretch sm:justify-end">
             <Button
-              className="cursor-pointer rounded-full"
+              className="w-full cursor-pointer rounded-full sm:w-auto"
               onClick={submitComment}
               disabled={!userId || !draft.trim() || sending}
             >
@@ -423,7 +423,7 @@ export function ResourceInteractionPanel({
 
         <div className="mt-5 space-y-3">
           {comments.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-border/70 bg-muted/10 p-10 text-center">
+            <div className="rounded-3xl border border-dashed border-border/70 bg-muted/10 p-6 text-center sm:p-10">
               <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-muted text-muted-foreground">
                 <MessageCircle className="h-4 w-4" />
               </div>
@@ -444,7 +444,7 @@ export function ResourceInteractionPanel({
               return (
                 <article
                   key={comment.id}
-                  className="rounded-2xl border border-border/60 bg-card/70 p-4 shadow-sm"
+                  className="min-w-0 rounded-2xl border border-border/60 bg-card/70 p-3 shadow-sm sm:p-4"
                 >
                   <div className="flex items-start gap-3">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
@@ -452,7 +452,7 @@ export function ResourceInteractionPanel({
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex min-w-0 flex-col items-start gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
                         <div>
                           <p className="text-sm font-medium">{name}</p>
 
@@ -468,7 +468,7 @@ export function ResourceInteractionPanel({
                         </time>
                       </div>
 
-                      <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-foreground/90">
+                      <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-6 text-foreground/90">
                         {comment.body}
                       </p>
                     </div>

@@ -206,7 +206,7 @@ function Field({ label, value }: { label: string; value: ReactNode }) {
         {label}
       </p>
 
-      <div className="mt-1 text-sm">{value || "—"}</div>
+      <div className="mt-1 min-w-0 break-words text-sm">{value || "—"}</div>
     </div>
   );
 }
@@ -343,7 +343,7 @@ export function CommunityReviewDialog({
       case "record_edit":
         return (
           <div className="space-y-5">
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 md:grid-cols-2">
               <Field label="Title" value={selected.title} />
               <Field
                 label="Category"
@@ -408,7 +408,7 @@ export function CommunityReviewDialog({
                       </p>
 
                       {selected.source_note && (
-                        <p className="mt-1.5 text-xs leading-5 text-muted-foreground">
+                        <p className="mt-1.5 break-words text-xs leading-5 text-muted-foreground">
                           {selected.source_note}
                         </p>
                       )}
@@ -417,7 +417,7 @@ export function CommunityReviewDialog({
                         href={selected.source_url}
                         target="_blank"
                         rel="noreferrer noopener"
-                        className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+                        className="mt-3 inline-flex max-w-full items-center gap-1.5 break-all text-xs font-medium text-primary hover:underline"
                       >
                         Open source
                         <ExternalLink className="h-3 w-3" />
@@ -447,7 +447,7 @@ export function CommunityReviewDialog({
                 Summary
               </p>
 
-              <p className="mt-2 text-sm leading-6 text-foreground/90">
+              <p className="mt-2 break-words text-sm leading-6 text-foreground/90">
                 {selected.summary || "No summary."}
               </p>
             </section>
@@ -473,7 +473,7 @@ export function CommunityReviewDialog({
       case "source":
         return (
           <div className="space-y-4">
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 md:grid-cols-2">
               <Field label="Source name" value={selected.source_name} />
               <Field label="Type" value={selected.source_type || "community"} />
               <Field
@@ -526,7 +526,7 @@ export function CommunityReviewDialog({
       case "timeline_update":
         return (
           <div className="space-y-4">
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 md:grid-cols-2">
               <Field label="Update title" value={selected.update_title} />
               <Field
                 label="Occurred"
@@ -634,8 +634,8 @@ export function CommunityReviewDialog({
       <DialogContent
         id="community-review-dialog"
         className={cn(
-          "flex max-h-[95dvh] w-[calc(100vw-1rem)] flex-col gap-0 overflow-hidden p-0",
-          "sm:max-h-[92vh] sm:max-w-6xl",
+          "flex max-h-[calc(100dvh-1rem)] min-h-0 w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-col gap-0 overflow-hidden p-0",
+          "sm:max-h-[92dvh] sm:max-w-6xl",
         )}
       >
         <DialogHeader className="shrink-0 border-b border-border/70 px-4 py-4 pr-12 text-left sm:px-6 sm:py-5">
@@ -687,8 +687,8 @@ export function CommunityReviewDialog({
           </div>
         </DialogHeader>
 
-        <div className="grid min-h-0 flex-1 overflow-hidden grid-rows-[auto_minmax(0,1fr)] lg:grid-cols-[19rem_minmax(0,1fr)] lg:grid-rows-1">
-          <aside className="border-b border-border/70 bg-muted/10 lg:min-h-0 lg:border-b-0 lg:border-r">
+        <div className="grid min-h-0 flex-1 overflow-hidden grid-rows-[auto_minmax(0,1fr)] xl:grid-cols-[19rem_minmax(0,1fr)] xl:grid-rows-1">
+          <aside className="border-b border-border/70 bg-muted/10 xl:min-h-0 xl:border-b-0 xl:border-r">
             <div className="flex items-center justify-between px-4 pb-2 pt-3 lg:px-4 lg:pb-3 lg:pt-4">
               <div>
                 <p className="text-sm font-semibold">Review queue</p>
@@ -698,14 +698,14 @@ export function CommunityReviewDialog({
               </div>
             </div>
 
-            <div className="flex gap-2 overflow-x-auto px-3 pb-3 lg:block lg:max-h-full lg:space-y-1 lg:scrollbar-thin lg:overflow-y-auto lg:overflow-x-hidden lg:px-2 lg:pb-4">
+            <div className="flex gap-2 overflow-x-auto px-3 pb-3 xl:block xl:max-h-full xl:space-y-1 xl:scrollbar-thin xl:overflow-y-auto xl:overflow-x-hidden lg:px-2 lg:pb-4">
               {loading && submissions.length === 0 ? (
-                <div className="flex min-h-28 w-full items-center justify-center text-sm text-muted-foreground lg:min-h-48">
+                <div className="flex min-h-28 w-full items-center justify-center text-sm text-muted-foreground xl:min-h-48">
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Loading...
                 </div>
               ) : submissions.length === 0 ? (
-                <div className="flex min-h-28 w-full flex-col items-center justify-center rounded-xl border border-dashed border-border/65 px-4 text-center lg:min-h-48">
+                <div className="flex min-h-28 w-full flex-col items-center justify-center rounded-xl border border-dashed border-border/65 px-4 text-center xl:min-h-48">
                   <Check className="mb-2 h-5 w-5 text-emerald-500" />
                   <p className="text-sm font-medium">Queue is clear</p>
                   <p className="mt-1 max-w-44 text-xs text-muted-foreground">
@@ -812,7 +812,7 @@ export function CommunityReviewDialog({
                 </div>
               </div>
             ) : (
-              <div className="mx-auto w-full max-w-4xl space-y-5 p-4 sm:p-5 lg:p-6">
+              <div className="mx-auto w-full max-w-4xl space-y-5 p-3 sm:p-5 xl:p-6">
                 <section className="overflow-hidden rounded-2xl border border-border/70 bg-card">
                   <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
                     <div className="flex min-w-0 items-start gap-3">
@@ -1008,7 +1008,7 @@ export function CommunityReviewDialog({
 
         <DialogFooter
           className={cn(
-            "shrink-0 border-t border-border/70 bg-background/95 px-4 py-3 backdrop-blur",
+            "shrink-0 border-t border-border/70 bg-background/95 px-3 py-3 backdrop-blur",
             "sm:px-6",
           )}
         >

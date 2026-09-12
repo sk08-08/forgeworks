@@ -87,7 +87,7 @@ export async function AtlasHomeView() {
   const recent = overview.success ? overview.data.recent : [];
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-8 p-4 pb-16 sm:p-6 md:p-8 lg:p-10">
+    <div className="mx-auto w-full max-w-[92rem] space-y-8 p-3 pb-20 sm:p-6 md:p-8 lg:p-10">
       <section className="relative isolate overflow-hidden rounded-[2rem] border border-border/70 bg-card/90 shadow-[0_24px_80px_-36px_rgba(0,0,0,0.45)]">
         <div className="pointer-events-none absolute inset-0 -z-20 bg-linear-to-br from-primary/[0.09] via-background/10 to-fuchsia-500/[0.05]" />
 
@@ -98,8 +98,8 @@ export async function AtlasHomeView() {
           <div className="absolute inset-0 opacity-[0.025] [background-image:linear-gradient(to_right,currentColor_1px,transparent_1px),linear-gradient(to_bottom,currentColor_1px,transparent_1px)] [background-size:42px_42px]" />
         </div>
 
-        <div className="grid min-h-[26rem] lg:grid-cols-[minmax(0,1.08fr)_minmax(23rem,0.92fr)]">
-          <div className="flex min-w-0 flex-col justify-center p-6 sm:p-8 lg:p-10 xl:p-12">
+        <div className="grid xl:min-h-[26rem] xl:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)]">
+          <div className="flex min-w-0 flex-col justify-center p-5 sm:p-8 lg:p-10 xl:p-12">
             <div className="mb-5 flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary shadow-sm">
                 <Network className="h-5 w-5" />
@@ -124,12 +124,14 @@ export async function AtlasHomeView() {
             </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-              <CreateEntryDialog />
+              <div className="w-full sm:w-auto [&_button]:w-full sm:[&_button]:w-auto">
+                <CreateEntryDialog />
+              </div>
 
               <Button
                 asChild
                 variant="outline"
-                className="cursor-pointer rounded-xl border-border/70 bg-background/60 hover:bg-muted/60"
+                className="w-full cursor-pointer rounded-xl border-border/70 bg-background/60 hover:bg-muted/60 sm:w-auto"
               >
                 <Link href="/atlas/lorebooks">
                   <NotebookTabs className="mr-2 h-4 w-4" />
@@ -156,7 +158,7 @@ export async function AtlasHomeView() {
             </div>
           </div>
 
-          <div className="relative flex min-h-[22rem] items-center border-t border-border/60 bg-background/30 p-5 sm:p-7 lg:border-l lg:border-t-0 lg:p-8">
+          <div className="relative flex min-h-[18rem] items-center border-t border-border/60 bg-background/30 p-5 sm:min-h-[20rem] sm:p-7 xl:min-h-[22rem] xl:border-l xl:border-t-0 xl:p-8">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(124,58,237,0.09),transparent_65%)]" />
 
             <div className="relative mx-auto w-full max-w-md">
@@ -187,7 +189,9 @@ export async function AtlasHomeView() {
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium">Wednesday Addams</p>
+                      <p className="break-words text-sm font-medium">
+                        Wednesday Addams
+                      </p>
                       <p className="text-xs text-muted-foreground">
                         Character Entry
                       </p>
@@ -202,7 +206,7 @@ export async function AtlasHomeView() {
                         <Globe2 className="h-4 w-4 text-primary" />
 
                         <div className="min-w-0">
-                          <p className="text-sm font-medium">
+                          <p className="break-words text-sm font-medium">
                             Wednesday Universe
                           </p>
                           <p className="text-xs text-muted-foreground">World</p>
@@ -273,7 +277,7 @@ export async function AtlasHomeView() {
             </p>
           </div>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
           {quickCards.map(({ key, title, description, icon: Icon, href }) => (
             <Link key={title} href={href} className="group min-w-0">
               <Card className="h-full overflow-hidden border-border/70 bg-card/80 shadow-sm transition-all duration-200 group-hover:-translate-y-0.5 group-hover:border-primary/35 group-hover:bg-card group-hover:shadow-md">
@@ -350,12 +354,12 @@ export async function AtlasHomeView() {
                   it later without committing to a World first.
                 </p>
 
-                <div className="mt-5">
+                <div className="mt-5 w-full sm:w-auto [&_button]:w-full sm:[&_button]:w-auto">
                   <CreateEntryDialog />
                 </div>
               </div>
             ) : (
-              <div className="max-h-[32rem] overflow-y-auto">
+              <div>
                 <div className="divide-y divide-border/60">
                   {recent.map((item) => (
                     <Link
@@ -412,7 +416,7 @@ export async function AtlasHomeView() {
             </p>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-4">
             <div className="rounded-2xl border border-border/65 bg-card/65 p-4 transition-colors hover:border-primary/20 hover:bg-card/85">
               <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <LibraryBig className="h-4 w-4" />

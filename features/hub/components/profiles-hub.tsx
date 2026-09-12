@@ -248,7 +248,7 @@ function ProfileResultCard({ profile }: { profile: ProfileCard }) {
           )}
         </div>
 
-        <div className="flex flex-1 flex-col px-5 pb-5 pt-0">
+        <div className="flex min-w-0 flex-1 flex-col px-4 pb-4 pt-0 sm:px-5 sm:pb-5">
           <div className="-mt-8 flex items-end justify-between gap-3">
             <Avatar
               className="h-16 w-16 border-[3px] border-card shadow-md transition-transform duration-300 group-hover:scale-[1.03]"
@@ -271,7 +271,7 @@ function ProfileResultCard({ profile }: { profile: ProfileCard }) {
           <div className="mt-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <h3 className="line-clamp-1 text-lg font-semibold tracking-tight">
+                <h3 className="line-clamp-2 break-words text-lg font-semibold tracking-tight">
                   {displayName}
                 </h3>
                 <p className="mt-1 truncate text-sm text-muted-foreground">
@@ -328,14 +328,14 @@ function ProfileResultCard({ profile }: { profile: ProfileCard }) {
               {visibleSpecialties.map((specialty) => (
                 <span
                   key={specialty}
-                  className="rounded-full border border-border/55 bg-muted/25 px-2.5 py-1 text-[10px] font-medium text-muted-foreground"
+                  className="max-w-full truncate rounded-full border border-border/55 bg-muted/25 px-2.5 py-1 text-[10px] font-medium text-muted-foreground"
                 >
                   {specialty}
                 </span>
               ))}
 
               {remainingSpecialties > 0 && (
-                <span className="rounded-full border border-border/55 bg-muted/25 px-2.5 py-1 text-[10px] font-medium text-muted-foreground">
+                <span className="max-w-full truncate rounded-full border border-border/55 bg-muted/25 px-2.5 py-1 text-[10px] font-medium text-muted-foreground">
                   +{remainingSpecialties}
                 </span>
               )}
@@ -352,7 +352,7 @@ function ProfileResultCard({ profile }: { profile: ProfileCard }) {
             )}
 
           <div className="mt-auto border-t border-border/45 pt-4">
-            <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
+            <div className="flex min-w-0 items-center justify-between gap-3 text-xs text-muted-foreground">
               <span className="inline-flex min-w-0 items-center gap-1.5">
                 <CalendarDays className="h-3.5 w-3.5 shrink-0" />
                 <span className="truncate">
@@ -360,7 +360,7 @@ function ProfileResultCard({ profile }: { profile: ProfileCard }) {
                 </span>
               </span>
 
-              <span className="font-medium text-foreground transition-colors group-hover:text-primary">
+              <span className="hidden shrink-0 font-medium text-foreground transition-colors group-hover:text-primary sm:inline">
                 View profile
               </span>
             </div>
@@ -612,21 +612,21 @@ export function ProfilesHub() {
   };
 
   return (
-    <div className="relative min-h-full px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8">
-      <div className="relative mx-auto max-w-7xl space-y-7">
+    <div className="relative min-h-full min-w-0 overflow-x-clip px-3 py-4 sm:px-6 sm:py-7 lg:px-8 lg:py-8">
+      <div className="relative mx-auto w-full max-w-[92rem] space-y-7">
         <section className="profiles-hero group/people-hero rounded-[2rem] border border-border/65 shadow-xl shadow-black/5 dark:shadow-primary/5">
-          <div className="profiles-hero-grid hidden lg:block" />
+          <div className="profiles-hero-grid hidden xl:block" />
           <div className="profiles-orb profiles-orb-a hidden sm:block" />
-          <div className="profiles-orb profiles-orb-b hidden lg:block" />
+          <div className="profiles-orb profiles-orb-b hidden xl:block" />
 
-          <div className="relative z-10 grid min-h-[28rem] items-center gap-10 px-6 py-10 sm:px-10 sm:py-12 lg:grid-cols-[minmax(0,1.08fr)_minmax(20rem,0.92fr)] lg:px-12 lg:py-12 xl:gap-14">
+          <div className="relative z-10 grid min-h-[28rem] items-center gap-10 px-6 py-10 sm:px-10 sm:py-12 xl:grid-cols-[minmax(0,1.08fr)_minmax(20rem,0.92fr)] xl:px-12 xl:py-12 xl:gap-14">
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary shadow-sm">
                 <UsersRound className="h-3.5 w-3.5" />
                 People
               </div>
 
-              <h1 className="mt-5 max-w-3xl text-balance text-4xl font-bold tracking-tight sm:text-5xl lg:text-[3.4rem] lg:leading-[1.02]">
+              <h1 className="mt-5 max-w-3xl text-balance text-3xl font-bold tracking-tight sm:text-5xl xl:text-[3.4rem] xl:leading-[1.02]">
                 Meet the people behind
                 <span className="text-primary"> Forgeworks.</span>
               </h1>
@@ -643,10 +643,10 @@ export function ProfilesHub() {
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder="Search creators, taglines, locations..."
-                  className="profiles-search-input h-12 w-full pl-11 pr-14"
+                  className="profiles-search-input h-12 w-full min-w-0 pl-11 pr-11 sm:pr-14"
                 />
 
-                <kbd className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-md border border-border/70 bg-muted/45 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+                <kbd className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded-md border border-border/70 bg-muted/45 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:block">
                   /
                 </kbd>
               </div>
@@ -679,7 +679,7 @@ export function ProfilesHub() {
               </div>
             </div>
 
-            <div className="hidden lg:block">
+            <div className="hidden xl:block">
               <div className="profiles-constellation relative mx-auto h-[22rem] w-full max-w-[27rem]">
                 <div className="profiles-constellation-glow" />
 
@@ -797,7 +797,7 @@ export function ProfilesHub() {
             </div>
           </div>
 
-          <div className="relative z-10 flex flex-col gap-3 border-t border-border/50 bg-background/20 px-6 py-4 sm:px-10 lg:flex-row lg:items-center lg:justify-between lg:px-12">
+          <div className="relative z-10 flex flex-col gap-3 border-t border-border/50 bg-background/20 px-6 py-4 sm:px-10 xl:flex-row xl:items-center xl:justify-between xl:px-12">
             <div className="flex max-w-2xl items-start gap-2 text-[11px] leading-relaxed text-muted-foreground sm:text-xs">
               <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
               <p>
@@ -829,8 +829,8 @@ export function ProfilesHub() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-              <div className="flex max-w-full gap-1 overflow-x-auto rounded-full border border-border/55 bg-background/75 p-1 shadow-inner shadow-black/[0.02]">
+            <div className="flex min-w-0 flex-col gap-3 xl:flex-row xl:items-center">
+              <div className="flex min-w-0 max-w-full gap-1 overflow-x-auto overscroll-x-contain rounded-full border border-border/55 bg-background/75 p-1 shadow-inner shadow-black/[0.02] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {SORT_OPTIONS.map((option) => {
                   const Icon = option.icon;
                   const active = sortMode === option.value;
@@ -855,7 +855,7 @@ export function ProfilesHub() {
                 })}
               </div>
 
-              <div className="flex max-w-full gap-1 overflow-x-auto">
+              <div className="flex min-w-0 max-w-full gap-1 overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {FILTER_OPTIONS.map((option) => {
                   const active = filterMode === option.value;
 
@@ -916,13 +916,13 @@ export function ProfilesHub() {
           </div>
 
           {loadingInitial ? (
-            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
               {Array.from({ length: 6 }).map((_, index) => (
                 <ProfileSkeleton key={index} />
               ))}
             </div>
           ) : error ? (
-            <div className="rounded-[1.75rem] border border-destructive/20 bg-destructive/[0.03] p-8 text-center">
+            <div className="rounded-[1.75rem] border border-destructive/20 bg-destructive/[0.03] p-5 text-center sm:p-8">
               <p className="text-sm font-medium">
                 We couldn&apos;t load creator profiles.
               </p>
@@ -938,7 +938,7 @@ export function ProfilesHub() {
               </Button>
             </div>
           ) : profiles.length === 0 ? (
-            <div className="rounded-[1.75rem] border border-dashed border-border/65 bg-card/45 px-6 py-16 text-center">
+            <div className="rounded-[1.75rem] border border-dashed border-border/65 bg-card/45 px-4 py-12 text-center sm:px-6 sm:py-16">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                 <Compass className="h-5 w-5" />
               </div>
@@ -963,7 +963,7 @@ export function ProfilesHub() {
             </div>
           ) : (
             <>
-              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                 {profiles.map((profile) => (
                   <ProfileResultCard key={profile.id} profile={profile} />
                 ))}
@@ -976,7 +976,7 @@ export function ProfilesHub() {
                     variant="outline"
                     size="lg"
                     disabled={loadingMore}
-                    className="min-w-48 cursor-pointer rounded-full bg-background shadow-sm"
+                    className="w-full cursor-pointer rounded-full bg-background shadow-sm sm:w-auto sm:min-w-48"
                     onClick={() => void loadProfiles(false)}
                   >
                     {loadingMore ? (

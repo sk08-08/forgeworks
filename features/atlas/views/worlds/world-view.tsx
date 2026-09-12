@@ -312,62 +312,70 @@ export function WorldView({ worldId }: { worldId: string }) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-6 p-4 pb-28 sm:p-6 md:p-8 lg:p-10">
-      <section className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <Link
-            href="/atlas/worlds"
-            className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" /> All Worlds
-          </Link>
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
-              <Globe2 className="h-5 w-5" />
-            </div>
-            <div className="min-w-0">
-              <h1 className="truncate text-2xl font-bold tracking-tight sm:text-3xl">
-                {world.title}
-              </h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                /{world.slug}
-              </p>
+    <div
+      className="mx-auto w-full max-w-[92rem] space-y-6 p-3 sm:p-6 md:p-8 lg:p-10"
+      style={{
+        paddingBottom: "calc(7rem + env(safe-area-inset-bottom))",
+      }}
+    >
+      <section className="relative isolate overflow-hidden rounded-[1.75rem] border border-border/70 bg-card/70 p-5 shadow-sm sm:p-6 lg:p-7">
+        <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
+        <div className="relative flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <Link
+              href="/atlas/worlds"
+              className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="h-4 w-4" /> All Worlds
+            </Link>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
+                <Globe2 className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="break-words text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
+                  {world.title}
+                </h1>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  /{world.slug}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              variant="outline"
-              className="text-destructive hover:text-destructive cursor-pointer"
-            >
-              <Trash2 className="mr-2 h-4 w-4" /> Delete World
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete {world.title}?</AlertDialogTitle>
-              <AlertDialogDescription>
-                The World and its memberships will be removed. Your Entries,
-                Bots, and Lorebooks will not be deleted.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={removeWorld}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90 cursor-pointer"
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                className="text-destructive hover:text-destructive cursor-pointer"
               >
-                Delete World
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+                <Trash2 className="mr-2 h-4 w-4" /> Delete World
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete {world.title}?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  The World and its memberships will be removed. Your Entries,
+                  Bots, and Lorebooks will not be deleted.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={removeWorld}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90 cursor-pointer"
+                >
+                  Delete World
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </section>
 
       <section className="grid gap-3 sm:grid-cols-3">
-        <Card className="border-border/70 bg-card/85">
+        <Card className="border-border/60 bg-card/65 shadow-sm">
           <CardContent className="flex items-center gap-3 p-4">
             <LibraryBig className="h-5 w-5 text-primary" />
             <div>
@@ -376,7 +384,7 @@ export function WorldView({ worldId }: { worldId: string }) {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-border/70 bg-card/85">
+        <Card className="border-border/60 bg-card/65 shadow-sm">
           <CardContent className="flex items-center gap-3 p-4">
             <Bot className="h-5 w-5 text-primary" />
             <div>
@@ -385,7 +393,7 @@ export function WorldView({ worldId }: { worldId: string }) {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-border/70 bg-card/85">
+        <Card className="border-border/60 bg-card/65 shadow-sm">
           <CardContent className="flex items-center gap-3 p-4">
             <Braces className="h-5 w-5 text-primary" />
             <div>
@@ -397,7 +405,7 @@ export function WorldView({ worldId }: { worldId: string }) {
       </section>
 
       <Tabs defaultValue="overview" className="space-y-5">
-        <TabsList className="h-auto w-full justify-start overflow-x-auto rounded-xl bg-muted/35 p-1 sm:w-auto">
+        <TabsList className="h-auto w-full justify-start overflow-x-auto rounded-2xl bg-muted/35 p-1 sm:w-fit">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="entries">
             Entries{" "}
@@ -799,14 +807,28 @@ export function WorldView({ worldId }: { worldId: string }) {
       </Tabs>
 
       {dirty && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/90 p-3 shadow-[0_-10px_30px_-20px_rgba(0,0,0,0.45)] backdrop-blur-xl lg:left-64">
-          <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-1 sm:px-4">
-            <p className="text-sm text-muted-foreground">
-              You have unsaved World changes.
+        <div
+          className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/90 px-3 pt-3 shadow-[0_-10px_30px_-20px_rgba(0,0,0,0.45)] backdrop-blur-xl lg:left-64"
+          style={{
+            paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))",
+          }}
+        >
+          <div className="mx-auto flex max-w-[92rem] items-center justify-between gap-3 px-1 sm:px-4">
+            <p className="min-w-0 text-xs text-muted-foreground sm:text-sm">
+              <span className="sm:hidden">Unsaved changes</span>
+              <span className="hidden sm:inline">
+                You have unsaved World changes.
+              </span>
             </p>
-            <Button onClick={save} disabled={pending || !title.trim()}>
-              <Save className="mr-2 h-4 w-4" />{" "}
-              {pending ? "Saving..." : "Save changes"}
+            <Button
+              onClick={save}
+              disabled={pending || !title.trim()}
+              className="h-10 shrink-0 px-3 sm:px-4"
+            >
+              <Save className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">
+                {pending ? "Saving..." : "Save changes"}
+              </span>
             </Button>
           </div>
         </div>

@@ -1020,8 +1020,8 @@ export function ResourcesHub() {
   };
 
   return (
-    <div className="min-h-full p-4 sm:p-6 md:p-8">
-      <div className="mx-auto max-w-7xl space-y-8">
+    <div className="min-h-full min-w-0 overflow-x-clip p-3 sm:p-6 md:p-8 lg:p-10">
+      <div className="mx-auto w-full max-w-[92rem] space-y-8">
         <Link
           href="/"
           onClick={() => {
@@ -1041,14 +1041,14 @@ export function ResourcesHub() {
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_14%_12%,rgba(255,255,255,0.10),transparent_24%),radial-gradient(circle_at_88%_18%,rgba(245,158,11,0.08),transparent_28%),linear-gradient(to_bottom_right,transparent_35%,rgba(59,130,246,0.035))]" />
           <div className="resources-hero-grid pointer-events-none absolute inset-0" />
 
-          <div className="relative z-10 grid min-h-[28rem] items-center gap-10 px-6 py-10 sm:px-9 sm:py-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(20rem,0.95fr)] lg:px-12 lg:py-14">
+          <div className="relative z-10 grid min-h-[28rem] items-center gap-10 px-6 py-10 sm:px-9 sm:py-12 xl:grid-cols-[minmax(0,1.05fr)_minmax(20rem,0.95fr)] xl:px-12 xl:py-14">
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary backdrop-blur">
                 <BookOpen className="h-3.5 w-3.5" />
                 Forgeworks Library
               </div>
 
-              <h1 className="mt-5 max-w-xl text-balance text-4xl font-bold tracking-tight sm:text-5xl">
+              <h1 className="mt-5 max-w-xl text-balance text-3xl font-bold tracking-tight sm:text-5xl">
                 Everything useful,
                 <span className="text-primary"> in one place.</span>
               </h1>
@@ -1084,7 +1084,7 @@ export function ResourcesHub() {
 
               {authUserId && !canManageResources && (
                 <Button
-                  className="mt-7 w-full cursor-pointer sm:w-auto rounded-full px-5 shadow-md shadow-primary/20"
+                  className="mt-7 w-full cursor-pointer rounded-full px-5 shadow-md shadow-primary/20 sm:w-auto"
                   onClick={() => {
                     setSuggestionTargetEntry(null);
                     setSuggestionDialogOpen(true);
@@ -1097,7 +1097,7 @@ export function ResourcesHub() {
 
               {canManageResources && (
                 <Button
-                  className="mt-7 w-full cursor-pointer sm:w-auto rounded-full px-5 shadow-md shadow-primary/20"
+                  className="mt-7 w-full cursor-pointer rounded-full px-5 shadow-md shadow-primary/20 sm:w-auto"
                   onClick={() => {
                     setSuggestionTargetEntry(null);
                     setSuggestionDialogOpen(true);
@@ -1109,7 +1109,7 @@ export function ResourcesHub() {
               )}
             </div>
 
-            <div className="relative hidden min-h-[21rem] lg:block">
+            <div className="relative hidden min-h-[21rem] xl:block">
               <div
                 className="resources-hero-card absolute left-[8%] top-[6%] w-[15rem] -rotate-[5deg] rounded-2xl border border-white/10 bg-card/75 p-4 shadow-2xl shadow-primary/10 backdrop-blur-xl"
                 style={{
@@ -1191,7 +1191,7 @@ export function ResourcesHub() {
               </div>
             </div>
           </div>
-          <div className="relative z-10 flex flex-col gap-3 border-t border-border/50 bg-background/25 px-6 py-4 backdrop-blur-md sm:px-9 lg:flex-row lg:items-center lg:justify-between lg:px-12">
+          <div className="relative z-10 flex flex-col gap-3 border-t border-border/50 bg-background/25 px-6 py-4 backdrop-blur-md sm:px-9 xl:flex-row xl:items-center xl:justify-between xl:px-12">
             <div className="flex max-w-3xl items-start gap-2 text-[11px] leading-relaxed text-muted-foreground sm:text-xs">
               <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
               <p>
@@ -1234,7 +1234,7 @@ export function ResourcesHub() {
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="grid w-full grid-cols-1 gap-2 sm:flex sm:w-auto sm:flex-wrap">
               <Button
                 size="sm"
                 variant="ghost"
@@ -1267,7 +1267,7 @@ export function ResourcesHub() {
         )}
 
         {loading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             {[0, 1, 2, 3, 4, 5].map((item) => (
               <div
                 key={item}
@@ -1304,7 +1304,7 @@ export function ResourcesHub() {
                   </div>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                   {pinnedEntries.map((entry) => {
                     const section = sections.find(
                       (candidate) => candidate.id === entry.section_id,
@@ -1382,7 +1382,7 @@ export function ResourcesHub() {
                         <div className="mt-5 flex items-end justify-between gap-3 border-t border-border/50 pt-4">
                           <div className="min-w-0 space-y-1">
                             {section && (
-                              <p className="truncate text-xs font-medium">
+                              <p className="line-clamp-1 break-all text-xs font-medium">
                                 {section.title}
                               </p>
                             )}
@@ -1420,7 +1420,7 @@ export function ResourcesHub() {
                   </div>
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                   {sections.map((section, index) => {
                     const active = section.id === selectedSectionId;
                     const SectionIcon =
@@ -1460,7 +1460,7 @@ export function ResourcesHub() {
                             </div>
                             <div className="min-w-0 space-y-2">
                               <div className="flex items-center gap-2">
-                                <h3 className="truncate text-base font-semibold">
+                                <h3 className="line-clamp-2 break-words text-base font-semibold">
                                   {section.title}
                                 </h3>
                                 {canManageResources &&
@@ -1502,7 +1502,7 @@ export function ResourcesHub() {
 
                             <CollapsibleContent>
                               <div
-                                className="mt-1 grid grid-cols-2 gap-1 rounded-xl border border-border/60 bg-muted/20 p-1.5"
+                                className="mt-1 grid grid-cols-1 gap-1 rounded-xl border border-border/60 bg-muted/20 p-1.5 sm:grid-cols-2"
                                 onClick={(event) => event.stopPropagation()}
                               >
                                 <Button
@@ -1720,7 +1720,7 @@ export function ResourcesHub() {
                   </CardContent>
                 </Card>
               ) : (
-                <div className="grid grid-cols-1 gap-4 min-[640px]:grid-cols-2 xl:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                   {visibleEntries.map((entry) => {
                     return (
                       <div key={entry.id} className="min-w-0">
@@ -1826,7 +1826,7 @@ export function ResourcesHub() {
                             </CollapsibleTrigger>
 
                             <CollapsibleContent>
-                              <div className="mt-1 grid grid-cols-2 gap-1 rounded-xl border border-border/60 bg-muted/20 p-1.5">
+                              <div className="mt-1 grid grid-cols-1 gap-1 rounded-xl border border-border/60 bg-muted/20 p-1.5 sm:grid-cols-2">
                                 <Button
                                   variant="ghost"
                                   size="sm"
@@ -1927,7 +1927,7 @@ export function ResourcesHub() {
       </AlertDialog>
 
       <Dialog open={sectionDialogOpen} onOpenChange={setSectionDialogOpen}>
-        <DialogContent className="scrollbar-thin max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+        <DialogContent className="scrollbar-thin max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>
               {editingSectionId ? "Edit category" : "New category"}
@@ -2086,7 +2086,7 @@ export function ResourcesHub() {
         <DialogContent
           id="resources-entry-dialog-content"
           className={cn(
-            "flex max-h-[92vh] flex-col overflow-visible",
+            "flex max-h-[calc(100dvh-1rem)] min-h-0 w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-col overflow-hidden",
             "sm:max-w-4xl",
           )}
         >
@@ -2225,8 +2225,8 @@ export function ResourcesHub() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-center justify-between rounded-xl border border-border/70 px-4 py-3">
-              <div>
+            <div className="flex min-w-0 items-start justify-between gap-4 rounded-xl border border-border/70 px-3 py-3 sm:px-4">
+              <div className="min-w-0">
                 <p className="text-sm font-medium">Pinned by platform</p>
                 <p className="text-xs text-muted-foreground">
                   Feature this resource in Forgeworks Picks.
@@ -2242,8 +2242,8 @@ export function ResourcesHub() {
                 }
               />
             </div>
-            <div className="flex items-center justify-between rounded-xl border border-border/70 px-4 py-3">
-              <div>
+            <div className="flex min-w-0 items-start justify-between gap-4 rounded-xl border border-border/70 px-3 py-3 sm:px-4">
+              <div className="min-w-0">
                 <p className="text-sm font-medium">Published</p>
                 <p className="text-xs text-muted-foreground">
                   Visible to everyone when enabled.

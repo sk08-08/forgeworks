@@ -320,7 +320,7 @@ function KpiCard({
 }) {
   return (
     <Card className="border-border/70 bg-card/90 backdrop-blur">
-      <CardContent className="flex items-center gap-3 p-4">
+      <CardContent className="flex min-w-0 items-center gap-2.5 p-3 sm:gap-3 sm:p-4">
         <div
           className={cn(
             "flex h-10 w-10 items-center justify-center rounded-xl ring-1 ring-inset ring-border/50",
@@ -329,8 +329,10 @@ function KpiCard({
         >
           <Icon className="h-5 w-5 text-foreground" />
         </div>
-        <div>
-          <p className="text-2xl font-bold tracking-tight">{value}</p>
+        <div className="min-w-0">
+          <p className="text-xl font-bold tracking-tight sm:text-2xl">
+            {value}
+          </p>
           <p className="text-xs text-muted-foreground">{label}</p>
         </div>
       </CardContent>
@@ -379,10 +381,10 @@ function ImageLightbox({
         Le quitamos el fondo oscuro por defecto al overlay del Dialog porque nosotros 
         queremos nuestro propio fondo con backdrop-blur
       */}
-      <DialogContent className="max-w-7xl border-none bg-transparent p-0 shadow-none [&>button]:hidden">
+      <DialogContent className="max-h-[100dvh] w-screen max-w-none border-none bg-transparent p-0 shadow-none [&>button]:hidden">
         <DialogTitle className="sr-only">Image Preview</DialogTitle>
 
-        <div className="relative flex h-[90vh] w-full flex-col items-center justify-center outline-none">
+        <div className="relative flex h-[calc(100dvh-1rem)] w-full flex-col items-center justify-center outline-none">
           {/* Botón Cerrar Superior */}
           <button
             onClick={onClose}
@@ -404,7 +406,7 @@ function ImageLightbox({
             <img
               src={images[currentIndex].src}
               alt={images[currentIndex].alt}
-              className="max-h-[80vh] max-w-full object-contain"
+              className="max-h-[78dvh] max-w-full object-contain"
             />
           </div>
 
@@ -932,1108 +934,1128 @@ export function FeedbackInbox() {
   // No access
   if (!loading && !isAdmin) {
     return (
-      <div className="p-4 sm:p-6 md:p-8 lg:p-10">
-        <Card>
-          <CardContent className="p-6 text-center text-muted-foreground">
-            You do not have access to the admin feedback inbox.
-          </CardContent>
-        </Card>
+      <div className="min-w-0 overflow-x-clip p-3 sm:p-6 md:p-8 lg:p-10">
+        <div className="mx-auto w-full max-w-[92rem]">
+          <Card>
+            <CardContent className="p-6 text-center text-muted-foreground">
+              You do not have access to the admin feedback inbox.
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-4 sm:p-6 md:p-8 lg:p-10 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-              Feedback Inbox
-            </h1>
-            <p className="mt-1 text-sm sm:text-base text-muted-foreground">
-              Review and manage user suggestions and bug reports.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {lastRefreshedAt && (
-            <span className="hidden text-xs text-muted-foreground sm:inline">
-              Updated {timeAgo(lastRefreshedAt)}
-            </span>
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            className="cursor-pointer"
-            onClick={() => loadFeedback()}
-            disabled={loading}
-          >
-            <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
-            <span className="ml-2 hidden sm:inline">Refresh</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* KPI Stats */}
-      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
-        <KpiCard label="Total" value={stats.total} icon={MessageSquareMore} />
-        <KpiCard
-          label="Unread"
-          value={stats.unread}
-          icon={EyeOff}
-          accent="bg-amber-500/10"
-        />
-        <KpiCard
-          label="New"
-          value={stats.newCount}
-          icon={CircleDot}
-          accent="bg-blue-500/10"
-        />
-        <KpiCard
-          label="Reviewing"
-          value={stats.reviewing}
-          icon={Clock}
-          accent="bg-amber-500/10"
-        />
-        <KpiCard
-          label="Bugs"
-          value={stats.bugs}
-          icon={Bug}
-          accent="bg-red-500/10"
-        />
-        <KpiCard
-          label="Suggestions"
-          value={stats.suggestions}
-          icon={Lightbulb}
-          accent="bg-emerald-500/10"
-        />
-      </div>
-
-      {/* Filters Bar */}
-      <Card className="border-border/70 bg-card/90 backdrop-blur">
-        <CardContent className="p-4">
-          <div className="flex flex-col gap-3">
-            {/* Search */}
-            <SearchInput
-              value={searchQuery}
-              onChange={(value) => {
-                setSearchQuery(value);
-                setPage(1);
-              }}
-              placeholder="Search feedback by subject, message, or source..."
-              className="w-full"
-              debounce={180}
-              shortcutKey="/"
-            />
-
-            {/* Filter row */}
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Filter className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Filters:</span>
-              </div>
-
-              <Select
-                value={typeFilter}
-                onValueChange={(v) => {
-                  setTypeFilter(v as any);
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger className="w-32.5 h-8 text-xs">
-                  <SelectValue placeholder="Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All types</SelectItem>
-                  <SelectItem value="suggestion">Suggestions</SelectItem>
-                  <SelectItem value="bug">Bug reports</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select
-                value={statusFilter}
-                onValueChange={(v) => {
-                  setStatusFilter(v as any);
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger className="w-35 h-8 text-xs">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All statuses</SelectItem>
-                  <SelectItem value="new">New</SelectItem>
-                  <SelectItem value="reviewing">Reviewing</SelectItem>
-                  <SelectItem value="resolved">Resolved</SelectItem>
-                  <SelectItem value="closed">Closed</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {hasNewFields && (
-                <Select
-                  value={priorityFilter}
-                  onValueChange={(v) => {
-                    setPriorityFilter(v as any);
-                    setPage(1);
-                  }}
-                >
-                  <SelectTrigger className="w-35 h-8 text-xs">
-                    <SelectValue placeholder="Priority" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All priorities</SelectItem>
-                    <SelectItem value="urgent">Urgent</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="low">Low</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-
-              <Select
-                value={assignmentFilter}
-                onValueChange={(value) => {
-                  setAssignmentFilter(value as "all" | "mine" | "unassigned");
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger className="w-40 h-8 text-xs">
-                  <SelectValue placeholder="Assignee" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All assignees</SelectItem>
-                  <SelectItem value="mine">Assigned to me</SelectItem>
-                  <SelectItem value="unassigned">Unassigned</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Button
-                variant={showUnreadOnly ? "secondary" : "ghost"}
-                size="sm"
-                className="h-8 text-xs cursor-pointer"
-                onClick={() => {
-                  setShowUnreadOnly(!showUnreadOnly);
-                  setPage(1);
-                }}
-              >
-                <EyeOff className="h-3.5 w-3.5 mr-1" />
-                Unread only
-              </Button>
-
-              {(typeFilter !== "all" ||
-                statusFilter !== "all" ||
-                priorityFilter !== "all" ||
-                assignmentFilter !== "all" ||
-                showUnreadOnly ||
-                searchQuery) && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 text-xs text-muted-foreground cursor-pointer"
-                  onClick={() => {
-                    setTypeFilter("all");
-                    setStatusFilter("all");
-                    setPriorityFilter("all");
-                    setAssignmentFilter("all");
-                    setShowUnreadOnly(false);
-                    setSearchQuery("");
-                    setPage(1);
-                  }}
-                >
-                  Clear all
-                </Button>
-              )}
-
-              <Select
-                value={sortBy}
-                onValueChange={(value) => {
-                  setSortBy(
-                    value as
-                      | "created_at"
-                      | "priority"
-                      | "status"
-                      | "feedback_type"
-                      | "is_read",
-                  );
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger className="w-38 h-8 text-xs">
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="created_at">Sort: Date</SelectItem>
-                  <SelectItem value="priority">Sort: Priority</SelectItem>
-                  <SelectItem value="status">Sort: Status</SelectItem>
-                  <SelectItem value="feedback_type">Sort: Type</SelectItem>
-                  <SelectItem value="is_read">Sort: Read</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select
-                value={sortDirection}
-                onValueChange={(value) => {
-                  setSortDirection(value as "asc" | "desc");
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger className="w-34 h-8 text-xs">
-                  <SelectValue placeholder="Order" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="desc">Order: Desc</SelectItem>
-                  <SelectItem value="asc">Order: Asc</SelectItem>
-                </SelectContent>
-              </Select>
+    <div className="min-w-0 overflow-x-clip p-3 sm:p-6 md:p-8 lg:p-10">
+      <div className="mx-auto w-full max-w-[92rem] space-y-6">
+        {/* Header */}
+        <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                Feedback Inbox
+              </h1>
+              <p className="mt-1 text-sm sm:text-base text-muted-foreground">
+                Review and manage user suggestions and bug reports.
+              </p>
             </div>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Bulk Actions Bar */}
-      {selectedIds.size > 0 && (
-        <Card className="border-primary/30 bg-primary/5">
-          <CardContent className="flex flex-wrap items-center gap-3 p-3">
-            <span className="text-sm font-medium">
-              {selectedIds.size} selected
-            </span>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 text-xs cursor-pointer"
-                onClick={() => handleBulkMarkRead(true)}
-              >
-                <Eye className="h-3 w-3 mr-1" /> Mark read
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 text-xs cursor-pointer"
-                onClick={() => handleBulkMarkRead(false)}
-              >
-                <EyeOff className="h-3 w-3 mr-1" /> Mark unread
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 text-xs cursor-pointer"
-                onClick={() => handleBulkStatus("resolved")}
-              >
-                <CheckCircle2 className="h-3 w-3 mr-1" /> Resolve
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 text-xs cursor-pointer"
-                onClick={() => handleBulkStatus("closed")}
-              >
-                Close
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 text-xs cursor-pointer"
-                onClick={clearSelection}
-              >
-                <X className="h-3 w-3 mr-1" /> Deselect all
-              </Button>
+          <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-start">
+            {lastRefreshedAt && (
+              <span className="hidden text-xs text-muted-foreground sm:inline">
+                Updated {timeAgo(lastRefreshedAt)}
+              </span>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="cursor-pointer"
+              onClick={() => loadFeedback()}
+              disabled={loading}
+            >
+              <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
+              <span className="ml-2 hidden sm:inline">Refresh</span>
+            </Button>
+          </div>
+        </div>
+
+        {/* KPI Stats */}
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 2xl:grid-cols-6">
+          <KpiCard label="Total" value={stats.total} icon={MessageSquareMore} />
+          <KpiCard
+            label="Unread"
+            value={stats.unread}
+            icon={EyeOff}
+            accent="bg-amber-500/10"
+          />
+          <KpiCard
+            label="New"
+            value={stats.newCount}
+            icon={CircleDot}
+            accent="bg-blue-500/10"
+          />
+          <KpiCard
+            label="Reviewing"
+            value={stats.reviewing}
+            icon={Clock}
+            accent="bg-amber-500/10"
+          />
+          <KpiCard
+            label="Bugs"
+            value={stats.bugs}
+            icon={Bug}
+            accent="bg-red-500/10"
+          />
+          <KpiCard
+            label="Suggestions"
+            value={stats.suggestions}
+            icon={Lightbulb}
+            accent="bg-emerald-500/10"
+          />
+        </div>
+
+        {/* Filters Bar */}
+        <Card className="border-border/70 bg-card/90 backdrop-blur">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex flex-col gap-3">
+              {/* Search */}
+              <SearchInput
+                value={searchQuery}
+                onChange={(value) => {
+                  setSearchQuery(value);
+                  setPage(1);
+                }}
+                placeholder="Search feedback by subject, message, or source..."
+                className="w-full"
+                debounce={180}
+                shortcutKey="/"
+              />
+
+              {/* Filter row */}
+              <div className="grid min-w-0 grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
+                <div className="col-span-2 flex items-center gap-1.5 text-xs text-muted-foreground sm:col-auto">
+                  <Filter className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Filters:</span>
+                </div>
+
+                <Select
+                  value={typeFilter}
+                  onValueChange={(v) => {
+                    setTypeFilter(v as any);
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger className="h-9 w-full min-w-0 text-xs sm:h-8 sm:w-32.5">
+                    <SelectValue placeholder="Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All types</SelectItem>
+                    <SelectItem value="suggestion">Suggestions</SelectItem>
+                    <SelectItem value="bug">Bug reports</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select
+                  value={statusFilter}
+                  onValueChange={(v) => {
+                    setStatusFilter(v as any);
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger className="h-9 w-full min-w-0 text-xs sm:h-8 sm:w-35">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All statuses</SelectItem>
+                    <SelectItem value="new">New</SelectItem>
+                    <SelectItem value="reviewing">Reviewing</SelectItem>
+                    <SelectItem value="resolved">Resolved</SelectItem>
+                    <SelectItem value="closed">Closed</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {hasNewFields && (
+                  <Select
+                    value={priorityFilter}
+                    onValueChange={(v) => {
+                      setPriorityFilter(v as any);
+                      setPage(1);
+                    }}
+                  >
+                    <SelectTrigger className="h-9 w-full min-w-0 text-xs sm:h-8 sm:w-35">
+                      <SelectValue placeholder="Priority" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All priorities</SelectItem>
+                      <SelectItem value="urgent">Urgent</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="low">Low</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+
+                <Select
+                  value={assignmentFilter}
+                  onValueChange={(value) => {
+                    setAssignmentFilter(value as "all" | "mine" | "unassigned");
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger className="h-9 w-full min-w-0 text-xs sm:h-8 sm:w-40">
+                    <SelectValue placeholder="Assignee" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All assignees</SelectItem>
+                    <SelectItem value="mine">Assigned to me</SelectItem>
+                    <SelectItem value="unassigned">Unassigned</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Button
+                  variant={showUnreadOnly ? "secondary" : "ghost"}
+                  size="sm"
+                  className="h-9 w-full cursor-pointer text-xs sm:h-8 sm:w-auto"
+                  onClick={() => {
+                    setShowUnreadOnly(!showUnreadOnly);
+                    setPage(1);
+                  }}
+                >
+                  <EyeOff className="h-3.5 w-3.5 mr-1" />
+                  Unread only
+                </Button>
+
+                {(typeFilter !== "all" ||
+                  statusFilter !== "all" ||
+                  priorityFilter !== "all" ||
+                  assignmentFilter !== "all" ||
+                  showUnreadOnly ||
+                  searchQuery) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-9 w-full cursor-pointer text-xs text-muted-foreground sm:h-8 sm:w-auto"
+                    onClick={() => {
+                      setTypeFilter("all");
+                      setStatusFilter("all");
+                      setPriorityFilter("all");
+                      setAssignmentFilter("all");
+                      setShowUnreadOnly(false);
+                      setSearchQuery("");
+                      setPage(1);
+                    }}
+                  >
+                    Clear all
+                  </Button>
+                )}
+
+                <Select
+                  value={sortBy}
+                  onValueChange={(value) => {
+                    setSortBy(
+                      value as
+                        | "created_at"
+                        | "priority"
+                        | "status"
+                        | "feedback_type"
+                        | "is_read",
+                    );
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger className="h-9 w-full min-w-0 text-xs sm:h-8 sm:w-38">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="created_at">Sort: Date</SelectItem>
+                    <SelectItem value="priority">Sort: Priority</SelectItem>
+                    <SelectItem value="status">Sort: Status</SelectItem>
+                    <SelectItem value="feedback_type">Sort: Type</SelectItem>
+                    <SelectItem value="is_read">Sort: Read</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select
+                  value={sortDirection}
+                  onValueChange={(value) => {
+                    setSortDirection(value as "asc" | "desc");
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger className="h-9 w-full min-w-0 text-xs sm:h-8 sm:w-34">
+                    <SelectValue placeholder="Order" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="desc">Order: Desc</SelectItem>
+                    <SelectItem value="asc">Order: Asc</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </CardContent>
         </Card>
-      )}
 
-      {/* Feedback List */}
-      {loading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-4">
-                <div className="h-4 w-3/4 rounded bg-muted mb-3" />
-                <div className="h-3 w-1/2 rounded bg-muted" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : items.length > 0 ? (
-        <div className="space-y-2">
-          {/* List header */}
-          <div className="flex items-center justify-between px-1 text-xs text-muted-foreground">
-            <span>
-              {total} result{total !== 1 && "s"} · Page {page} / {totalPages}
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 text-xs cursor-pointer"
-              onClick={toggleSelectAll}
-            >
-              {selectedOnPageCount === items.length && items.length > 0
-                ? "Deselect all"
-                : "Select all"}
-            </Button>
+        {/* Bulk Actions Bar */}
+        {selectedIds.size > 0 && (
+          <Card className="border-primary/30 bg-primary/5">
+            <CardContent className="flex min-w-0 flex-col items-stretch gap-3 p-3 sm:flex-row sm:flex-wrap sm:items-center">
+              <span className="text-sm font-medium">
+                {selectedIds.size} selected
+              </span>
+              <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs cursor-pointer"
+                  onClick={() => handleBulkMarkRead(true)}
+                >
+                  <Eye className="h-3 w-3 mr-1" /> Mark read
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs cursor-pointer"
+                  onClick={() => handleBulkMarkRead(false)}
+                >
+                  <EyeOff className="h-3 w-3 mr-1" /> Mark unread
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs cursor-pointer"
+                  onClick={() => handleBulkStatus("resolved")}
+                >
+                  <CheckCircle2 className="h-3 w-3 mr-1" /> Resolve
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs cursor-pointer"
+                  onClick={() => handleBulkStatus("closed")}
+                >
+                  Close
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs cursor-pointer"
+                  onClick={clearSelection}
+                >
+                  <X className="h-3 w-3 mr-1" /> Deselect all
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Feedback List */}
+        {loading ? (
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="animate-pulse">
+                <CardContent className="p-3 sm:p-4">
+                  <div className="h-4 w-3/4 rounded bg-muted mb-3" />
+                  <div className="h-3 w-1/2 rounded bg-muted" />
+                </CardContent>
+              </Card>
+            ))}
           </div>
-
-          {/* Items */}
-          {items.map((item) => {
-            const isSelected = selectedIds.has(item.id);
-            const isCurrentlyViewing = selectedItem?.id === item.id;
-            const statusConf = statusConfig[item.status];
-            const priorityConf = priorityConfig[item.priority || "medium"];
-            const StatusIcon = statusConf.icon;
-            const PriorityIcon = priorityConf.icon;
-
-            return (
-              <Card
-                key={item.id}
-                className={cn(
-                  "group transition-all cursor-pointer hover:border-primary/40 hover:shadow-md",
-                  isCurrentlyViewing &&
-                    "border-primary/60 shadow-md ring-1 ring-primary/20",
-                  !item.is_read && "border-l-2 border-l-primary",
-                )}
-                onClick={() => setSelectedItem(item)}
+        ) : items.length > 0 ? (
+          <div className="space-y-2">
+            {/* List header */}
+            <div className="flex items-center justify-between px-1 text-xs text-muted-foreground">
+              <span>
+                {total} result{total !== 1 && "s"} · Page {page} / {totalPages}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 text-xs cursor-pointer"
+                onClick={toggleSelectAll}
               >
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    {/* Checkbox */}
-                    <button
-                      className="mt-1 shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleSelect(item.id);
-                      }}
-                    >
-                      {isSelected ? (
-                        <SquareCheck className="h-4 w-4 text-primary" />
-                      ) : (
-                        <Square className="h-4 w-4" />
-                      )}
-                    </button>
+                {selectedOnPageCount === items.length && items.length > 0
+                  ? "Deselect all"
+                  : "Select all"}
+              </Button>
+            </div>
 
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 mb-1.5">
-                        <h3
-                          className={cn(
-                            "text-sm leading-snug truncate flex-1",
-                            !item.is_read ? "font-semibold" : "font-medium",
-                          )}
-                        >
-                          {item.subject}
-                        </h3>
-                        <span className="text-[11px] text-muted-foreground whitespace-nowrap shrink-0">
-                          {timeAgo(item.created_at)}
-                        </span>
-                      </div>
+            {/* Items */}
+            {items.map((item) => {
+              const isSelected = selectedIds.has(item.id);
+              const isCurrentlyViewing = selectedItem?.id === item.id;
+              const statusConf = statusConfig[item.status];
+              const priorityConf = priorityConfig[item.priority || "medium"];
+              const StatusIcon = statusConf.icon;
+              const PriorityIcon = priorityConf.icon;
 
-                      <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
-                        {item.message}
-                      </p>
+              return (
+                <Card
+                  key={item.id}
+                  className={cn(
+                    "group transition-all cursor-pointer hover:border-primary/40 hover:shadow-md",
+                    isCurrentlyViewing &&
+                      "border-primary/60 shadow-md ring-1 ring-primary/20",
+                    !item.is_read && "border-l-2 border-l-primary",
+                  )}
+                  onClick={() => setSelectedItem(item)}
+                >
+                  <CardContent className="p-3 sm:p-4">
+                    <div className="flex items-start gap-3">
+                      {/* Checkbox */}
+                      <button
+                        className="mt-1 shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleSelect(item.id);
+                        }}
+                      >
+                        {isSelected ? (
+                          <SquareCheck className="h-4 w-4 text-primary" />
+                        ) : (
+                          <Square className="h-4 w-4" />
+                        )}
+                      </button>
 
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        {/* Type badge */}
-                        <Badge
-                          variant={
-                            item.feedback_type === "bug"
-                              ? "destructive"
-                              : "secondary"
-                          }
-                          className="text-[10px] px-1.5 py-0"
-                        >
-                          {item.feedback_type === "bug" ? (
-                            <Bug className="h-2.5 w-2.5 mr-0.5" />
-                          ) : (
-                            <Lightbulb className="h-2.5 w-2.5 mr-0.5" />
-                          )}
-                          {item.feedback_type === "bug" ? "Bug" : "Suggestion"}
-                        </Badge>
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="mb-1.5 flex min-w-0 flex-col items-start gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-2">
+                          <h3
+                            className={cn(
+                              "line-clamp-2 min-w-0 flex-1 break-words text-sm leading-snug",
+                              !item.is_read ? "font-semibold" : "font-medium",
+                            )}
+                          >
+                            {item.subject}
+                          </h3>
+                          <span className="text-[11px] text-muted-foreground whitespace-nowrap shrink-0">
+                            {timeAgo(item.created_at)}
+                          </span>
+                        </div>
 
-                        {/* Status badge */}
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            "text-[10px] px-1.5 py-0",
-                            statusConf.className,
-                          )}
-                        >
-                          <StatusIcon className="h-2.5 w-2.5 mr-0.5" />
-                          {statusConf.label}
-                        </Badge>
+                        <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                          {item.message}
+                        </p>
 
-                        {/* Priority badge (only if migration applied) */}
-                        {hasNewFields && (
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {/* Type badge */}
+                          <Badge
+                            variant={
+                              item.feedback_type === "bug"
+                                ? "destructive"
+                                : "secondary"
+                            }
+                            className="text-[10px] px-1.5 py-0"
+                          >
+                            {item.feedback_type === "bug" ? (
+                              <Bug className="h-2.5 w-2.5 mr-0.5" />
+                            ) : (
+                              <Lightbulb className="h-2.5 w-2.5 mr-0.5" />
+                            )}
+                            {item.feedback_type === "bug"
+                              ? "Bug"
+                              : "Suggestion"}
+                          </Badge>
+
+                          {/* Status badge */}
                           <Badge
                             variant="outline"
                             className={cn(
                               "text-[10px] px-1.5 py-0",
-                              priorityConf.className,
+                              statusConf.className,
                             )}
                           >
-                            <PriorityIcon className="h-2.5 w-2.5 mr-0.5" />
-                            {priorityConf.label}
+                            <StatusIcon className="h-2.5 w-2.5 mr-0.5" />
+                            {statusConf.label}
                           </Badge>
-                        )}
 
-                        {/* Source */}
-                        {item.source_label && (
-                          <span className="text-[10px] text-muted-foreground">
-                            {item.source_label}
-                          </span>
-                        )}
-
-                        {item.assigned_to && (
-                          <Badge
-                            variant="outline"
-                            className="text-[10px] px-1.5 py-0"
-                          >
-                            <UserRound className="mr-0.5 h-2.5 w-2.5" />
-                            {item.assignee?.display_name ||
-                              item.assignee?.username ||
-                              (item.assigned_to === currentUserId
-                                ? "You"
-                                : "Assigned")}
-                          </Badge>
-                        )}
-
-                        {/* Unread dot */}
-                        {!item.is_read && (
-                          <span className="flex h-1.5 w-1.5 rounded-full bg-primary" />
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Actions menu */}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 cursor-pointer"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleToggleRead(item.id, item.is_read);
-                          }}
-                        >
-                          {item.is_read ? (
-                            <>
-                              <EyeOff className="h-4 w-4 mr-2" /> Mark unread
-                            </>
-                          ) : (
-                            <>
-                              <Eye className="h-4 w-4 mr-2" /> Mark read
-                            </>
+                          {/* Priority badge (only if migration applied) */}
+                          {hasNewFields && (
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                "text-[10px] px-1.5 py-0",
+                                priorityConf.className,
+                              )}
+                            >
+                              <PriorityIcon className="h-2.5 w-2.5 mr-0.5" />
+                              {priorityConf.label}
+                            </Badge>
                           )}
-                        </DropdownMenuItem>
 
-                        <DropdownMenuSub>
-                          <DropdownMenuSubTrigger>
-                            <CircleDot className="h-4 w-4 mr-2" />
-                            Change status
-                          </DropdownMenuSubTrigger>
-                          <DropdownMenuPortal>
-                            <DropdownMenuSubContent>
-                              {(
-                                Object.keys(statusConfig) as FeedbackStatus[]
-                              ).map((s) => (
-                                <DropdownMenuItem
-                                  key={s}
-                                  disabled={item.status === s}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleStatusChange(item.id, s);
-                                  }}
-                                >
-                                  {statusConfig[s].label}
-                                </DropdownMenuItem>
-                              ))}
-                            </DropdownMenuSubContent>
-                          </DropdownMenuPortal>
-                        </DropdownMenuSub>
+                          {/* Source */}
+                          {item.source_label && (
+                            <span className="text-[10px] text-muted-foreground">
+                              {item.source_label}
+                            </span>
+                          )}
 
-                        {hasNewFields && (
+                          {item.assigned_to && (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] px-1.5 py-0"
+                            >
+                              <UserRound className="mr-0.5 h-2.5 w-2.5" />
+                              {item.assignee?.display_name ||
+                                item.assignee?.username ||
+                                (item.assigned_to === currentUserId
+                                  ? "You"
+                                  : "Assigned")}
+                            </Badge>
+                          )}
+
+                          {/* Unread dot */}
+                          {!item.is_read && (
+                            <span className="flex h-1.5 w-1.5 rounded-full bg-primary" />
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Actions menu */}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 shrink-0 cursor-pointer opacity-100 transition-opacity sm:h-7 sm:w-7 sm:opacity-0 sm:group-hover:opacity-100"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleRead(item.id, item.is_read);
+                            }}
+                          >
+                            {item.is_read ? (
+                              <>
+                                <EyeOff className="h-4 w-4 mr-2" /> Mark unread
+                              </>
+                            ) : (
+                              <>
+                                <Eye className="h-4 w-4 mr-2" /> Mark read
+                              </>
+                            )}
+                          </DropdownMenuItem>
+
                           <DropdownMenuSub>
                             <DropdownMenuSubTrigger>
-                              <ArrowUp className="h-4 w-4 mr-2" />
-                              Change priority
+                              <CircleDot className="h-4 w-4 mr-2" />
+                              Change status
                             </DropdownMenuSubTrigger>
                             <DropdownMenuPortal>
                               <DropdownMenuSubContent>
                                 {(
-                                  Object.keys(
-                                    priorityConfig,
-                                  ) as FeedbackPriority[]
-                                ).map((p) => (
+                                  Object.keys(statusConfig) as FeedbackStatus[]
+                                ).map((s) => (
                                   <DropdownMenuItem
-                                    key={p}
-                                    disabled={(item.priority || "medium") === p}
+                                    key={s}
+                                    disabled={item.status === s}
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      handlePriorityChange(item.id, p);
+                                      handleStatusChange(item.id, s);
                                     }}
                                   >
-                                    {priorityConfig[p].label}
+                                    {statusConfig[s].label}
                                   </DropdownMenuItem>
                                 ))}
                               </DropdownMenuSubContent>
                             </DropdownMenuPortal>
                           </DropdownMenuSub>
-                        )}
 
-                        <DropdownMenuSeparator />
+                          {hasNewFields && (
+                            <DropdownMenuSub>
+                              <DropdownMenuSubTrigger>
+                                <ArrowUp className="h-4 w-4 mr-2" />
+                                Change priority
+                              </DropdownMenuSubTrigger>
+                              <DropdownMenuPortal>
+                                <DropdownMenuSubContent>
+                                  {(
+                                    Object.keys(
+                                      priorityConfig,
+                                    ) as FeedbackPriority[]
+                                  ).map((p) => (
+                                    <DropdownMenuItem
+                                      key={p}
+                                      disabled={
+                                        (item.priority || "medium") === p
+                                      }
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handlePriorityChange(item.id, p);
+                                      }}
+                                    >
+                                      {priorityConfig[p].label}
+                                    </DropdownMenuItem>
+                                  ))}
+                                </DropdownMenuSubContent>
+                              </DropdownMenuPortal>
+                            </DropdownMenuSub>
+                          )}
 
-                        {!item.assigned_to ? (
+                          <DropdownMenuSeparator />
+
+                          {!item.assigned_to ? (
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                void handleAssignToMe(item.id);
+                              }}
+                            >
+                              <UserRound className="h-4 w-4 mr-2" /> Assign to
+                              me
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                void handleUnassign(item.id);
+                              }}
+                            >
+                              <UserRound className="h-4 w-4 mr-2" /> Unassign
+                            </DropdownMenuItem>
+                          )}
+
+                          <DropdownMenuSeparator />
+
                           <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
                             onClick={(e) => {
                               e.stopPropagation();
-                              void handleAssignToMe(item.id);
+                              setDeleteTarget(item);
                             }}
                           >
-                            <UserRound className="h-4 w-4 mr-2" /> Assign to me
+                            <Trash2 className="h-4 w-4 mr-2" /> Delete
                           </DropdownMenuItem>
-                        ) : (
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              void handleUnassign(item.id);
-                            }}
-                          >
-                            <UserRound className="h-4 w-4 mr-2" /> Unassign
-                          </DropdownMenuItem>
-                        )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
 
-                        <DropdownMenuSeparator />
-
-                        <DropdownMenuItem
-                          className="text-destructive focus:text-destructive"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDeleteTarget(item);
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" /> Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-
-          <div className="flex items-center justify-between gap-2 pt-2">
-            <span className="text-xs text-muted-foreground">
-              Showing {items.length} of {total}
-            </span>
-            <div className="flex gap-1">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 cursor-pointer"
-                onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                disabled={page <= 1 || loading}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 cursor-pointer"
-                onClick={() =>
-                  setPage((prev) => Math.min(totalPages, prev + 1))
-                }
-                disabled={page >= totalPages || loading}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+            <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:items-center sm:justify-between">
+              <span className="text-xs text-muted-foreground">
+                Showing {items.length} of {total}
+              </span>
+              <div className="flex gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 cursor-pointer"
+                  onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                  disabled={page <= 1 || loading}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 cursor-pointer"
+                  onClick={() =>
+                    setPage((prev) => Math.min(totalPages, prev + 1))
+                  }
+                  disabled={page >= totalPages || loading}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      ) : (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-            <MessageSquareMore className="h-10 w-10 text-muted-foreground mb-3" />
-            <p className="text-sm font-medium">No feedback found</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {searchQuery || typeFilter !== "all" || statusFilter !== "all"
-                ? "Try adjusting your filters or search query."
-                : "No feedback submissions yet."}
-            </p>
-          </CardContent>
-        </Card>
-      )}
+        ) : (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+              <MessageSquareMore className="h-10 w-10 text-muted-foreground mb-3" />
+              <p className="text-sm font-medium">No feedback found</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {searchQuery || typeFilter !== "all" || statusFilter !== "all"
+                  ? "Try adjusting your filters or search query."
+                  : "No feedback submissions yet."}
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
-      {/* =========================================================================
+        {/* =========================================================================
           DETAIL DIALOG
           ========================================================================= */}
-      <Dialog
-        open={!!selectedItem}
-        onOpenChange={(open) => !open && setSelectedItem(null)}
-      >
-        <DialogContent className="w-[calc(100%-1rem)] max-w-5xl max-h-[90vh] overflow-hidden flex flex-col p-0 sm:max-w-4xl">
-          {selectedItem && (
-            <>
-              {/* Dialog navigation bar */}
-              <div className="flex items-center justify-between border-b px-4 py-2 sm:px-6">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 cursor-pointer"
-                    disabled={currentIndex <= 0}
-                    onClick={() => navigateItem("prev")}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <span className="text-xs text-muted-foreground">
-                    {currentIndex + 1} of {items.length}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 cursor-pointer"
-                    disabled={currentIndex >= items.length - 1}
-                    onClick={() => navigateItem("next")}
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
+        <Dialog
+          open={!!selectedItem}
+          onOpenChange={(open) => !open && setSelectedItem(null)}
+        >
+          <DialogContent className="flex max-h-[calc(100dvh-1rem)] min-h-0 w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-col overflow-hidden p-0 sm:max-w-4xl">
+            {selectedItem && (
+              <>
+                {/* Dialog navigation bar */}
+                <div className="flex min-w-0 items-center justify-between gap-2 border-b px-3 py-2 sm:px-6">
+                  <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 cursor-pointer"
+                      disabled={currentIndex <= 0}
+                      onClick={() => navigateItem("prev")}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <span className="text-xs text-muted-foreground">
+                      {currentIndex + 1} of {items.length}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 cursor-pointer"
+                      disabled={currentIndex >= items.length - 1}
+                      onClick={() => navigateItem("next")}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-xs cursor-pointer"
+                      onClick={() =>
+                        handleToggleRead(selectedItem.id, selectedItem.is_read)
+                      }
+                    >
+                      {selectedItem.is_read ? (
+                        <>
+                          <EyeOff className="h-3.5 w-3.5 mr-1" /> Mark unread
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="h-3.5 w-3.5 mr-1" /> Mark read
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 mr-6 text-xs text-destructive hover:text-white cursor-pointer"
+                      onClick={() => setDeleteTarget(selectedItem)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
+                    </Button>
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 text-xs cursor-pointer"
-                    onClick={() =>
-                      handleToggleRead(selectedItem.id, selectedItem.is_read)
-                    }
-                  >
-                    {selectedItem.is_read ? (
-                      <>
-                        <EyeOff className="h-3.5 w-3.5 mr-1" /> Mark unread
-                      </>
-                    ) : (
-                      <>
-                        <Eye className="h-3.5 w-3.5 mr-1" /> Mark read
-                      </>
-                    )}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 mr-6 text-xs text-destructive hover:text-white cursor-pointer"
-                    onClick={() => setDeleteTarget(selectedItem)}
-                  >
-                    <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
-                  </Button>
-                </div>
-              </div>
-
-              {/* Dialog content */}
-              <ScrollArea className="flex-1 overflow-auto">
-                <div className="p-4 sm:p-6 space-y-4">
-                  <DialogHeader className="text-left space-y-2">
-                    <div className="flex flex-wrap items-start gap-2">
-                      <Badge
-                        variant={
-                          selectedItem.feedback_type === "bug"
-                            ? "destructive"
-                            : "secondary"
-                        }
-                      >
-                        {selectedItem.feedback_type === "bug" ? (
-                          <Bug className="h-3 w-3 mr-1" />
-                        ) : (
-                          <Lightbulb className="h-3 w-3 mr-1" />
-                        )}
-                        {selectedItem.feedback_type === "bug"
-                          ? "Bug Report"
-                          : "Suggestion"}
-                      </Badge>
-                      <Badge
-                        variant="outline"
-                        className={statusConfig[selectedItem.status].className}
-                      >
-                        {statusConfig[selectedItem.status].label}
-                      </Badge>
-                      {hasNewFields && (
+                {/* Dialog content */}
+                <ScrollArea className="flex-1 overflow-auto">
+                  <div className="p-4 sm:p-6 space-y-4">
+                    <DialogHeader className="text-left space-y-2">
+                      <div className="flex flex-wrap items-start gap-2">
+                        <Badge
+                          variant={
+                            selectedItem.feedback_type === "bug"
+                              ? "destructive"
+                              : "secondary"
+                          }
+                        >
+                          {selectedItem.feedback_type === "bug" ? (
+                            <Bug className="h-3 w-3 mr-1" />
+                          ) : (
+                            <Lightbulb className="h-3 w-3 mr-1" />
+                          )}
+                          {selectedItem.feedback_type === "bug"
+                            ? "Bug Report"
+                            : "Suggestion"}
+                        </Badge>
                         <Badge
                           variant="outline"
                           className={
-                            priorityConfig[selectedItem.priority || "medium"]
-                              .className
+                            statusConfig[selectedItem.status].className
                           }
                         >
-                          {
-                            priorityConfig[selectedItem.priority || "medium"]
-                              .label
-                          }
+                          {statusConfig[selectedItem.status].label}
                         </Badge>
-                      )}
-                    </div>
-                    <DialogTitle className="text-xl leading-snug">
-                      {selectedItem.subject}
-                    </DialogTitle>
-                    <DialogDescription className="wrap-break-word">
-                      {selectedItem.source_label || "Unknown source"} ·{" "}
-                      {formatDate(selectedItem.created_at)}
-                      {selectedItem.is_read ? (
-                        <span className="ml-2 text-xs">(Read)</span>
-                      ) : (
-                        <span className="ml-2 text-xs text-primary font-medium">
-                          (Unread)
-                        </span>
-                      )}
-                    </DialogDescription>
-                  </DialogHeader>
-
-                  {/* Quick actions */}
-                  <div className="flex flex-wrap gap-2">
-                    {selectedItem.status === "new" && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8 text-xs cursor-pointer"
-                        onClick={() =>
-                          void handleTransitionToReviewing(selectedItem.id)
-                        }
-                      >
-                        <Eye className="mr-1.5 h-3.5 w-3.5" /> Start review
-                      </Button>
-                    )}
-
-                    {selectedItem.status === "reviewing" && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8 text-xs cursor-pointer"
-                        onClick={() =>
-                          void handleTransitionToResolved(selectedItem.id)
-                        }
-                      >
-                        <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" /> Mark
-                        resolved
-                      </Button>
-                    )}
-
-                    {!selectedItem.assigned_to ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8 text-xs cursor-pointer"
-                        onClick={() => void handleAssignToMe(selectedItem.id)}
-                      >
-                        <UserRound className="mr-1.5 h-3.5 w-3.5" /> Assign to
-                        me
-                      </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8 text-xs cursor-pointer"
-                        onClick={() => void handleUnassign(selectedItem.id)}
-                      >
-                        <UserRound className="mr-1.5 h-3.5 w-3.5" /> Unassign
-                      </Button>
-                    )}
-
-                    <Select
-                      value={selectedItem.status}
-                      onValueChange={(v) =>
-                        handleStatusChange(selectedItem.id, v as FeedbackStatus)
-                      }
-                    >
-                      <SelectTrigger className="w-37.5 h-8 text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {(Object.keys(statusConfig) as FeedbackStatus[]).map(
-                          (s) => (
-                            <SelectItem key={s} value={s}>
-                              {statusConfig[s].label}
-                            </SelectItem>
-                          ),
+                        {hasNewFields && (
+                          <Badge
+                            variant="outline"
+                            className={
+                              priorityConfig[selectedItem.priority || "medium"]
+                                .className
+                            }
+                          >
+                            {
+                              priorityConfig[selectedItem.priority || "medium"]
+                                .label
+                            }
+                          </Badge>
                         )}
-                      </SelectContent>
-                    </Select>
+                      </div>
+                      <DialogTitle className="break-words text-xl leading-snug">
+                        {selectedItem.subject}
+                      </DialogTitle>
+                      <DialogDescription className="wrap-break-word">
+                        {selectedItem.source_label || "Unknown source"} ·{" "}
+                        {formatDate(selectedItem.created_at)}
+                        {selectedItem.is_read ? (
+                          <span className="ml-2 text-xs">(Read)</span>
+                        ) : (
+                          <span className="ml-2 text-xs text-primary font-medium">
+                            (Unread)
+                          </span>
+                        )}
+                      </DialogDescription>
+                    </DialogHeader>
 
-                    {hasNewFields && (
+                    {/* Quick actions */}
+                    <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
+                      {selectedItem.status === "new" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-9 w-full cursor-pointer text-xs sm:h-8 sm:w-auto"
+                          onClick={() =>
+                            void handleTransitionToReviewing(selectedItem.id)
+                          }
+                        >
+                          <Eye className="mr-1.5 h-3.5 w-3.5" /> Start review
+                        </Button>
+                      )}
+
+                      {selectedItem.status === "reviewing" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-9 w-full cursor-pointer text-xs sm:h-8 sm:w-auto"
+                          onClick={() =>
+                            void handleTransitionToResolved(selectedItem.id)
+                          }
+                        >
+                          <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" /> Mark
+                          resolved
+                        </Button>
+                      )}
+
+                      {!selectedItem.assigned_to ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-9 w-full cursor-pointer text-xs sm:h-8 sm:w-auto"
+                          onClick={() => void handleAssignToMe(selectedItem.id)}
+                        >
+                          <UserRound className="mr-1.5 h-3.5 w-3.5" /> Assign to
+                          me
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-9 w-full cursor-pointer text-xs sm:h-8 sm:w-auto"
+                          onClick={() => void handleUnassign(selectedItem.id)}
+                        >
+                          <UserRound className="mr-1.5 h-3.5 w-3.5" /> Unassign
+                        </Button>
+                      )}
+
                       <Select
-                        value={selectedItem.priority || "medium"}
+                        value={selectedItem.status}
                         onValueChange={(v) =>
-                          handlePriorityChange(
+                          handleStatusChange(
                             selectedItem.id,
-                            v as FeedbackPriority,
+                            v as FeedbackStatus,
                           )
                         }
                       >
-                        <SelectTrigger className="w-37.5 h-8 text-xs">
+                        <SelectTrigger className="h-9 w-full text-xs sm:h-8 sm:w-37.5">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {(
-                            Object.keys(priorityConfig) as FeedbackPriority[]
-                          ).map((p) => (
-                            <SelectItem key={p} value={p}>
-                              {priorityConfig[p].label}
-                            </SelectItem>
-                          ))}
+                          {(Object.keys(statusConfig) as FeedbackStatus[]).map(
+                            (s) => (
+                              <SelectItem key={s} value={s}>
+                                {statusConfig[s].label}
+                              </SelectItem>
+                            ),
+                          )}
                         </SelectContent>
                       </Select>
-                    )}
-                  </div>
 
-                  {/* Content grid */}
-                  <div className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.95fr)]">
-                    {/* Message */}
-                    <Card className="border-border/70">
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-base">Message</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
-                          {selectedItem.message}
-                        </p>
-                      </CardContent>
-                    </Card>
+                      {hasNewFields && (
+                        <Select
+                          value={selectedItem.priority || "medium"}
+                          onValueChange={(v) =>
+                            handlePriorityChange(
+                              selectedItem.id,
+                              v as FeedbackPriority,
+                            )
+                          }
+                        >
+                          <SelectTrigger className="h-9 w-full text-xs sm:h-8 sm:w-37.5">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {(
+                              Object.keys(priorityConfig) as FeedbackPriority[]
+                            ).map((p) => (
+                              <SelectItem key={p} value={p}>
+                                {priorityConfig[p].label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    </div>
 
-                    {/* Details */}
-                    <Card className="border-border/70">
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-base">Details</CardTitle>
-                      </CardHeader>
-                      <CardContent className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-1">
-                        <div>
-                          <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                            Source page
-                          </p>
-                          <p className="wrap-break-word">
-                            {selectedItem.source_page || "-"}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                            Source path
-                          </p>
-                          <p className="break-all font-mono text-xs">
-                            {selectedItem.source_path || "-"}
-                          </p>
-                        </div>
-                        {selectedItem.related_id && (
-                          <div>
-                            <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                              Related ID
-                            </p>
-                            <p className="break-all font-mono text-xs">
-                              {selectedItem.related_id}
-                            </p>
-                          </div>
-                        )}
-                        {selectedItem.contact && (
-                          <div>
-                            <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                              Contact
-                            </p>
-                            <p className="break-all">{selectedItem.contact}</p>
-                          </div>
-                        )}
-                        <div>
-                          <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                            Assigned to
-                          </p>
-                          <p>
-                            {selectedItem.assignee?.display_name ||
-                              selectedItem.assignee?.username ||
-                              (selectedItem.assigned_to
-                                ? selectedItem.assigned_to === currentUserId
-                                  ? "You"
-                                  : "Assigned"
-                                : "Unassigned")}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* Attached images */}
-                  {Array.isArray(selectedItem.metadata?.images) &&
-                    (selectedItem.metadata.images as any[]).length > 0 && (
+                    {/* Content grid */}
+                    <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,0.95fr)]">
+                      {/* Message */}
                       <Card className="border-border/70">
                         <CardHeader className="pb-3">
-                          <CardTitle className="text-base">
-                            Attached images
-                          </CardTitle>
+                          <CardTitle className="text-base">Message</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                            {(
-                              selectedItem.metadata.images as Array<{
-                                name?: string;
-                                size?: number;
-                                url?: string;
-                              }>
-                            ).map((image, index) =>
-                              image.url ? (
-                                <div
-                                  key={`${selectedItem.id}-img-${index}`}
-                                  className="overflow-hidden rounded-lg border"
-                                >
-                                  <div
-                                    className="group relative cursor-pointer overflow-hidden"
-                                    onClick={() => setLightboxIndex(index)}
-                                  >
-                                    <img
-                                      src={image.url}
-                                      alt={
-                                        image.name || `Attachment ${index + 1}`
-                                      }
-                                      className="h-44 w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                    />
-                                    <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors duration-300 group-hover:bg-black/30">
-                                      <Maximize2 className="h-8 w-8 text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100 drop-shadow-md" />
-                                    </div>
-                                  </div>
+                          <p className="whitespace-pre-wrap break-words text-sm leading-6 text-muted-foreground">
+                            {selectedItem.message}
+                          </p>
+                        </CardContent>
+                      </Card>
 
-                                  <div className="space-y-1 p-3 text-xs text-muted-foreground">
-                                    <p className="truncate font-medium text-foreground">
-                                      {image.name || `Attachment ${index + 1}`}
-                                    </p>
-                                    {typeof image.size === "number" && (
-                                      <p>{Math.round(image.size / 1024)} KB</p>
-                                    )}
-                                  </div>
-                                </div>
-                              ) : null,
-                            )}
+                      {/* Details */}
+                      <Card className="border-border/70">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-base">Details</CardTitle>
+                        </CardHeader>
+                        <CardContent className="grid gap-3 text-sm md:grid-cols-2 xl:grid-cols-1">
+                          <div>
+                            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                              Source page
+                            </p>
+                            <p className="wrap-break-word">
+                              {selectedItem.source_page || "-"}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                              Source path
+                            </p>
+                            <p className="break-all font-mono text-xs">
+                              {selectedItem.source_path || "-"}
+                            </p>
+                          </div>
+                          {selectedItem.related_id && (
+                            <div>
+                              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                                Related ID
+                              </p>
+                              <p className="break-all font-mono text-xs">
+                                {selectedItem.related_id}
+                              </p>
+                            </div>
+                          )}
+                          {selectedItem.contact && (
+                            <div>
+                              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                                Contact
+                              </p>
+                              <p className="break-all">
+                                {selectedItem.contact}
+                              </p>
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                              Assigned to
+                            </p>
+                            <p>
+                              {selectedItem.assignee?.display_name ||
+                                selectedItem.assignee?.username ||
+                                (selectedItem.assigned_to
+                                  ? selectedItem.assigned_to === currentUserId
+                                    ? "You"
+                                    : "Assigned"
+                                  : "Unassigned")}
+                            </p>
                           </div>
                         </CardContent>
                       </Card>
-                    )}
-                  {/* Admin Notes */}
-                  <Card className="border-border/70">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center gap-2">
-                        <StickyNote className="h-4 w-4 text-muted-foreground" />
-                        <CardTitle className="text-base">
-                          Internal Notes
-                        </CardTitle>
-                      </div>
-                      <CardDescription>
-                        Private notes visible only to admins.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {detailNotesLoading ? (
-                        <p className="text-xs text-muted-foreground">
-                          Loading notes...
-                        </p>
-                      ) : detailNotes.length > 0 ? (
-                        <div className="space-y-2">
-                          {detailNotes.map((note) => (
-                            <div
-                              key={note.id}
-                              className="rounded-lg border border-border/70 bg-muted/50 p-3"
-                            >
-                              <p className="text-sm whitespace-pre-wrap">
-                                {note.note}
-                              </p>
-                              <p className="mt-1 text-[10px] text-muted-foreground">
-                                {formatDate(note.created_at)}
-                              </p>
+                    </div>
+
+                    {/* Attached images */}
+                    {Array.isArray(selectedItem.metadata?.images) &&
+                      (selectedItem.metadata.images as any[]).length > 0 && (
+                        <Card className="border-border/70">
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-base">
+                              Attached images
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                              {(
+                                selectedItem.metadata.images as Array<{
+                                  name?: string;
+                                  size?: number;
+                                  url?: string;
+                                }>
+                              ).map((image, index) =>
+                                image.url ? (
+                                  <div
+                                    key={`${selectedItem.id}-img-${index}`}
+                                    className="overflow-hidden rounded-lg border"
+                                  >
+                                    <div
+                                      className="group relative cursor-pointer overflow-hidden"
+                                      onClick={() => setLightboxIndex(index)}
+                                    >
+                                      <img
+                                        src={image.url}
+                                        alt={
+                                          image.name ||
+                                          `Attachment ${index + 1}`
+                                        }
+                                        className="h-44 w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                      />
+                                      <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors duration-300 group-hover:bg-black/30">
+                                        <Maximize2 className="h-8 w-8 text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100 drop-shadow-md" />
+                                      </div>
+                                    </div>
+
+                                    <div className="space-y-1 p-3 text-xs text-muted-foreground">
+                                      <p className="truncate font-medium text-foreground">
+                                        {image.name ||
+                                          `Attachment ${index + 1}`}
+                                      </p>
+                                      {typeof image.size === "number" && (
+                                        <p>
+                                          {Math.round(image.size / 1024)} KB
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                ) : null,
+                              )}
                             </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-xs text-muted-foreground">
-                          No notes yet.
-                        </p>
+                          </CardContent>
+                        </Card>
                       )}
+                    {/* Admin Notes */}
+                    <Card className="border-border/70">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center gap-2">
+                          <StickyNote className="h-4 w-4 text-muted-foreground" />
+                          <CardTitle className="text-base">
+                            Internal Notes
+                          </CardTitle>
+                        </div>
+                        <CardDescription>
+                          Private notes visible only to admins.
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        {detailNotesLoading ? (
+                          <p className="text-xs text-muted-foreground">
+                            Loading notes...
+                          </p>
+                        ) : detailNotes.length > 0 ? (
+                          <div className="space-y-2">
+                            {detailNotes.map((note) => (
+                              <div
+                                key={note.id}
+                                className="rounded-lg border border-border/70 bg-muted/50 p-3"
+                              >
+                                <p className="whitespace-pre-wrap break-words text-sm">
+                                  {note.note}
+                                </p>
+                                <p className="mt-1 text-[10px] text-muted-foreground">
+                                  {formatDate(note.created_at)}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-muted-foreground">
+                            No notes yet.
+                          </p>
+                        )}
 
-                      {/* Add note */}
-                      <div className="flex gap-2">
-                        <Textarea
-                          placeholder="Add an internal note..."
-                          value={newNote}
-                          onChange={(e) => setNewNote(e.target.value)}
-                          rows={2}
-                          className="text-sm"
-                        />
-                      </div>
-                      <div className="flex justify-end">
-                        <Button
-                          size="sm"
-                          className="cursor-pointer"
-                          disabled={!newNote.trim() || addingNote}
-                          onClick={handleAddNote}
-                        >
-                          {addingNote ? (
-                            "Adding..."
-                          ) : (
-                            <>
-                              <Send className="h-3.5 w-3.5 mr-1.5" /> Add Note
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </ScrollArea>
-            </>
+                        {/* Add note */}
+                        <div className="flex gap-2">
+                          <Textarea
+                            placeholder="Add an internal note..."
+                            value={newNote}
+                            onChange={(e) => setNewNote(e.target.value)}
+                            rows={2}
+                            className="text-sm"
+                          />
+                        </div>
+                        <div className="flex justify-stretch sm:justify-end">
+                          <Button
+                            size="sm"
+                            className="w-full cursor-pointer sm:w-auto"
+                            disabled={!newNote.trim() || addingNote}
+                            onClick={handleAddNote}
+                          >
+                            {addingNote ? (
+                              "Adding..."
+                            ) : (
+                              <>
+                                <Send className="h-3.5 w-3.5 mr-1.5" /> Add Note
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </ScrollArea>
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete confirmation */}
+        <AlertDialog
+          open={!!deleteTarget}
+          onOpenChange={(open) => !open && setDeleteTarget(null)}
+        >
+          <AlertDialogContent className="max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-lg overflow-y-auto">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete feedback?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will permanently delete &quot;{deleteTarget?.subject}&quot;
+                and all associated notes. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="cursor-pointer">
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90 cursor-pointer"
+                onClick={handleDelete}
+                disabled={deleting}
+              >
+                {deleting ? "Deleting..." : "Delete"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Lightbox */}
+        {lightboxIndex !== null &&
+          selectedItem &&
+          Array.isArray(selectedItem.metadata?.images) && (
+            <ImageLightbox
+              images={(selectedItem.metadata.images as any[]).map((img, i) => ({
+                src: img.url,
+                alt: img.name || `Attachment ${i + 1}`,
+              }))}
+              initialIndex={lightboxIndex}
+              onClose={() => setLightboxIndex(null)}
+            />
           )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete confirmation */}
-      <AlertDialog
-        open={!!deleteTarget}
-        onOpenChange={(open) => !open && setDeleteTarget(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete feedback?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete &quot;{deleteTarget?.subject}&quot;
-              and all associated notes. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="cursor-pointer">
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 cursor-pointer"
-              onClick={handleDelete}
-              disabled={deleting}
-            >
-              {deleting ? "Deleting..." : "Delete"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Lightbox */}
-      {lightboxIndex !== null &&
-        selectedItem &&
-        Array.isArray(selectedItem.metadata?.images) && (
-          <ImageLightbox
-            images={(selectedItem.metadata.images as any[]).map((img, i) => ({
-              src: img.url,
-              alt: img.name || `Attachment ${i + 1}`,
-            }))}
-            initialIndex={lightboxIndex}
-            onClose={() => setLightboxIndex(null)}
-          />
-        )}
+      </div>
     </div>
   );
 }

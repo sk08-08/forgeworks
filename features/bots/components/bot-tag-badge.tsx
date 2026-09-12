@@ -104,7 +104,7 @@ export function BotTagBadge({
     <Badge
       variant="outline"
       className={cn(
-        "min-w-0 gap-1.5 border text-xs",
+        "max-w-full min-w-0 gap-1.5 border text-xs",
         meta.badgeClassName,
         className,
       )}
@@ -126,7 +126,7 @@ export function BotTagCountBadge({
     <Badge
       variant="outline"
       className={cn(
-        "gap-1.5 border border-border bg-muted/60 text-xs text-foreground",
+        "max-w-full gap-1.5 border border-border bg-muted/60 text-xs text-foreground",
         className,
       )}
     >

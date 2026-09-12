@@ -237,13 +237,13 @@ export function FeedbackActions({
   };
 
   const ActionSheet = (
-    <form onSubmit={submit} className="space-y-6 pt-2">
-      <div className="flex w-full rounded-lg bg-muted/50 p-1">
+    <form onSubmit={submit} className="min-w-0 space-y-5 pt-2 sm:space-y-6">
+      <div className="grid w-full grid-cols-2 gap-1 rounded-xl bg-muted/50 p-1">
         <button
           type="button"
           onClick={() => setFeedbackType("suggestion")}
           className={cn(
-            "flex flex-1 items-center justify-center gap-2 rounded-md py-1.5 text-sm font-medium transition-all duration-200",
+            "flex min-w-0 items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-medium transition-all duration-200 sm:gap-2 sm:text-sm",
             feedbackType === "suggestion"
               ? "cursor-default bg-primary/10 text-primary shadow-sm"
               : "cursor-pointer text-muted-foreground hover:text-foreground",
@@ -255,7 +255,7 @@ export function FeedbackActions({
           type="button"
           onClick={() => setFeedbackType("bug")}
           className={cn(
-            "flex flex-1 items-center justify-center gap-2 rounded-md py-1.5 text-sm font-medium transition-all duration-200",
+            "flex min-w-0 items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-medium transition-all duration-200 sm:gap-2 sm:text-sm",
             feedbackType === "bug"
               ? "cursor-default bg-red-500/10 text-destructive shadow-sm"
               : "cursor-pointer text-muted-foreground hover:text-foreground",
@@ -341,13 +341,16 @@ export function FeedbackActions({
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="feedback-location" className="text-foreground/90">
             {selectLabelText}
           </Label>
           <Select value={location} onValueChange={setLocation}>
-            <SelectTrigger id="feedback-location" className="bg-muted/20">
+            <SelectTrigger
+              id="feedback-location"
+              className="bg-muted/20 w-full"
+            >
               <SelectValue
                 placeholder={
                   feedbackType === "bug"
@@ -405,7 +408,7 @@ export function FeedbackActions({
 
         <label
           htmlFor="feedback-images"
-          className="group flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border/70 bg-muted/10 px-6 py-6 transition-colors hover:bg-muted/40 hover:border-primary/50"
+          className="group flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/70 bg-muted/10 px-4 py-5 text-center transition-colors hover:border-primary/50 hover:bg-muted/40 sm:px-6 sm:py-6"
         >
           <div className="rounded-full bg-muted p-2 text-muted-foreground group-hover:text-primary transition-colors">
             <Upload className="h-4 w-4" />
@@ -457,7 +460,7 @@ export function FeedbackActions({
         </label>
 
         {images.length > 0 && (
-          <div className="mt-3 grid grid-cols-3 gap-3">
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
             {images.map((img, idx) => (
               <div
                 key={idx}
@@ -470,7 +473,7 @@ export function FeedbackActions({
                 />
                 <button
                   type="button"
-                  className="absolute right-1.5 top-1.5 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100 hover:bg-destructive"
+                  className="absolute right-1.5 top-1.5 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-black/70 text-white opacity-100 backdrop-blur-sm transition-opacity hover:bg-destructive sm:h-6 sm:w-6 sm:opacity-0 sm:group-hover:opacity-100"
                   onClick={(e) => {
                     e.preventDefault();
                     setImages((prev) => prev.filter((_, i) => i !== idx));
@@ -484,7 +487,7 @@ export function FeedbackActions({
         )}
       </div>
 
-      <div className="mt-2 flex items-center justify-between border-t border-border/50 pt-4">
+      <div className="mt-2 flex flex-col gap-3 border-t border-border/50 pt-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="hidden max-w-[60%] text-xs text-muted-foreground sm:block">
           {copy.helper}
         </p>
@@ -508,7 +511,7 @@ export function FeedbackActions({
 
   return (
     <>
-      <div className={cn("flex flex-wrap gap-2", className)}>
+      <div className={cn("flex min-w-0 flex-wrap gap-2", className)}>
         {(mode === "both" || mode === "suggestion") && (
           <Button
             type="button"
@@ -537,8 +540,8 @@ export function FeedbackActions({
 
       {isMobile ? (
         <Drawer open={open} onOpenChange={closeDialog}>
-          <DrawerContent className="max-h-[96vh]">
-            <div className="overflow-y-auto px-4 pb-10 sm:px-6">
+          <DrawerContent className="max-h-[calc(100dvh-0.5rem)]">
+            <div className="min-h-0 overflow-y-auto overscroll-contain px-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:px-6 sm:pb-10">
               <DrawerHeader className="px-0 pt-4 text-left">
                 <DrawerTitle>{copy.title}</DrawerTitle>
                 <DrawerDescription>{copy.description}</DrawerDescription>
@@ -549,8 +552,8 @@ export function FeedbackActions({
         </Drawer>
       ) : (
         <Dialog open={open} onOpenChange={closeDialog}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
+          <DialogContent className="max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] overflow-y-auto overflow-x-hidden sm:max-w-2xl">
+            <DialogHeader className="text-left">
               <DialogTitle>{copy.title}</DialogTitle>
               <DialogDescription>{copy.description}</DialogDescription>
             </DialogHeader>

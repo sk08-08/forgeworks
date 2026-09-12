@@ -98,7 +98,7 @@ export function BotTagSelector({
       {showInput && (
         <Popover open={open && !disabled} onOpenChange={setOpen}>
           <PopoverAnchor asChild>
-            <div ref={inputWrapRef} className="flex gap-2">
+            <div ref={inputWrapRef} className="flex min-w-0 gap-2">
               <Input
                 value={inputValue}
                 onChange={(e) => {
@@ -137,8 +137,12 @@ export function BotTagSelector({
             align="start"
             side="bottom"
             sideOffset={8}
-            className="z-80 overflow-hidden border border-border/70 bg-popover p-0 shadow-md"
-            style={popoverWidth ? { width: `${popoverWidth}px` } : undefined}
+            className="z-80 max-w-[calc(100vw-1.5rem)] overflow-hidden border border-border/70 bg-popover p-0 shadow-md"
+            style={
+              popoverWidth
+                ? { width: `min(${popoverWidth}px, calc(100vw - 1.5rem))` }
+                : undefined
+            }
             onOpenAutoFocus={(event) => event.preventDefault()}
             onInteractOutside={(event) => {
               if (
@@ -168,7 +172,7 @@ export function BotTagSelector({
                         type="button"
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={() => commitTag(tag.label)}
-                        className="flex w-full items-center justify-between gap-2 rounded-md px-2 py-2 text-left text-sm transition-colors hover:bg-accent"
+                        className="flex min-h-10 w-full items-center justify-between gap-2 rounded-lg px-2 py-2 text-left text-sm transition-colors hover:bg-accent"
                       >
                         <span className="flex min-w-0 items-center gap-2">
                           <span
@@ -205,7 +209,7 @@ export function BotTagSelector({
                     type="button"
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => commitTag(trimmedInput)}
-                    className="flex w-full items-center justify-between gap-2 rounded-md px-2 py-2 text-left text-sm transition-colors hover:bg-accent"
+                    className="flex min-h-10 w-full items-center justify-between gap-2 rounded-lg px-2 py-2 text-left text-sm transition-colors hover:bg-accent"
                   >
                     <span className="flex min-w-0 items-center gap-2">
                       <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border bg-muted/60 text-foreground">
@@ -233,22 +237,25 @@ export function BotTagSelector({
         </Popover>
       )}
 
-      <div className="flex flex-wrap gap-2 pt-1">
+      <div className="flex min-w-0 flex-wrap gap-2 pt-1">
         {tags.map((tag) => {
           const meta = getBotTagMeta(tag);
           return (
             <Badge
               key={tag}
               variant="outline"
-              className={cn("gap-1.5 border", meta.badgeClassName)}
+              className={cn(
+                "max-w-full min-w-0 gap-1.5 border",
+                meta.badgeClassName,
+              )}
             >
               <TagVisualIcon iconKey={meta.icon} className="h-3 w-3 shrink-0" />
-              <span>{meta.label}</span>
+              <span className="min-w-0 truncate">{meta.label}</span>
               {!disabled && (
                 <button
                   type="button"
                   onClick={() => removeTag(tag)}
-                  className="ml-0.5 cursor-pointer text-current/70 transition-colors hover:text-current"
+                  className="ml-0.5 inline-flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-full text-current/70 transition-colors hover:bg-black/5 hover:text-current dark:hover:bg-white/10"
                   aria-label={`Remove ${meta.label}`}
                 >
                   <X className="h-3 w-3" />

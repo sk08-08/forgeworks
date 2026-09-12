@@ -368,8 +368,8 @@ export function ResourceReviewDialog({
       <DialogContent
         id="resource-review-dialog"
         className={cn(
-          "flex max-h-[95dvh] w-[calc(100vw-1rem)] flex-col gap-0 overflow-hidden p-0",
-          "sm:max-h-[92vh] sm:max-w-6xl",
+          "flex max-h-[calc(100dvh-1rem)] min-h-0 w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-col gap-0 overflow-hidden p-0",
+          "sm:max-h-[92dvh] sm:max-w-6xl",
         )}
       >
         {/* ================================================================ */}
@@ -396,7 +396,7 @@ export function ResourceReviewDialog({
               </div>
             </div>
 
-            <div className="flex items-center gap-2 mr-6 self-start sm:self-auto">
+            <div className="mr-6 flex w-full items-center justify-between gap-2 self-start sm:mr-0 sm:w-auto sm:justify-start sm:self-auto">
               <Badge
                 variant={submissions.length > 0 ? "default" : "secondary"}
                 className="h-7 px-2.5"
@@ -432,7 +432,7 @@ export function ResourceReviewDialog({
           className={cn(
             "grid min-h-0 flex-1 overflow-hidden",
             "grid-rows-[auto_minmax(0,1fr)]",
-            "lg:grid-cols-[19rem_minmax(0,1fr)] lg:grid-rows-1",
+            "xl:grid-cols-[19rem_minmax(0,1fr)] xl:grid-rows-1",
           )}
         >
           {/* ============================================================== */}
@@ -442,13 +442,13 @@ export function ResourceReviewDialog({
           <aside
             className={cn(
               "border-b border-border/70 bg-muted/10",
-              "lg:min-h-0 lg:border-b-0 lg:border-r",
+              "xl:min-h-0 xl:border-b-0 xl:border-r",
             )}
           >
             <div
               className={cn(
                 "flex items-center justify-between px-4 pb-2 pt-3",
-                "lg:px-4 lg:pb-3 lg:pt-4",
+                "xl:px-4 xl:pb-3 xl:pt-4",
               )}
             >
               <div>
@@ -463,16 +463,16 @@ export function ResourceReviewDialog({
             <div
               className={cn(
                 "flex gap-2 overflow-x-auto px-3 pb-3",
-                "lg:block lg:max-h-full lg:space-y-1 lg:scrollbar-thin lg:overflow-y-auto lg:overflow-x-hidden lg:px-2 lg:pb-4",
+                "xl:block xl:max-h-full xl:space-y-1 xl:scrollbar-thin xl:overflow-y-auto xl:overflow-x-hidden xl:px-2 xl:pb-4",
               )}
             >
               {loading && submissions.length === 0 ? (
-                <div className="flex min-h-28 w-full items-center justify-center text-sm text-muted-foreground lg:min-h-48">
+                <div className="flex min-h-28 w-full items-center justify-center text-sm text-muted-foreground xl:min-h-48">
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Loading suggestions...
                 </div>
               ) : submissions.length === 0 ? (
-                <div className="flex min-h-28 w-full flex-col items-center justify-center rounded-xl border border-dashed border-border/70 px-4 text-center lg:min-h-48">
+                <div className="flex min-h-28 w-full flex-col items-center justify-center rounded-xl border border-dashed border-border/70 px-4 text-center xl:min-h-48">
                   <Check className="mb-2 h-5 w-5 text-muted-foreground" />
 
                   <p className="text-sm font-medium">Queue is clear</p>
@@ -499,7 +499,7 @@ export function ResourceReviewDialog({
                       onClick={() => setSelectedId(submission.id)}
                       className={cn(
                         "group shrink-0 cursor-pointer rounded-xl border p-3 text-left transition-colors",
-                        "w-[16rem] lg:w-full",
+                        "w-[min(16rem,82vw)] xl:w-full",
                         active
                           ? "border-primary/50 bg-primary/5 shadow-sm"
                           : "border-border/60 bg-background/70 hover:border-border hover:bg-muted/50",
@@ -587,7 +587,7 @@ export function ResourceReviewDialog({
                 </div>
               </div>
             ) : (
-              <div className="mx-auto w-full max-w-4xl space-y-5 p-4 sm:p-5 lg:p-6">
+              <div className="mx-auto w-full max-w-4xl space-y-5 p-3 sm:p-5 xl:p-6">
                 {/* -------------------------------------------------------- */}
                 {/* Submission summary */}
                 {/* -------------------------------------------------------- */}
@@ -601,7 +601,7 @@ export function ResourceReviewDialog({
 
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="truncate text-sm font-semibold">
+                          <p className="break-words text-sm font-semibold">
                             {getContributorName(contributor)}
                           </p>
 
@@ -647,7 +647,7 @@ export function ResourceReviewDialog({
                   </div>
 
                   <div className="space-y-4 p-4 sm:p-5">
-                    <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
                         <Label htmlFor="resource-review-category">
                           Category
@@ -779,7 +779,7 @@ export function ResourceReviewDialog({
 
         <DialogFooter
           className={cn(
-            "shrink-0 border-t border-border/70 bg-background/95 px-4 py-3 backdrop-blur",
+            "shrink-0 border-t border-border/70 bg-background/95 px-3 py-3 backdrop-blur",
             "sm:px-6",
           )}
         >

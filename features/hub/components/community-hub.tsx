@@ -735,7 +735,7 @@ export function CommunityHub() {
 
         <Link
           href={`/community/${record.slug}`}
-          className="relative z-10 flex flex-1 cursor-pointer flex-col p-5 text-left sm:p-6"
+          className="relative z-10 flex min-w-0 flex-1 cursor-pointer flex-col p-4 text-left sm:p-6"
         >
           <div className="flex items-start justify-between gap-4">
             <div className="flex min-w-0 items-center gap-3">
@@ -831,7 +831,7 @@ export function CommunityHub() {
             )}
           </div>
 
-          <div className="mt-5 flex min-w-0 items-center justify-between gap-3 border-t border-border/50 pt-4">
+          <div className="mt-5 flex min-w-0 flex-col items-start gap-3 border-t border-border/50 pt-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-muted-foreground">
               {date && (
                 <span className="inline-flex items-center gap-1.5">
@@ -854,7 +854,7 @@ export function CommunityHub() {
           </div>
         </Link>
 
-        <div className="relative z-20 flex flex-wrap items-center gap-2 border-t border-border/45 bg-muted/[0.12] px-5 py-3 sm:px-6">
+        <div className="relative z-20 flex min-w-0 flex-wrap items-center gap-2 border-t border-border/45 bg-muted/[0.12] px-4 py-3 sm:px-6">
           <div className="relative isolate">
             {helpfulAnimations[record.id] === "liked" && (
               <div
@@ -929,8 +929,8 @@ export function CommunityHub() {
   };
 
   return (
-    <div className="p-4 sm:p-6 md:p-8 lg:p-10">
-      <div className="mx-auto w-full min-w-0 max-w-7xl space-y-8">
+    <div className="min-w-0 overflow-x-clip p-3 sm:p-6 md:p-8 lg:p-10">
+      <div className="mx-auto w-full min-w-0 max-w-[92rem] space-y-8">
         <Link
           href="/"
           onClick={() => {
@@ -949,7 +949,7 @@ export function CommunityHub() {
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_14%_12%,rgba(255,255,255,0.12),transparent_24%),radial-gradient(circle_at_88%_18%,rgba(139,92,246,0.10),transparent_28%),linear-gradient(to_bottom_right,transparent_35%,rgba(59,130,246,0.035))]" />
           <div className="pointer-events-none absolute inset-0 opacity-[0.32] [background-image:linear-gradient(rgba(127,127,127,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(127,127,127,0.08)_1px,transparent_1px)] [background-size:32px_32px] [mask-image:linear-gradient(to_right,transparent,black_52%,black)]" />
 
-          <div className="relative z-10 grid min-h-[27rem] items-center gap-10 px-6 py-9 sm:px-9 sm:py-10 lg:grid-cols-[minmax(0,1.06fr)_minmax(21rem,0.94fr)] lg:px-11 lg:py-12">
+          <div className="relative z-10 grid min-h-[27rem] items-center gap-10 px-6 py-9 sm:px-9 sm:py-10 xl:grid-cols-[minmax(0,1.06fr)_minmax(21rem,0.94fr)] xl:px-11 xl:py-12">
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/[0.09] px-3 py-1.5 text-xs font-medium text-primary shadow-sm backdrop-blur-xl">
                 <span className="relative flex h-2 w-2">
@@ -959,7 +959,7 @@ export function CommunityHub() {
                 Community Archive
               </div>
 
-              <h1 className="mt-5 max-w-2xl text-balance text-4xl font-bold tracking-[-0.045em] sm:text-5xl lg:text-[3.35rem] lg:leading-[1.02]">
+              <h1 className="mt-5 max-w-2xl text-balance text-3xl font-bold tracking-[-0.045em] sm:text-5xl xl:text-[3.35rem] xl:leading-[1.02]">
                 Keep the context.
                 <span className="bg-linear-to-r from-primary via-violet-400 to-blue-400 bg-clip-text text-transparent">
                   {" "}
@@ -990,7 +990,7 @@ export function CommunityHub() {
                   <Button
                     type="button"
                     size="sm"
-                    className="cursor-pointer rounded-full px-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+                    className="cursor-pointer rounded-full px-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md w-full justify-center sm:w-auto"
                     onClick={() => openSubmissionDialog("record_create")}
                   >
                     <Plus className="mr-2 h-4 w-4" />
@@ -1002,7 +1002,7 @@ export function CommunityHub() {
                   <Button
                     type="button"
                     size="sm"
-                    className="cursor-pointer rounded-full px-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+                    className="cursor-pointer rounded-full px-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md w-full justify-center sm:w-auto"
                     onClick={() => setStaffCreateOpen(true)}
                   >
                     <Plus className="mr-2 h-4 w-4" />
@@ -1015,7 +1015,7 @@ export function CommunityHub() {
                     type="button"
                     size="sm"
                     variant="outline"
-                    className="cursor-pointer rounded-full bg-background/60 px-4 backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/25 hover:bg-primary/[0.045]"
+                    className="cursor-pointer rounded-full bg-background/60 px-4 backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/25 hover:bg-primary/[0.045] w-full justify-center sm:w-auto"
                     onClick={() => setReviewOpen(true)}
                   >
                     <ClipboardCheck className="mr-2 h-4 w-4" />
@@ -1047,7 +1047,7 @@ export function CommunityHub() {
               </div>
             </div>
 
-            <div className="relative hidden min-h-[20rem] lg:block">
+            <div className="relative hidden min-h-[20rem] xl:block">
               <div className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/[0.08] blur-3xl transition-transform duration-700 group-hover/hero:scale-110" />
 
               <button
@@ -1182,7 +1182,7 @@ export function CommunityHub() {
             </div>
           </div>
 
-          <div className="relative z-10 flex flex-col gap-3 border-t border-border/50 bg-background/25 px-6 py-4 backdrop-blur-md sm:px-9 lg:flex-row lg:items-center lg:justify-between lg:px-12">
+          <div className="relative z-10 flex flex-col gap-3 border-t border-border/50 bg-background/25 px-6 py-4 backdrop-blur-md sm:px-9 xl:flex-row xl:items-center xl:justify-between xl:px-12">
             <div className="flex max-w-3xl items-start gap-2 text-[11px] leading-relaxed text-muted-foreground sm:text-xs">
               <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
               <p>
@@ -1218,14 +1218,14 @@ export function CommunityHub() {
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
               <Select
                 value={statusFilter}
                 onValueChange={(value) =>
                   setStatusFilter(value as CommunityStatus | "all")
                 }
               >
-                <SelectTrigger className="h-9 w-full rounded-full bg-background/60 sm:w-48">
+                <SelectTrigger className="h-9 w-full min-w-0 rounded-full bg-background/60 sm:w-48">
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
 
@@ -1257,7 +1257,7 @@ export function CommunityHub() {
             </div>
           </div>
 
-          <div className="flex gap-2 overflow-x-auto pb-1">
+          <div className="-mx-1 flex min-w-0 gap-2 overflow-x-auto overscroll-x-contain px-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <Button
               type="button"
               size="sm"
@@ -1422,7 +1422,7 @@ export function CommunityHub() {
                   </p>
                 </div>
 
-                <div className="grid items-stretch gap-4 lg:grid-cols-2">
+                <div className="grid items-stretch gap-4 xl:grid-cols-2">
                   {featuredRecords.map((record) =>
                     renderRecordCard(record, true),
                   )}
@@ -1450,7 +1450,7 @@ export function CommunityHub() {
                   </p>
                 </div>
 
-                <div className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <div className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                   {recentRecords.map((record) => renderRecordCard(record))}
                 </div>
               </section>

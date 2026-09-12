@@ -242,9 +242,9 @@ export function ResourceSuggestionDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         id="resource-suggestion-dialog"
-        className="flex max-h-[92vh] flex-col overflow-hidden sm:max-w-4xl"
+        className="flex max-h-[calc(100dvh-1rem)] min-h-0 w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-col overflow-hidden sm:max-w-4xl"
       >
-        <DialogHeader>
+        <DialogHeader className="shrink-0 text-left">
           <DialogTitle>
             {isEditing ? "Edit your resource" : "Suggest a resource"}
           </DialogTitle>
@@ -256,10 +256,10 @@ export function ResourceSuggestionDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="min-h-0 flex-1 scrollbar-thin overflow-y-auto pr-2">
+        <div className="min-h-0 flex-1 scrollbar-thin overflow-y-auto overflow-x-hidden pr-1 sm:pr-2">
           <div className="space-y-6 py-1">
             <Tabs defaultValue="write">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-2 gap-1">
                 <TabsTrigger value="write" className="cursor-pointer">
                   <FileText className="mr-2 h-4 w-4" />
                   Write
@@ -283,7 +283,7 @@ export function ResourceSuggestionDialog({
               </TabsContent>
 
               <TabsContent value="import" className="mt-4">
-                <div className="space-y-3 rounded-xl border border-border/60 bg-muted/20 p-4">
+                <div className="space-y-3 rounded-xl border border-border/60 bg-muted/20 p-3 sm:p-4">
                   <div>
                     <p className="text-sm font-medium">Import from a website</p>
 
@@ -306,7 +306,7 @@ export function ResourceSuggestionDialog({
                       type="button"
                       onClick={handleImport}
                       disabled={importing}
-                      className="cursor-pointer sm:shrink-0"
+                      className="w-full cursor-pointer sm:w-auto sm:shrink-0"
                     >
                       {importing ? (
                         <>
@@ -331,7 +331,7 @@ export function ResourceSuggestionDialog({
               </TabsContent>
             </Tabs>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label>Category</Label>
 
@@ -415,7 +415,7 @@ export function ResourceSuggestionDialog({
               />
             </div>
 
-            <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+            <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 sm:p-4">
               <div className="flex gap-3">
                 <Send className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
 
@@ -435,7 +435,7 @@ export function ResourceSuggestionDialog({
           </div>
         </div>
 
-        <DialogFooter className="gap-2">
+        <DialogFooter className="shrink-0 gap-2 border-t border-border/60 pt-3 sm:pt-4">
           <Button
             type="button"
             variant="outline"

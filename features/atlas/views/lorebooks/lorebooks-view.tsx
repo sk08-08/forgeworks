@@ -175,12 +175,8 @@ export function LorebooksView() {
     setQuery("");
   };
 
-  if (loading && viewMode === "grid") {
-    return <AtlasLorebooksListSkeleton />;
-  }
-
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-7 p-4 pb-16 sm:p-6 md:p-8 lg:p-10">
+    <div className="mx-auto w-full max-w-[92rem] space-y-7 p-3 pb-20 sm:p-6 md:p-8 lg:p-10">
       {/* Header */}
       <section className="relative isolate overflow-hidden rounded-[2rem] border border-border/70 bg-card/85 shadow-md">
         <div className="pointer-events-none absolute inset-0 -z-10 bg-linear-to-br from-primary/[0.07] via-transparent to-fuchsia-500/[0.035]" />
@@ -214,14 +210,14 @@ export function LorebooksView() {
             </p>
           </div>
 
-          <div className="shrink-0">
+          <div className="w-full shrink-0 sm:w-auto [&_button]:w-full sm:[&_button]:w-auto">
             <CreateLorebookDialog />
           </div>
         </div>
 
         {/* Compact summary */}
-        <div className="grid border-t border-border/50 sm:grid-cols-4">
-          <div className="flex items-center gap-3 border-b border-border/50 px-5 py-4 sm:border-b-0 sm:border-r sm:px-6">
+        <div className="grid grid-cols-2 border-t border-border/50 md:grid-cols-4">
+          <div className="flex items-center gap-3 border-b border-r border-border/50 px-4 py-4 sm:px-5 md:border-b-0 md:px-6">
             <BookOpen className="h-4 w-4 text-primary" />
 
             <div>
@@ -233,7 +229,7 @@ export function LorebooksView() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 border-b border-border/50 px-5 py-4 sm:border-b-0 sm:border-r sm:px-6">
+          <div className="flex items-center gap-3 border-b border-border/50 px-4 py-4 sm:px-5 md:border-b-0 md:border-r md:px-6">
             <FileJson2 className="h-4 w-4 text-primary" />
 
             <div>
@@ -247,7 +243,7 @@ export function LorebooksView() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 border-b border-border/50 px-5 py-4 sm:border-b-0 sm:border-r sm:px-6">
+          <div className="flex items-center gap-3 border-r border-border/50 px-4 py-4 sm:px-5 md:px-6">
             <FileJson2 className="h-4 w-4 text-primary" />
 
             <div>
@@ -261,7 +257,7 @@ export function LorebooksView() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 px-5 py-4 sm:px-6">
+          <div className="flex items-center gap-3 px-4 py-4 sm:px-5 md:px-6">
             <BookOpen className="h-4 w-4 text-primary" />
 
             <div>
@@ -277,7 +273,7 @@ export function LorebooksView() {
 
       {/* Controls */}
       <section className="overflow-hidden rounded-2xl border border-border/65 bg-card/65 shadow-sm">
-        <div className="flex flex-col gap-3 border-b border-border/50 p-3 sm:p-4 lg:flex-row lg:items-center">
+        <div className="flex flex-col gap-3 border-b border-border/50 p-3 sm:p-4 xl:flex-row xl:items-center">
           <div className="relative min-w-0 flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 
@@ -300,12 +296,12 @@ export function LorebooksView() {
             ) : null}
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
             <Select
               value={sort}
               onValueChange={(value) => setSort(value as SortMode)}
             >
-              <SelectTrigger className="h-10 min-h-10 min-w-44 flex-1 cursor-pointer rounded-xl border-border/65 bg-background/60 px-3 py-0 sm:flex-none">
+              <SelectTrigger className="h-10 min-h-10 w-full min-w-0 cursor-pointer rounded-xl border-border/65 bg-background/60 px-3 py-0 sm:w-auto sm:min-w-44">
                 <SlidersHorizontal className="mr-2 h-4 w-4" />
                 <SelectValue />
               </SelectTrigger>
@@ -321,7 +317,7 @@ export function LorebooksView() {
               </SelectContent>
             </Select>
 
-            <div className="flex h-10 items-center rounded-xl border border-border/65 bg-background/60 p-1">
+            <div className="flex h-10 w-fit shrink-0 items-center self-end rounded-xl border border-border/65 bg-background/60 p-1 sm:self-auto">
               <button
                 type="button"
                 onClick={() => setViewMode("grid")}
@@ -430,8 +426,8 @@ export function LorebooksView() {
           </CardContent>
         </Card>
       ) : viewMode === "grid" ? (
-        <div className="max-h-[68vh] overflow-y-auto px-1 pt-1">
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="px-1 pt-1">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             {filtered.map((lorebook) => (
               <Link
                 key={lorebook.id}
@@ -457,7 +453,7 @@ export function LorebooksView() {
                     </div>
 
                     <div className="mt-5 min-w-0">
-                      <h2 className="truncate text-lg font-semibold tracking-tight transition-colors group-hover:text-primary">
+                      <h2 className="line-clamp-2 break-words text-lg font-semibold tracking-tight transition-colors group-hover:text-primary">
                         {lorebook.title}
                       </h2>
                     </div>
@@ -509,7 +505,7 @@ export function LorebooksView() {
           </div>
         </div>
       ) : (
-        <div className="max-h-[68vh] overflow-y-auto rounded-2xl border border-border/70 bg-card/70 shadow-sm">
+        <div className="overflow-hidden rounded-2xl border border-border/70 bg-card/70 shadow-sm">
           {filtered.map((lorebook) => (
             <Link
               key={lorebook.id}

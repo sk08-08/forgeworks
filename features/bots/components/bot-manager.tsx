@@ -229,8 +229,8 @@ function CollaborativeBotCard({
 
   if (viewMode === "list") {
     return (
-      <Card className="transition-all hover:border-primary/30 border-l-2 border-l-primary/40">
-        <CardContent className="flex items-center gap-4 p-4">
+      <Card className="min-w-0 border-l-2 border-l-primary/40 transition-all hover:border-primary/30">
+        <CardContent className="flex min-w-0 flex-col items-stretch gap-3 p-3 sm:flex-row sm:items-center sm:gap-4 sm:p-4">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 overflow-hidden">
             {bot.image_url ? (
               <img
@@ -243,8 +243,10 @@ function CollaborativeBotCard({
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="font-semibold truncate">{bot.name}</h3>
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <h3 className="min-w-0 flex-1 break-words font-semibold sm:truncate">
+                {bot.name}
+              </h3>
               <Badge
                 variant="outline"
                 className={cn("text-[10px] shrink-0", roleConf.className)}
@@ -255,7 +257,7 @@ function CollaborativeBotCard({
                 Shared
               </Badge>
             </div>
-            <p className="mt-0.5 text-sm text-muted-foreground truncate">
+            <p className="mt-0.5 line-clamp-2 break-words text-sm text-muted-foreground sm:line-clamp-1">
               {bot.short_description || "No description"}
             </p>
             {bot.owner_display_name && (
@@ -266,7 +268,11 @@ function CollaborativeBotCard({
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="ml-auto shrink-0 cursor-pointer"
+              >
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -290,7 +296,7 @@ function CollaborativeBotCard({
 
   // Grid view for collaborative bot
   return (
-    <Card className="group transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/8 hover:-translate-y-1 border-l-2 border-l-primary/40">
+    <Card className="group h-full min-w-0 border-l-2 border-l-primary/40 transition-all duration-200 hover:-translate-y-px hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5">
       <div className="relative aspect-4/5 w-full overflow-hidden bg-muted">
         {bot.image_url ? (
           <img
@@ -321,9 +327,9 @@ function CollaborativeBotCard({
           Shared
         </Badge>
       </div>
-      <CardHeader className="pb-2 pt-3">
+      <CardHeader className="min-w-0 pb-2 pt-3">
         <div className="flex items-start justify-between gap-2">
-          <CardTitle className="text-lg font-bold leading-tight flex-1 min-w-0">
+          <CardTitle className="min-w-0 flex-1 line-clamp-2 break-words text-lg font-bold leading-tight">
             {bot.name}
           </CardTitle>
           <DropdownMenu>
@@ -331,7 +337,7 @@ function CollaborativeBotCard({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100 cursor-pointer shrink-0"
+                className="h-8 w-8 shrink-0 cursor-pointer opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
               >
                 <MoreVertical className="h-4 w-4" />
               </Button>
@@ -350,7 +356,7 @@ function CollaborativeBotCard({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <CardDescription className="line-clamp-2 text-sm mt-1">
+        <CardDescription className="mt-1 line-clamp-2 break-words text-sm">
           {bot.short_description || "No description provided"}
         </CardDescription>
         {bot.owner_display_name && (
@@ -386,8 +392,8 @@ function BotCard({
 
   if (viewMode === "list") {
     return (
-      <Card className="transition-all hover:border-primary/30">
-        <CardContent className="flex items-center gap-4 p-4">
+      <Card className="min-w-0 transition-all hover:border-primary/30">
+        <CardContent className="flex min-w-0 flex-col items-stretch gap-3 p-3 sm:flex-row sm:items-center sm:gap-4 sm:p-4">
           {/* Icon / Image */}
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 overflow-hidden">
             {bot.imageUrl ? (
@@ -403,8 +409,10 @@ function BotCard({
 
           {/* Info */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="font-semibold truncate">{bot.name}</h3>
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <h3 className="min-w-0 flex-1 break-words font-semibold sm:truncate">
+                {bot.name}
+              </h3>
               <Badge
                 variant={bot.rating === "SFW" ? "secondary" : "destructive"}
                 className="shrink-0"
@@ -412,13 +420,13 @@ function BotCard({
                 {bot.rating}
               </Badge>
             </div>
-            <p className="mt-0.5 text-sm text-muted-foreground truncate">
+            <p className="mt-0.5 line-clamp-2 break-words text-sm text-muted-foreground sm:line-clamp-1">
               {bot.shortDescription || "No description"}
             </p>
           </div>
 
           {/* Stats */}
-          <div className="hidden sm:flex items-center gap-6 text-sm text-muted-foreground">
+          <div className="hidden min-w-0 items-center gap-4 text-sm text-muted-foreground md:flex xl:gap-6">
             <div className="flex items-center gap-1.5">
               <span className="font-medium text-foreground">
                 {tokenCount.toLocaleString()}
@@ -434,7 +442,11 @@ function BotCard({
           {/* Actions */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="ml-auto shrink-0 cursor-pointer"
+              >
                 <MoreVertical className="h-4 w-4 text-primary" />
               </Button>
             </DropdownMenuTrigger>
@@ -469,7 +481,7 @@ function BotCard({
 
   // Grid view
   return (
-    <Card className="group transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/8 hover:-translate-y-1">
+    <Card className="group h-full min-w-0 transition-all duration-200 hover:-translate-y-px hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5">
       {/* Large cover image */}
       <div className="relative aspect-4/5 w-full overflow-hidden bg-muted">
         {bot.imageUrl ? (
@@ -491,9 +503,9 @@ function BotCard({
           {bot.rating}
         </Badge>
       </div>
-      <CardHeader className="pb-2 pt-3">
+      <CardHeader className="min-w-0 pb-2 pt-3">
         <div className="flex items-start justify-between gap-2">
-          <CardTitle className="text-lg font-bold leading-tight flex-1 min-w-0">
+          <CardTitle className="min-w-0 flex-1 line-clamp-2 break-words text-lg font-bold leading-tight">
             {bot.name}
           </CardTitle>
           <DropdownMenu>
@@ -501,7 +513,7 @@ function BotCard({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 sm:opacity-0 opacity-100 transition-opacity group-hover:opacity-100 cursor-pointer shrink-0"
+                className="h-8 w-8 shrink-0 cursor-pointer opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
               >
                 <MoreVertical className="h-4 w-4" />
               </Button>
@@ -534,7 +546,7 @@ function BotCard({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <CardDescription className="line-clamp-2 text-sm mt-1">
+        <CardDescription className="mt-1 line-clamp-2 break-words text-sm">
           {bot.shortDescription || "No description provided"}
         </CardDescription>
       </CardHeader>
@@ -550,9 +562,9 @@ function BotCard({
         </div>
 
         {/* Footer */}
-        <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-          <span>{tokenCount.toLocaleString()} tokens</span>
-          <span className="flex items-center gap-1">
+        <div className="mt-4 flex min-w-0 flex-col gap-1.5 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+          <span className="shrink-0">{tokenCount.toLocaleString()} tokens</span>
+          <span className="flex min-w-0 items-center gap-1 sm:justify-end">
             <Clock className="h-3 w-3 text-primary" />
             {formatDateTime(bot.updatedAt)}
           </span>
@@ -568,8 +580,8 @@ function BotCard({
 
 function EmptyState({ onCreateNew }: { onCreateNew: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted">
+    <div className="flex flex-col items-center justify-center px-4 py-12 text-center sm:py-16">
+      <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border/60 bg-muted/60 sm:h-20 sm:w-20">
         <BotIcon className="h-10 w-10 text-muted-foreground" />
       </div>
       <h3 className="mt-6 text-xl font-semibold">No bots yet</h3>
@@ -577,7 +589,10 @@ function EmptyState({ onCreateNew }: { onCreateNew: () => void }) {
         Get started by creating your first bot or importing an existing
         character card.
       </p>
-      <Button className="mt-6 cursor-pointer" onClick={onCreateNew}>
+      <Button
+        className="mt-6 w-full cursor-pointer rounded-xl sm:w-auto"
+        onClick={onCreateNew}
+      >
         <Plus className="mr-2 h-4 w-4" />
         Create Your First Bot
       </Button>
@@ -889,99 +904,314 @@ export function BotManager() {
   };
 
   return (
-    <div id="bot-manager-top" className="p-4 sm:p-6 md:p-8 lg:p-10">
-      {/* Pending Collaboration Invites */}
-      <PendingInvites />
+    <div
+      id="bot-manager-top"
+      className="min-w-0 overflow-x-clip p-3 sm:p-6 md:p-8 lg:p-10"
+    >
+      <div className="mx-auto w-full max-w-[92rem]">
+        {/* Pending Collaboration Invites */}
+        <PendingInvites />
 
-      {/* Header */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-            Bot Manager
-          </h1>
-          <p className="mt-1 text-sm sm:text-base text-muted-foreground">
-            Create, edit, and manage your bot characters
-          </p>
+        {/* Header */}
+        <div className="mb-6 flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+              Bot Manager
+            </h1>
+            <p className="mt-1 text-sm sm:text-base text-muted-foreground">
+              Create, edit, and manage your bot characters
+            </p>
+          </div>
+          <Button
+            onClick={() => setIsCreating(true)}
+            className="w-full cursor-pointer sm:w-auto"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            New Bot
+          </Button>
         </div>
-        <Button
-          onClick={() => setIsCreating(true)}
-          className="cursor-pointer w-full sm:w-auto"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          New Bot
-        </Button>
-      </div>
 
-      {/* Filters */}
-      <div className="mb-6 flex flex-col gap-3">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <FilteredSearchInput
-            searchValue={searchQuery}
-            onSearchChange={setSearchQuery}
-            searchPlaceholder="Search bots..."
-            shortcutKey="/"
-            filterOptions={[
-              { value: "all", label: "All" },
-              { value: "SFW", label: "SFW" },
-              { value: "NSFW", label: "NSFW" },
-            ]}
-            filterValue={filterRating}
-            onFilterChange={(v) => setFilterRating(v as FilterRating)}
-            className="flex-1"
-          />
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowAdvancedFilters((value) => !value)}
-              className="cursor-pointer h-10"
-            >
-              <SlidersHorizontal className="mr-2 h-4 w-4" />
-              {showAdvancedFilters ? "Hide filters" : "More filters"}
-            </Button>
-            <div className="flex items-center gap-1 rounded-lg border p-1 w-full sm:w-auto">
+        {/* Filters */}
+        <div className="mb-6 flex flex-col gap-3">
+          <div className="flex min-w-0 flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+            <FilteredSearchInput
+              searchValue={searchQuery}
+              onSearchChange={setSearchQuery}
+              searchPlaceholder="Search bots..."
+              shortcutKey="/"
+              filterOptions={[
+                { value: "all", label: "All" },
+                { value: "SFW", label: "SFW" },
+                { value: "NSFW", label: "NSFW" },
+              ]}
+              filterValue={filterRating}
+              onFilterChange={(v) => setFilterRating(v as FilterRating)}
+              className="min-w-0 flex-1"
+            />
+            <div className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:w-auto sm:gap-3">
               <Button
-                variant={viewMode === "grid" ? "secondary" : "ghost"}
+                variant="outline"
                 size="sm"
-                onClick={() => setViewMode("grid")}
-                className="cursor-pointer flex-1 sm:flex-none"
+                onClick={() => setShowAdvancedFilters((value) => !value)}
+                className="h-10 w-full cursor-pointer sm:w-auto"
               >
-                <Grid3X3 className="h-4 w-4" />
+                <SlidersHorizontal className="mr-2 h-4 w-4" />
+                {showAdvancedFilters ? "Hide filters" : "More filters"}
               </Button>
-              <Button
-                variant={viewMode === "list" ? "secondary" : "ghost"}
-                size="sm"
-                onClick={() => setViewMode("list")}
-                className="cursor-pointer flex-1 sm:flex-none"
-              >
-                <List className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-1 rounded-lg border p-1 sm:w-auto">
+                <Button
+                  variant={viewMode === "grid" ? "secondary" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("grid")}
+                  className="cursor-pointer flex-1 sm:flex-none"
+                >
+                  <Grid3X3 className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === "list" ? "secondary" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("list")}
+                  className="cursor-pointer flex-1 sm:flex-none"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div
+            className={cn(
+              "overflow-hidden rounded-xl border bg-muted/20 px-4 py-0 transition-all duration-300 ease-out",
+              showAdvancedFilters
+                ? "mt-2 max-h-80 border-border/70 opacity-100"
+                : "mt-0 max-h-0 border-transparent opacity-0",
+            )}
+          >
+            <div className="py-4">
+              <div className="mb-3 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-medium">Advanced filters</p>
+                  <p className="text-xs text-muted-foreground">
+                    Pick a quick time range and a tag without extra typing
+                  </p>
+                </div>
+                {(hasAdvancedFilters ||
+                  searchQuery.trim() ||
+                  filterRating !== "all") && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSearchQuery("");
+                      setFilterRating("all");
+                      setFilterCreatedRange("any");
+                      setFilterUpdatedRange("any");
+                      setFilterTag("all");
+                    }}
+                    className="w-full cursor-pointer sm:w-auto"
+                  >
+                    Clear filters
+                  </Button>
+                )}
+              </div>
+
+              <div className="grid gap-3 lg:grid-cols-2 2xl:grid-cols-3">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Created</label>
+                  <Select
+                    value={filterCreatedRange}
+                    onValueChange={(value) =>
+                      setFilterCreatedRange(value as DateRangePreset)
+                    }
+                  >
+                    <SelectTrigger className="h-10 w-full">
+                      <SelectValue placeholder="Any time" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="any">Any time</SelectItem>
+                      <SelectItem value="today">Today</SelectItem>
+                      <SelectItem value="last7">Last 7 days</SelectItem>
+                      <SelectItem value="last30">Last 30 days</SelectItem>
+                      <SelectItem value="month">This month</SelectItem>
+                      <SelectItem value="year">This year</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Updated</label>
+                  <Select
+                    value={filterUpdatedRange}
+                    onValueChange={(value) =>
+                      setFilterUpdatedRange(value as DateRangePreset)
+                    }
+                  >
+                    <SelectTrigger className="h-10 w-full">
+                      <SelectValue placeholder="Any time" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="any">Any time</SelectItem>
+                      <SelectItem value="today">Today</SelectItem>
+                      <SelectItem value="last7">Last 7 days</SelectItem>
+                      <SelectItem value="last30">Last 30 days</SelectItem>
+                      <SelectItem value="month">This month</SelectItem>
+                      <SelectItem value="year">This year</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Tag</label>
+                  <Select value={filterTag} onValueChange={setFilterTag}>
+                    <SelectTrigger className="h-10 w-full">
+                      <SelectValue placeholder="All tags" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All tags</SelectItem>
+                      {availableTags.map((tag) => (
+                        <SelectItem key={tag} value={tag}>
+                          {tag}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div
-          className={cn(
-            "overflow-hidden rounded-xl border bg-muted/20 px-4 py-0 transition-all duration-300 ease-out",
-            showAdvancedFilters
-              ? "mt-2 max-h-80 border-border/70 opacity-100"
-              : "mt-0 max-h-0 border-transparent opacity-0",
-          )}
-        >
-          <div className="py-4">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <p className="text-sm font-medium">Advanced filters</p>
-                <p className="text-xs text-muted-foreground">
-                  Pick a quick time range and a tag without extra typing
-                </p>
-              </div>
-              {(hasAdvancedFilters ||
-                searchQuery.trim() ||
-                filterRating !== "all") && (
+        {/* Bot List */}
+        {isSearching ? (
+          <div className="flex items-center justify-center py-12 text-muted-foreground">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent mr-2" />
+            Searching...
+          </div>
+        ) : paginatedOwnedBots.length > 0 || collaborativeBots.length > 0 ? (
+          <div
+            className={cn(
+              viewMode === "grid"
+                ? "grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+                : "space-y-3",
+            )}
+          >
+            {/* Owned bots */}
+            {paginatedOwnedBots.map((bot) => (
+              <BotCard
+                key={bot.id}
+                bot={bot}
+                viewMode={viewMode}
+                onEdit={() => setEditingBot(bot)}
+                onDelete={() => setDeleteConfirmBot(bot)}
+                onExport={() => handleExportBot(bot)}
+                onWorkspace={() => {
+                  router.push(`/workspace/bots/${bot.id}`);
+                }}
+                onFork={async () => {
+                  setForking(true);
+                  const result = await forkBot(bot.id);
+                  setForking(false);
+                  if (result.success) {
+                    try {
+                      const supabase = createClient();
+                      const { data: forkedBotData } = await supabase
+                        .from("bots")
+                        .select("*")
+                        .eq("id", result.forkedBotId)
+                        .single();
+                      if (forkedBotData) {
+                        upsertBot({
+                          id: forkedBotData.id,
+                          ownerId: forkedBotData.user_id || undefined,
+                          chatName: forkedBotData.chat_name || undefined,
+                          name: forkedBotData.name,
+                          shortDescription:
+                            forkedBotData.short_description || "",
+                          personality: forkedBotData.personality || "",
+                          firstMessage: forkedBotData.first_message || "",
+                          alternateGreetings: Array.isArray(
+                            forkedBotData.alternate_greetings,
+                          )
+                            ? forkedBotData.alternate_greetings
+                            : [],
+                          scenario: forkedBotData.scenario || "",
+                          exampleDialogues:
+                            forkedBotData.example_dialogues || "",
+                          tags: Array.isArray(forkedBotData.tags)
+                            ? forkedBotData.tags
+                            : [],
+                          rating:
+                            forkedBotData.rating === "NSFW" ? "NSFW" : "SFW",
+                          imageUrl: forkedBotData.image_url || undefined,
+                          createdAt: forkedBotData.created_at
+                            ? new Date(forkedBotData.created_at)
+                            : new Date(),
+                          updatedAt: forkedBotData.updated_at
+                            ? new Date(forkedBotData.updated_at)
+                            : new Date(),
+                        });
+                      }
+                    } catch {
+                      // Bot will appear on next page load anyway
+                    }
+                    toast.success(`Bot "${bot.name}" forked successfully!`);
+                  } else {
+                    toast.error(result.error || "Failed to fork bot");
+                  }
+                }}
+              />
+            ))}
+
+            {/* Collaborative bots (shared with me) */}
+            {filteredCollaborativeBots.map((collabBot) => (
+              <CollaborativeBotCard
+                key={`collab-${collabBot.id}`}
+                bot={collabBot}
+                viewMode={viewMode}
+                onWorkspace={() => {
+                  router.push(`/workspace/bots/${collabBot.id}`);
+                }}
+                onExport={() => {
+                  // Export using the bot data from collaborative bot
+                  const botForExport: Bot = {
+                    id: collabBot.id,
+                    ownerId: collabBot.user_id,
+                    name: collabBot.name,
+                    chatName: collabBot.chat_name || undefined,
+                    shortDescription: collabBot.short_description,
+                    personality: collabBot.personality,
+                    firstMessage: collabBot.first_message,
+                    alternateGreetings: collabBot.alternate_greetings,
+                    scenario: collabBot.scenario,
+                    exampleDialogues: collabBot.example_dialogues,
+                    tags: collabBot.tags,
+                    rating: collabBot.rating as "SFW" | "NSFW",
+                    createdAt: new Date(collabBot.created_at),
+                    updatedAt: new Date(collabBot.updated_at),
+                    imageUrl: collabBot.image_url || undefined,
+                  };
+                  handleExportBot(botForExport);
+                }}
+              />
+            ))}
+          </div>
+        ) : !isSearchActive &&
+          filteredOwnedBots.length === 0 &&
+          filteredCollaborativeBots.length === 0 ? (
+          <Card>
+            <EmptyState onCreateNew={() => setIsCreating(true)} />
+          </Card>
+        ) : (
+          <Card>
+            <CardContent className="px-4 py-10 text-center sm:py-12">
+              <p className="text-muted-foreground">
+                {isSearchActive
+                  ? `No bots found for your current filters`
+                  : "No bots match your search criteria"}
+              </p>
+              {isSearchActive && (
                 <Button
-                  variant="ghost"
-                  size="sm"
+                  variant="link"
                   onClick={() => {
                     setSearchQuery("");
                     setFilterRating("all");
@@ -994,397 +1224,189 @@ export function BotManager() {
                   Clear filters
                 </Button>
               )}
-            </div>
+            </CardContent>
+          </Card>
+        )}
 
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium">Created</label>
-                <Select
-                  value={filterCreatedRange}
-                  onValueChange={(value) =>
-                    setFilterCreatedRange(value as DateRangePreset)
-                  }
-                >
-                  <SelectTrigger className="h-10 w-full">
-                    <SelectValue placeholder="Any time" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="any">Any time</SelectItem>
-                    <SelectItem value="today">Today</SelectItem>
-                    <SelectItem value="last7">Last 7 days</SelectItem>
-                    <SelectItem value="last30">Last 30 days</SelectItem>
-                    <SelectItem value="month">This month</SelectItem>
-                    <SelectItem value="year">This year</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium">Updated</label>
-                <Select
-                  value={filterUpdatedRange}
-                  onValueChange={(value) =>
-                    setFilterUpdatedRange(value as DateRangePreset)
-                  }
-                >
-                  <SelectTrigger className="h-10 w-full">
-                    <SelectValue placeholder="Any time" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="any">Any time</SelectItem>
-                    <SelectItem value="today">Today</SelectItem>
-                    <SelectItem value="last7">Last 7 days</SelectItem>
-                    <SelectItem value="last30">Last 30 days</SelectItem>
-                    <SelectItem value="month">This month</SelectItem>
-                    <SelectItem value="year">This year</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium">Tag</label>
-                <Select value={filterTag} onValueChange={setFilterTag}>
-                  <SelectTrigger className="h-10 w-full">
-                    <SelectValue placeholder="All tags" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All tags</SelectItem>
-                    {availableTags.map((tag) => (
-                      <SelectItem key={tag} value={tag}>
-                        {tag}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Bot List */}
-      {isSearching ? (
-        <div className="flex items-center justify-center py-12 text-muted-foreground">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent mr-2" />
-          Searching...
-        </div>
-      ) : paginatedOwnedBots.length > 0 || collaborativeBots.length > 0 ? (
-        <div
-          className={cn(
-            viewMode === "grid"
-              ? "grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-              : "space-y-3",
-          )}
+        {/* Create/Edit Sheet */}
+        <Sheet
+          open={isCreating || !!editingBot}
+          onOpenChange={(open) => {
+            if (!open) {
+              setIsCreating(false);
+              setEditingBot(null);
+            }
+          }}
         >
-          {/* Owned bots */}
-          {paginatedOwnedBots.map((bot) => (
-            <BotCard
-              key={bot.id}
-              bot={bot}
-              viewMode={viewMode}
-              onEdit={() => setEditingBot(bot)}
-              onDelete={() => setDeleteConfirmBot(bot)}
-              onExport={() => handleExportBot(bot)}
-              onWorkspace={() => {
-                router.push(`/workspace/bots/${bot.id}`);
-              }}
-              onFork={async () => {
-                setForking(true);
-                const result = await forkBot(bot.id);
-                setForking(false);
-                if (result.success) {
-                  try {
-                    const supabase = createClient();
-                    const { data: forkedBotData } = await supabase
-                      .from("bots")
-                      .select("*")
-                      .eq("id", result.forkedBotId)
-                      .single();
-                    if (forkedBotData) {
-                      upsertBot({
-                        id: forkedBotData.id,
-                        ownerId: forkedBotData.user_id || undefined,
-                        chatName: forkedBotData.chat_name || undefined,
-                        name: forkedBotData.name,
-                        shortDescription: forkedBotData.short_description || "",
-                        personality: forkedBotData.personality || "",
-                        firstMessage: forkedBotData.first_message || "",
-                        alternateGreetings: Array.isArray(
-                          forkedBotData.alternate_greetings,
-                        )
-                          ? forkedBotData.alternate_greetings
-                          : [],
-                        scenario: forkedBotData.scenario || "",
-                        exampleDialogues: forkedBotData.example_dialogues || "",
-                        tags: Array.isArray(forkedBotData.tags)
-                          ? forkedBotData.tags
-                          : [],
-                        rating:
-                          forkedBotData.rating === "NSFW" ? "NSFW" : "SFW",
-                        imageUrl: forkedBotData.image_url || undefined,
-                        createdAt: forkedBotData.created_at
-                          ? new Date(forkedBotData.created_at)
-                          : new Date(),
-                        updatedAt: forkedBotData.updated_at
-                          ? new Date(forkedBotData.updated_at)
-                          : new Date(),
-                      });
-                    }
-                  } catch {
-                    // Bot will appear on next page load anyway
-                  }
-                  toast.success(`Bot "${bot.name}" forked successfully!`);
-                } else {
-                  toast.error(result.error || "Failed to fork bot");
-                }
-              }}
-            />
-          ))}
-
-          {/* Collaborative bots (shared with me) */}
-          {filteredCollaborativeBots.map((collabBot) => (
-            <CollaborativeBotCard
-              key={`collab-${collabBot.id}`}
-              bot={collabBot}
-              viewMode={viewMode}
-              onWorkspace={() => {
-                router.push(`/workspace/bots/${collabBot.id}`);
-              }}
-              onExport={() => {
-                // Export using the bot data from collaborative bot
-                const botForExport: Bot = {
-                  id: collabBot.id,
-                  ownerId: collabBot.user_id,
-                  name: collabBot.name,
-                  chatName: collabBot.chat_name || undefined,
-                  shortDescription: collabBot.short_description,
-                  personality: collabBot.personality,
-                  firstMessage: collabBot.first_message,
-                  alternateGreetings: collabBot.alternate_greetings,
-                  scenario: collabBot.scenario,
-                  exampleDialogues: collabBot.example_dialogues,
-                  tags: collabBot.tags,
-                  rating: collabBot.rating as "SFW" | "NSFW",
-                  createdAt: new Date(collabBot.created_at),
-                  updatedAt: new Date(collabBot.updated_at),
-                  imageUrl: collabBot.image_url || undefined,
-                };
-                handleExportBot(botForExport);
-              }}
-            />
-          ))}
-        </div>
-      ) : !isSearchActive &&
-        filteredOwnedBots.length === 0 &&
-        filteredCollaborativeBots.length === 0 ? (
-        <Card>
-          <EmptyState onCreateNew={() => setIsCreating(true)} />
-        </Card>
-      ) : (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">
-              {isSearchActive
-                ? `No bots found for your current filters`
-                : "No bots match your search criteria"}
-            </p>
-            {isSearchActive && (
-              <Button
-                variant="link"
-                onClick={() => {
-                  setSearchQuery("");
-                  setFilterRating("all");
-                  setFilterCreatedRange("any");
-                  setFilterUpdatedRange("any");
-                  setFilterTag("all");
+          <SheetContent className="max-h-dvh w-full min-w-0 overflow-y-auto overflow-x-hidden overscroll-contain pb-[env(safe-area-inset-bottom)] sm:max-w-2xl">
+            <SheetHeader className="p-4 sm:p-5 lg:p-6">
+              <SheetTitle>
+                {editingBot ? "Edit Bot" : "Create New Bot"}
+              </SheetTitle>
+              <SheetDescription>
+                {editingBot
+                  ? "Update your bot's details and personality"
+                  : "Fill in the details to create a new bot character"}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="min-w-0">
+              <BotForm
+                initialData={editingBot || undefined}
+                onSubmit={editingBot ? handleUpdateBot : handleCreateBot}
+                onCancel={() => {
+                  setIsCreating(false);
+                  setEditingBot(null);
                 }}
-                className="cursor-pointer"
+                onDelete={
+                  editingBot ? () => setDeleteConfirmBot(editingBot) : undefined
+                }
+                isEditing={!!editingBot}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog
+          open={!!deleteConfirmBot}
+          onOpenChange={(open) => !open && setDeleteConfirmBot(null)}
+        >
+          <DialogContent className="max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] overflow-y-auto sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+                Delete Bot
+              </DialogTitle>
+              <DialogDescription>
+                You are about to delete{" "}
+                <span className="font-semibold text-foreground">
+                  &quot;{deleteConfirmBot?.name}&quot;
+                </span>
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 rounded-xl border border-destructive/20 bg-destructive/5 p-3 text-sm sm:p-4">
+              <p className="font-medium text-destructive">What happens:</p>
+              <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
+                <li>
+                  The bot will be deleted from your dashboard and public pages
+                </li>
+                <li>
+                  Collaborators will lose access to this bot&apos;s workspace
+                </li>
+                <li>
+                  If this bot is linked on your creator page, it will no longer
+                  be visible to visitors
+                </li>
+                <li>Character card data is preserved for potential recovery</li>
+              </ul>
+            </div>
+            <DialogFooter className="gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setDeleteConfirmBot(null)}
+                className="w-full cursor-pointer sm:w-auto"
               >
-                Clear filters
+                Cancel
               </Button>
-            )}
-          </CardContent>
-        </Card>
-      )}
+              <Button
+                variant="destructive"
+                onClick={handleDeleteBot}
+                className="w-full cursor-pointer sm:w-auto"
+              >
+                Delete Bot
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
-      {/* Create/Edit Sheet */}
-      <Sheet
-        open={isCreating || !!editingBot}
-        onOpenChange={(open) => {
-          if (!open) {
-            setIsCreating(false);
-            setEditingBot(null);
-          }
-        }}
-      >
-        <SheetContent className="w-full overflow-y-auto sm:max-w-2xl">
-          <SheetHeader className="p-4 lg:p-6">
-            <SheetTitle>
-              {editingBot ? "Edit Bot" : "Create New Bot"}
-            </SheetTitle>
-            <SheetDescription>
-              {editingBot
-                ? "Update your bot's details and personality"
-                : "Fill in the details to create a new bot character"}
-            </SheetDescription>
-          </SheetHeader>
-          <div className="mt-6">
-            <BotForm
-              initialData={editingBot || undefined}
-              onSubmit={editingBot ? handleUpdateBot : handleCreateBot}
-              onCancel={() => {
-                setIsCreating(false);
-                setEditingBot(null);
-              }}
-              onDelete={
-                editingBot ? () => setDeleteConfirmBot(editingBot) : undefined
-              }
-              isEditing={!!editingBot}
-            />
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-muted-foreground">
+              Showing {rangeStart}-{rangeEnd} of {ownedTotal} bots
+            </p>
+            <Pagination className="w-full sm:w-auto">
+              <PaginationContent className="w-full justify-between sm:w-auto sm:justify-center">
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage <= 0) return;
+                      if (isSearchActive) {
+                        handlePageChange(currentPage - 1);
+                      } else {
+                        setManagerPage((prev) => Math.max(0, prev - 1));
+                      }
+                      document
+                        .getElementById("bot-manager-top")
+                        ?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className={cn(
+                      "cursor-pointer",
+                      currentPage === 0 && "pointer-events-none opacity-50",
+                    )}
+                  />
+                </PaginationItem>
+                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                  const page =
+                    totalPages <= 5
+                      ? i
+                      : Math.max(0, Math.min(currentPage - 2, totalPages - 5)) +
+                        i;
+                  return (
+                    <PaginationItem key={page} className="hidden sm:block">
+                      <PaginationLink
+                        href="#"
+                        isActive={page === currentPage}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (page === currentPage) return;
+                          if (isSearchActive) {
+                            handlePageChange(page);
+                          } else {
+                            setManagerPage(page);
+                          }
+                          document
+                            .getElementById("bot-manager-top")
+                            ?.scrollIntoView({ behavior: "smooth" });
+                        }}
+                        className="cursor-pointer"
+                      >
+                        {page + 1}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                })}
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage >= totalPages - 1) return;
+                      if (isSearchActive) {
+                        handlePageChange(currentPage + 1);
+                      } else {
+                        setManagerPage((prev) =>
+                          Math.min(totalPages - 1, prev + 1),
+                        );
+                      }
+                      document
+                        .getElementById("bot-manager-top")
+                        ?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className={cn(
+                      "cursor-pointer",
+                      currentPage >= totalPages - 1 &&
+                        "pointer-events-none opacity-50",
+                    )}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           </div>
-        </SheetContent>
-      </Sheet>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog
-        open={!!deleteConfirmBot}
-        onOpenChange={(open) => !open && setDeleteConfirmBot(null)}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
-              Delete Bot
-            </DialogTitle>
-            <DialogDescription>
-              You are about to delete{" "}
-              <span className="font-semibold text-foreground">
-                &quot;{deleteConfirmBot?.name}&quot;
-              </span>
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3 rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-sm">
-            <p className="font-medium text-destructive">What happens:</p>
-            <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-              <li>
-                The bot will be deleted from your dashboard and public pages
-              </li>
-              <li>
-                Collaborators will lose access to this bot&apos;s workspace
-              </li>
-              <li>
-                If this bot is linked on your creator page, it will no longer be
-                visible to visitors
-              </li>
-              <li>Character card data is preserved for potential recovery</li>
-            </ul>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteConfirmBot(null)}
-              className="cursor-pointer"
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDeleteBot}
-              className="cursor-pointer"
-            >
-              Delete Bot
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-6 flex items-center justify-between">
-          <p className="text-xs text-muted-foreground">
-            Showing {rangeStart}-{rangeEnd} of {ownedTotal} bots
-          </p>
-          <Pagination className="w-auto">
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage <= 0) return;
-                    if (isSearchActive) {
-                      handlePageChange(currentPage - 1);
-                    } else {
-                      setManagerPage((prev) => Math.max(0, prev - 1));
-                    }
-                    document
-                      .getElementById("bot-manager-top")
-                      ?.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className={cn(
-                    "cursor-pointer",
-                    currentPage === 0 && "pointer-events-none opacity-50",
-                  )}
-                />
-              </PaginationItem>
-              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                const page =
-                  totalPages <= 5
-                    ? i
-                    : Math.max(0, Math.min(currentPage - 2, totalPages - 5)) +
-                      i;
-                return (
-                  <PaginationItem key={page}>
-                    <PaginationLink
-                      href="#"
-                      isActive={page === currentPage}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (page === currentPage) return;
-                        if (isSearchActive) {
-                          handlePageChange(page);
-                        } else {
-                          setManagerPage(page);
-                        }
-                        document
-                          .getElementById("bot-manager-top")
-                          ?.scrollIntoView({ behavior: "smooth" });
-                      }}
-                      className="cursor-pointer"
-                    >
-                      {page + 1}
-                    </PaginationLink>
-                  </PaginationItem>
-                );
-              })}
-              <PaginationItem>
-                <PaginationNext
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage >= totalPages - 1) return;
-                    if (isSearchActive) {
-                      handlePageChange(currentPage + 1);
-                    } else {
-                      setManagerPage((prev) =>
-                        Math.min(totalPages - 1, prev + 1),
-                      );
-                    }
-                    document
-                      .getElementById("bot-manager-top")
-                      ?.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className={cn(
-                    "cursor-pointer",
-                    currentPage >= totalPages - 1 &&
-                      "pointer-events-none opacity-50",
-                  )}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

@@ -36,11 +36,18 @@ export function FormDeactivationPage({
   const safeRedirectUrl = /^https?:\/\//i.test(redirectUrl) ? redirectUrl : "";
 
   return (
-    <div className={cn("bg-background", preview ? "w-full" : "min-h-screen")}>
+    <div
+      className={cn(
+        "min-w-0 overflow-x-clip bg-background",
+        preview ? "w-full" : "min-h-dvh",
+      )}
+    >
       <div
         className={cn(
           "mx-auto w-full",
-          preview ? "max-w-none p-4 sm:p-5" : "max-w-xl px-4 pt-8 sm:pt-16",
+          preview
+            ? "max-w-none p-3 sm:p-5"
+            : "max-w-xl px-3 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-6 sm:px-4 sm:pt-16",
         )}
       >
         {/* Top accent */}
@@ -94,7 +101,7 @@ export function FormDeactivationPage({
           <div
             className={cn(
               "rounded-2xl border",
-              preview ? "space-y-3 p-5" : "space-y-4 p-8",
+              preview ? "space-y-3 p-4 sm:p-5" : "space-y-4 p-5 sm:p-8",
             )}
             style={{
               borderColor: `${safeAccent}25`,
@@ -121,7 +128,7 @@ export function FormDeactivationPage({
             </div>
 
             {message ? (
-              <div className="rendered-markdown break-words text-sm leading-relaxed text-muted-foreground sm:text-base">
+              <div className="rendered-markdown min-w-0 break-words text-sm leading-relaxed text-muted-foreground sm:text-base [&_a]:break-all [&_code]:break-words [&_pre]:max-w-full [&_pre]:overflow-x-auto">
                 <MarkdownRenderer content={message} />
               </div>
             ) : (
@@ -136,7 +143,7 @@ export function FormDeactivationPage({
           {safeRedirectUrl &&
             (preview ? (
               <div
-                className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-md"
+                className="inline-flex max-w-full items-center justify-center gap-2 break-words rounded-xl px-5 py-2.5 text-center text-sm font-semibold text-white shadow-md"
                 style={{
                   background: `linear-gradient(
                     135deg,
@@ -154,7 +161,7 @@ export function FormDeactivationPage({
                 href={safeRedirectUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white no-underline shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl"
+                className="inline-flex w-full max-w-full items-center justify-center gap-2 break-words rounded-xl px-5 py-3 text-center text-sm font-semibold text-white no-underline shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl sm:w-auto sm:px-6"
                 style={{
                   background: `linear-gradient(
                     135deg,

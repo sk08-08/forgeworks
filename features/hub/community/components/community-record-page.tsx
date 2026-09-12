@@ -375,7 +375,7 @@ function SectionHeading({
           {eyebrow}
         </p>
 
-        <h2 className="mt-1 text-xl font-semibold tracking-tight sm:text-2xl">
+        <h2 className="mt-1 break-words text-xl font-semibold tracking-tight sm:text-2xl">
           {title}
         </h2>
 
@@ -988,7 +988,7 @@ export function CommunityRecordPage({
                 type="button"
                 size="sm"
                 variant="outline"
-                className="cursor-pointer rounded-full"
+                className="w-full cursor-pointer rounded-full sm:w-auto"
                 onClick={shareRecord}
               >
                 <Share2 className="mr-2 h-3.5 w-3.5" />
@@ -1014,7 +1014,7 @@ export function CommunityRecordPage({
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_8%,rgba(255,255,255,0.12),transparent_28%),radial-gradient(circle_at_90%_12%,rgba(139,92,246,0.12),transparent_28%)]" />
             <div className="pointer-events-none absolute inset-0 opacity-[0.24] [background-image:linear-gradient(rgba(127,127,127,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(127,127,127,0.08)_1px,transparent_1px)] [background-size:34px_34px] [mask-image:linear-gradient(to_right,transparent,black_45%,black)]" />
 
-            <div className="relative grid gap-8 px-6 py-7 sm:px-8 sm:py-9 lg:grid-cols-[minmax(0,1fr)_19rem] lg:px-10 lg:py-10">
+            <div className="relative grid gap-8 px-6 py-7 sm:px-8 sm:py-9 xl:grid-cols-[minmax(0,1fr)_19rem] lg:px-10 lg:py-10">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <span
@@ -1091,7 +1091,7 @@ export function CommunityRecordPage({
                 </div>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+              <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
                 <div className="rounded-2xl border border-border/60 bg-background/55 p-4 shadow-sm backdrop-blur">
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
@@ -1593,7 +1593,7 @@ export function CommunityRecordPage({
                       <Button
                         type="button"
                         size="sm"
-                        className="cursor-pointer rounded-full"
+                        className="w-full cursor-pointer rounded-full sm:w-auto"
                         disabled={
                           postingComment || commentDraft.trim().length === 0
                         }
@@ -1658,12 +1658,12 @@ export function CommunityRecordPage({
                                   {comment.author?.username ? (
                                     <Link
                                       href={`/profile/${comment.author.username}`}
-                                      className="truncate text-sm font-medium transition-colors hover:text-primary hover:underline"
+                                      className="break-words text-sm font-medium transition-colors hover:text-primary hover:underline"
                                     >
                                       {authorName}
                                     </Link>
                                   ) : (
-                                    <p className="truncate text-sm font-medium">
+                                    <p className="break-words text-sm font-medium">
                                       {authorName}
                                     </p>
                                   )}
@@ -1912,7 +1912,7 @@ export function CommunityRecordPage({
             <AlertDialogFooter>
               <AlertDialogCancel
                 disabled={deletingComment}
-                className="cursor-pointer"
+                className="w-full cursor-pointer sm:w-auto"
               >
                 Cancel
               </AlertDialogCancel>
@@ -1971,7 +1971,7 @@ export function CommunityRecordPage({
                     recordAdminAction === "archive" ||
                     recordAdminAction === "restore"
                   }
-                  className="cursor-pointer"
+                  className="w-full cursor-pointer sm:w-auto"
                 >
                   Cancel
                 </AlertDialogCancel>
@@ -2043,7 +2043,7 @@ export function CommunityRecordPage({
               <AlertDialogFooter>
                 <AlertDialogCancel
                   disabled={recordAdminAction === "delete"}
-                  className="cursor-pointer"
+                  className="w-full cursor-pointer sm:w-auto"
                 >
                   Cancel
                 </AlertDialogCancel>

@@ -116,7 +116,7 @@ export function CreateLorebookDialog({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="max-h-[calc(100dvh-1.5rem)] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>Create a Lorebook</DialogTitle>
           <DialogDescription>
@@ -178,7 +178,7 @@ export function CreateLorebookDialog({
                 maxLength={160}
               />
             </div>
-            <div className="rounded-2xl border border-dashed border-border/70 bg-muted/15 p-5 text-center">
+            <div className="rounded-2xl border border-dashed border-border/70 bg-muted/15 p-4 sm:p-5 text-center">
               <Upload className="mx-auto h-6 w-6 text-primary" />
               <p className="mt-2 text-sm font-medium">
                 Janitor AI lorebook JSON

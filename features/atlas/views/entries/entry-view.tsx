@@ -553,58 +553,66 @@ export function EntryView({ entryId }: { entryId: string }) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-6 p-4 pb-28 sm:p-6 md:p-8 lg:p-10">
-      <section className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <Link
-            href="/atlas/entries"
-            className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" /> All entries
-          </Link>
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="truncate text-3xl font-bold tracking-tight sm:text-4xl">
-              {entry.title}
-            </h1>
-            <EntryTypeBadge kind={entry.entryType} />
-          </div>
-          <p className="mt-2 text-xs text-muted-foreground">
-            Updated{" "}
-            {new Intl.DateTimeFormat(undefined, {
-              dateStyle: "medium",
-              timeStyle: "short",
-            }).format(new Date(entry.updatedAt))}
-          </p>
-        </div>
-
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              variant="outline"
-              className="text-destructive hover:text-destructive cursor-pointer"
+    <div
+      className="mx-auto w-full max-w-[92rem] space-y-6 p-3 sm:p-6 md:p-8 lg:p-10"
+      style={{
+        paddingBottom: "calc(7rem + env(safe-area-inset-bottom))",
+      }}
+    >
+      <section className="relative isolate overflow-hidden rounded-[1.75rem] border border-border/70 bg-card/70 p-5 shadow-sm sm:p-6 lg:p-7">
+        <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
+        <div className="relative flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <Link
+              href="/atlas/entries"
+              className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
             >
-              <Trash2 className="mr-2 h-4 w-4" /> Delete
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete “{entry.title}”?</AlertDialogTitle>
-              <AlertDialogDescription>
-                The entry will be soft-deleted and disappear from Worlds,
-                Collections, Lorebooks and Relations through their links.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={remove}>
-                Delete entry
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+              <ArrowLeft className="h-4 w-4" /> All entries
+            </Link>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="break-words text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
+                {entry.title}
+              </h1>
+              <EntryTypeBadge kind={entry.entryType} />
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Updated{" "}
+              {new Intl.DateTimeFormat(undefined, {
+                dateStyle: "medium",
+                timeStyle: "short",
+              }).format(new Date(entry.updatedAt))}
+            </p>
+          </div>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                className="text-destructive hover:text-destructive cursor-pointer"
+              >
+                <Trash2 className="mr-2 h-4 w-4" /> Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete “{entry.title}”?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  The entry will be soft-deleted and disappear from Worlds,
+                  Collections, Lorebooks and Relations through their links.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={remove}>
+                  Delete entry
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_20rem] 2xl:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="min-w-0 space-y-6">
           <Card className="border-border/70 bg-card/85 shadow-sm">
             <CardHeader>
@@ -858,7 +866,7 @@ export function EntryView({ entryId }: { entryId: string }) {
           </Card>
         </div>
 
-        <aside className="space-y-4">
+        <aside className="min-w-0 space-y-4 xl:sticky xl:top-6 xl:self-start">
           <Card className="border-border/70 bg-card/85 shadow-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
@@ -963,16 +971,18 @@ export function EntryView({ entryId }: { entryId: string }) {
               ) : (
                 <div className="max-h-72 space-y-2 overflow-y-auto pr-1">
                   {bots.map((bot) => (
-                  <label
-                    key={bot.id}
-                    className="flex cursor-pointer items-center gap-3 rounded-lg border border-border/60 px-3 py-2 text-sm hover:bg-muted/30"
-                  >
-                    <Checkbox
-                      checked={bot.linked}
-                      onCheckedChange={() => toggleBot(bot)}
-                    />
-                    <span className="min-w-0 flex-1 truncate">{bot.name}</span>
-                  </label>
+                    <label
+                      key={bot.id}
+                      className="flex cursor-pointer items-center gap-3 rounded-lg border border-border/60 px-3 py-2 text-sm hover:bg-muted/30"
+                    >
+                      <Checkbox
+                        checked={bot.linked}
+                        onCheckedChange={() => toggleBot(bot)}
+                      />
+                      <span className="min-w-0 flex-1 truncate">
+                        {bot.name}
+                      </span>
+                    </label>
                   ))}
                 </div>
               )}
@@ -1001,24 +1011,38 @@ export function EntryView({ entryId }: { entryId: string }) {
         </aside>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-background/85 px-4 py-3 backdrop-blur-xl lg:left-64">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
-          <div className="text-xs text-muted-foreground">
+      <div
+        className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-background/85 px-3 pt-3 backdrop-blur-xl sm:px-4 lg:left-64"
+        style={{
+          paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))",
+        }}
+      >
+        <div className="mx-auto flex max-w-[92rem] items-center justify-between gap-4">
+          <div className="min-w-0 text-xs text-muted-foreground">
             {dirty ? (
-              "You have unsaved changes."
+              <>
+                <span className="sm:hidden">Unsaved changes</span>
+                <span className="hidden sm:inline">
+                  You have unsaved changes.
+                </span>
+              </>
             ) : (
               <span className="inline-flex items-center gap-1.5">
-                <Check className="h-3.5 w-3.5" /> All changes saved
+                <Check className="h-3.5 w-3.5 shrink-0" />
+                <span className="sm:hidden">Saved</span>
+                <span className="hidden sm:inline">All changes saved</span>
               </span>
             )}
           </div>
           <Button
             onClick={save}
             disabled={!dirty || pending || !title.trim()}
-            className="rounded-xl"
+            className="h-10 shrink-0 rounded-xl px-3 sm:px-4"
           >
-            <Save className="mr-2 h-4 w-4" />{" "}
-            {pending ? "Saving..." : "Save entry"}
+            <Save className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">
+              {pending ? "Saving..." : "Save entry"}
+            </span>
           </Button>
         </div>
       </div>
