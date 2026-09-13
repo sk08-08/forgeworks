@@ -12,10 +12,6 @@ import {
   Download,
   Save,
   Trash2,
-  ChevronDown,
-  Info,
-  Bold,
-  Italic,
   Link as LinkIcon,
   Loader2,
 } from "lucide-react";
@@ -30,11 +26,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
