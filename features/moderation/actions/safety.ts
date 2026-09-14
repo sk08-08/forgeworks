@@ -557,6 +557,14 @@ export async function submitPublicFormRequest(
   error?: string;
 }> {
   const supabase = await createClient();
+  const adminClient = await createAdminClient();
+
+  if (!adminClient) {
+    return {
+      success: false,
+      error: "Submission security is temporarily unavailable.",
+    };
+  }
 
   const requestHeaders = await headers();
   const clientIp = getClientIp(requestHeaders);
@@ -565,9 +573,11 @@ export async function submitPublicFormRequest(
    * Never trust form structure, ownership,
    * labels or visibility sent by the browser.
    *
-   * Load the canonical form first.
+   * Public visitors cannot SELECT request_forms directly because its RLS
+   * intentionally exposes forms only to their owner/admin. This Server Action
+   * therefore loads the canonical form through the server-only admin client.
    */
-  const { data: canonicalForm, error: formError } = await supabase
+  const { data: canonicalForm, error: formError } = await adminClient
     .from("request_forms")
     .select(
       `
@@ -628,20 +638,13 @@ export async function submitPublicFormRequest(
   // Check if IP is blocked BEFORE processing submission.
   if (clientIp) {
     try {
-      const adminClient = await createAdminClient();
-      if (!adminClient) {
-        return {
-          success: false,
-          isFlagged: false,
-          riskLevel: "safe",
-          error: "Submission security is temporarily unavailable.",
-        };
-      }
-
-      const { data: blockedIp } = await adminClient.rpc("is_ip_blocked_for_form", {
-        p_form_id: formId,
-        p_ip_address: clientIp,
-      });
+      const { data: blockedIp } = await adminClient.rpc(
+        "is_ip_blocked_for_form",
+        {
+          p_form_id: formId,
+          p_ip_address: clientIp,
+        },
+      );
 
       if (blockedIp) {
         return {
