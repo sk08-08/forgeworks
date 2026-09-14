@@ -5,14 +5,14 @@
 
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { headers } from "next/headers";
 import {
   filterFormResponses,
   type ContentFilterResult,
   type SensitivityLevel,
 } from "@/features/moderation/lib/content-filter";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { checkDistributedRateLimit, getClientIp } from "@/lib/rate-limit";
 import type { FormSection } from "@/features/forms/types/form-types";
 
 import {
@@ -349,7 +349,7 @@ function validateBlocklistPattern(
   return null;
 }
 
-export async function validateFormSubmission(
+async function validateFormSubmission(
   formId: string,
   responses: Record<string, any>,
   clientIp?: string,
@@ -362,7 +362,10 @@ export async function validateFormSubmission(
 }> {
   // Check rate limiting
   const ip = clientIp || "unknown";
-  const rateCheck = checkRateLimit(ip);
+  const rateCheck = await checkDistributedRateLimit(`form:${formId}:ip:${ip}`, {
+    maxRequests: 8,
+    windowMs: 60_000,
+  });
 
   if (!rateCheck.allowed) {
     return {
@@ -377,7 +380,8 @@ export async function validateFormSubmission(
   let sensitivity: SensitivityLevel = "medium";
 
   try {
-    const supabaseClient = await createClient();
+    const supabaseClient = await createAdminClient();
+    if (!supabaseClient) throw new Error("Moderation service unavailable");
 
     const { data, error } = await supabaseClient.rpc(
       "get_submission_security_settings",
@@ -400,7 +404,8 @@ export async function validateFormSubmission(
   // Load global and custom blocklists through a SECURITY DEFINER RPC so
   // public submissions can be validated without opening table access.
   try {
-    const supabaseClient = await createClient();
+    const supabaseClient = await createAdminClient();
+    if (!supabaseClient) throw new Error("Moderation service unavailable");
 
     const { data: blocklistRows, error: blocklistError } =
       await supabaseClient.rpc("get_submission_blocklists", {
@@ -623,7 +628,17 @@ export async function submitPublicFormRequest(
   // Check if IP is blocked BEFORE processing submission.
   if (clientIp) {
     try {
-      const { data: blockedIp } = await supabase.rpc("is_ip_blocked_for_form", {
+      const adminClient = await createAdminClient();
+      if (!adminClient) {
+        return {
+          success: false,
+          isFlagged: false,
+          riskLevel: "safe",
+          error: "Submission security is temporarily unavailable.",
+        };
+      }
+
+      const { data: blockedIp } = await adminClient.rpc("is_ip_blocked_for_form", {
         p_form_id: formId,
         p_ip_address: clientIp,
       });
@@ -740,14 +755,18 @@ export async function submitPublicFormRequest(
 /**
  * Record a flagged submission for later review
  */
-export async function recordFlaggedRequest(
+async function recordFlaggedRequest(
   formId: string,
   requestId: string,
   riskLevel: "warning" | "dangerous",
   flaggedFields: Record<string, ContentFilterResult>,
   reason?: string,
 ): Promise<{ success: boolean; error?: string }> {
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
+
+  if (!supabase) {
+    return { success: false, error: "Moderation service unavailable" };
+  }
 
   const { error } = await supabase.rpc("record_flagged_submission", {
     p_form_id: formId,

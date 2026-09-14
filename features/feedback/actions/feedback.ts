@@ -2,7 +2,7 @@
 
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { friendlySupabaseError } from "@/lib/error-utils";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { checkDistributedRateLimit, getClientIp } from "@/lib/rate-limit";
 import { headers } from "next/headers";
 import { z } from "zod";
 
@@ -96,7 +96,10 @@ export async function submitFeedbackAction(formData: FormData) {
   const requestHeaders = await headers();
   const clientIp = getClientIp(requestHeaders);
 
-  const rateCheck = checkRateLimit(`feedback:${clientIp}`);
+  const rateCheck = await checkDistributedRateLimit(`feedback:${clientIp}`, {
+    maxRequests: 5,
+    windowMs: 60_000,
+  });
 
   if (!rateCheck.allowed) {
     return {
@@ -107,6 +110,13 @@ export async function submitFeedbackAction(formData: FormData) {
   }
 
   const metadata = readMetadata(formData);
+
+  if (Buffer.byteLength(JSON.stringify(metadata), "utf8") > 32 * 1024) {
+    return {
+      success: false,
+      error: "Feedback metadata is too large.",
+    };
+  }
 
   const parsed = feedbackSchema.safeParse({
     feedbackType: readOptionalString(formData, "feedbackType"),

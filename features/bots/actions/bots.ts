@@ -1,7 +1,6 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { cookies } from "next/headers";
 import type {
   BotFormData,
   CollaboratorRole,
@@ -28,32 +27,22 @@ const ALLOWED_BOT_IMAGE_TYPES = [
 ];
 const MAX_BOT_IMAGE_SIZE_BYTES = 4 * 1024 * 1024;
 
+async function requireAuthenticatedUserId(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+): Promise<string | null> {
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) return null;
+  return user.id;
+}
+
 export async function createBotAction(data: BotFormData) {
   const supabase = await createClient();
 
-  // Try to determine user from supabase auth, fallback to forgeworks_session cookie
-  let userId: string | undefined;
-  try {
-    const { data: userData } = await supabase.auth.getUser();
-    userId = userData?.user?.id || undefined;
-  } catch (e) {
-    // ignore error when checking supabase auth session
-    userId = undefined;
-  }
-
-  if (!userId) {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("forgeworks_session")?.value;
-    if (session) {
-      try {
-        const parsed = JSON.parse(session);
-        userId = parsed?.userId;
-      } catch (e) {
-        // ignore malformed session cookie
-      }
-    }
-  }
-
+  const userId = await requireAuthenticatedUserId(supabase);
   if (!userId) return { success: false, error: "Unauthenticated" };
 
   const payload = {
@@ -113,27 +102,7 @@ export async function createBotAction(data: BotFormData) {
 export async function updateBotAction(id: string, data: Partial<BotFormData>) {
   const supabase = await createClient();
 
-  let userId: string | undefined;
-  try {
-    const { data: userData } = await supabase.auth.getUser();
-    userId = userData?.user?.id || undefined;
-  } catch {
-    userId = undefined;
-  }
-
-  if (!userId) {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("forgeworks_session")?.value;
-    if (session) {
-      try {
-        const parsed = JSON.parse(session);
-        userId = parsed?.userId;
-      } catch {
-        userId = undefined;
-      }
-    }
-  }
-
+  const userId = await requireAuthenticatedUserId(supabase);
   if (!userId) return { success: false, error: "Unauthenticated" };
 
   const { data: existingBot, error: existingError } = await supabase
@@ -262,27 +231,7 @@ export async function updateBotAction(id: string, data: Partial<BotFormData>) {
 export async function deleteBotAction(id: string) {
   const supabase = await createClient();
 
-  // Ensure authenticated (supabase auth or forgeworks_session)
-  let userId: string | undefined;
-  try {
-    const { data: userData } = await supabase.auth.getUser();
-    userId = userData?.user?.id || undefined;
-  } catch (e) {
-    // ignore error when checking supabase auth session
-    userId = undefined;
-  }
-  if (!userId) {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("forgeworks_session")?.value;
-    if (session) {
-      try {
-        const parsed = JSON.parse(session);
-        userId = parsed?.userId;
-      } catch (e) {
-        // ignore malformed session cookie
-      }
-    }
-  }
+  const userId = await requireAuthenticatedUserId(supabase);
   if (!userId) return { success: false, error: "Unauthenticated" };
 
   // Verify ownership before deleting
@@ -338,25 +287,7 @@ export async function uploadBotImageAction(formData: FormData) {
 
   const supabase = await createClient();
 
-  let userId: string | undefined;
-  try {
-    const { data: userData } = await supabase.auth.getUser();
-    userId = userData?.user?.id || undefined;
-  } catch {
-    userId = undefined;
-  }
-  if (!userId) {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("forgeworks_session")?.value;
-    if (session) {
-      try {
-        const parsed = JSON.parse(session);
-        userId = parsed?.userId;
-      } catch {
-        userId = undefined;
-      }
-    }
-  }
+  const userId = await requireAuthenticatedUserId(supabase);
   if (!userId) return { success: false, error: "Unauthenticated" };
 
   // Always create a new object instead of overwriting the current image path.
@@ -387,25 +318,7 @@ export async function uploadBotImageAction(formData: FormData) {
 export async function removeBotImageAction(url: string) {
   const supabase = await createClient();
 
-  let userId: string | undefined;
-  try {
-    const { data: userData } = await supabase.auth.getUser();
-    userId = userData?.user?.id || undefined;
-  } catch {
-    userId = undefined;
-  }
-  if (!userId) {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("forgeworks_session")?.value;
-    if (session) {
-      try {
-        const parsed = JSON.parse(session);
-        userId = parsed?.userId;
-      } catch {
-        userId = undefined;
-      }
-    }
-  }
+  const userId = await requireAuthenticatedUserId(supabase);
   if (!userId) return { success: false, error: "Unauthenticated" };
 
   const path = extractStorageObjectPathFromPublicUrl(url, BOT_ASSETS_BUCKET);

@@ -430,12 +430,10 @@ export function CreatorPageView({
     (async () => {
       try {
         const supabase = createClient();
-        const { data, error } = await supabase
-          .from("creator_page_public_form_states")
-          .select(
-            "id, shareable_link, is_active, deactivated_message, deactivated_redirect_url, deactivated_redirect_label, deactivated_accent_color",
-          )
-          .in("id", formIds);
+        const { data, error } = await (supabase as any).rpc(
+          "get_creator_page_public_form_states",
+          { p_form_ids: formIds },
+        );
 
         if (error) throw error;
         if (cancelled) return;

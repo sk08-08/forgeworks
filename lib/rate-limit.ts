@@ -1,3 +1,5 @@
+import { createAdminClient } from "@/lib/supabase/server";
+
 // ============================================================================
 // Rate Limiting Utilities
 // In-memory rate limiting with automatic cleanup and configurable limits.
@@ -189,4 +191,48 @@ export function getRateLimitStats(
   key: string,
 ): { count: number; resetTime: number } | null {
   return defaultLimiter.getStats(key);
+}
+
+
+export interface DistributedRateLimitOptions {
+  maxRequests: number;
+  windowMs: number;
+}
+
+/**
+ * Distributed rate limiter backed by Postgres. Use this for serverless-sensitive
+ * paths (Auth, public Forms, Feedback). The RPC is executable only by service_role.
+ */
+export async function checkDistributedRateLimit(
+  key: string,
+  options: DistributedRateLimitOptions,
+): Promise<RateLimitResult & { retryAfterSeconds: number }> {
+  const admin = await createAdminClient();
+
+  // Fail closed on protected public/auth write paths if the privileged limiter
+  // is unavailable. This avoids silently falling back to per-instance memory.
+  if (!admin) {
+    return { allowed: false, remaining: 0, retryAfterSeconds: 60 };
+  }
+
+  const maxRequests = Math.max(1, Math.min(10_000, Math.trunc(options.maxRequests)));
+  const windowSeconds = Math.max(1, Math.min(86_400, Math.ceil(options.windowMs / 1000)));
+
+  const { data, error } = await admin.rpc("consume_server_rate_limit", {
+    p_key: key,
+    p_limit: maxRequests,
+    p_window_seconds: windowSeconds,
+  });
+
+  if (error) {
+    console.error("Distributed rate limit failed:", error.message);
+    return { allowed: false, remaining: 0, retryAfterSeconds: 60 };
+  }
+
+  const row = Array.isArray(data) ? data[0] : data;
+  return {
+    allowed: row?.allowed === true,
+    remaining: Number(row?.remaining ?? 0),
+    retryAfterSeconds: Number(row?.retry_after_seconds ?? 0),
+  };
 }
