@@ -27,6 +27,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ResourceVisibilitySelect } from "@/components/shared/resource-visibility-select";
 import { Textarea } from "@/components/ui/textarea";
 import {
   AlertDialog,
@@ -452,28 +453,11 @@ export function WorldView({ worldId }: { worldId: string }) {
                   placeholder="A short explanation of this World and its scope."
                 />
               </div>
-              <div className="space-y-2">
-                <Label>Visibility</Label>
-                <Select
-                  value={visibility}
-                  onValueChange={(value) =>
-                    setVisibility(value as AtlasWorldVisibility)
-                  }
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="private">Private</SelectItem>
-                    <SelectItem value="public">Public</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  Private Worlds stay inside your Atlas workspace. Public Worlds
-                  can appear on your public Profile and published Creator Pages
-                  when those surfaces include them.
-                </p>
-              </div>
+              <ResourceVisibilitySelect
+                value={visibility}
+                onChange={setVisibility}
+                description="This World has its own audience. Profiles and Creator Pages can include it, but they do not override who is allowed to read it."
+              />
               <div className="space-y-2">
                 <Label>World notes</Label>
                 <p className="text-xs text-muted-foreground">

@@ -17,6 +17,7 @@ import {
   uploadFormSectionImageAction,
 } from "@/features/forms/actions/forms";
 import { normalizeHttpUrl } from "@/lib/safe-url";
+import { normalizeResourceVisibility } from "@/lib/resource-visibility";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -131,6 +132,7 @@ function createBlankDraft(): FormBuilderDraft {
     sections: [createBlankSection()],
     shareableLink: "",
     isActive: true,
+    visibility: "private",
     appearance: resolveFormAppearance(defaultFormAppearance),
 
     deactivatedMessage: "",
@@ -155,6 +157,8 @@ function getDraftSnapshot(draft: FormBuilderDraft) {
     shareableLink: draft.shareableLink || "",
 
     isActive: draft.isActive,
+
+    visibility: draft.visibility,
 
     appearance: draft.appearance,
 
@@ -187,6 +191,8 @@ function toPersistableForm(draft: FormBuilderDraft): PersistableForm {
     shareableLink: draft.shareableLink || "",
 
     isActive: draft.isActive,
+
+    visibility: draft.visibility,
 
     deactivatedMessage: draft.deactivatedMessage || "",
 
@@ -230,6 +236,8 @@ function mapSavedRowToDraft(
     shareableLink: row?.shareable_link ?? current.shareableLink ?? "",
 
     isActive: row?.is_active !== false,
+
+    visibility: normalizeResourceVisibility(row?.visibility ?? current.visibility),
 
     deactivatedMessage:
       row?.deactivated_message ?? current.deactivatedMessage ?? "",

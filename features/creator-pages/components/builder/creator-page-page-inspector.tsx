@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/select";
 import { MarkdownField } from "@/features/markdown/components/markdown-field";
 import { cn } from "@/lib/utils";
+import { ResourceVisibilitySelect } from "@/components/shared/resource-visibility-select";
+import type { ResourceVisibility } from "@/lib/resource-visibility";
 import type {
   CreatorPageBackgroundStyle,
   CreatorPageFontStyle,
@@ -26,6 +28,7 @@ interface CreatorPagePageInspectorProps {
   accentColor: string;
   backgroundStyle: CreatorPageBackgroundStyle;
   fontStyle: CreatorPageFontStyle;
+  visibility: ResourceVisibility;
   slugStatus: "idle" | "checking" | "available" | "taken";
   slugMessage: string;
   onTitleChange: (value: string) => void;
@@ -34,6 +37,7 @@ interface CreatorPagePageInspectorProps {
   onAccentColorChange: (value: string) => void;
   onBackgroundStyleChange: (value: CreatorPageBackgroundStyle) => void;
   onFontStyleChange: (value: CreatorPageFontStyle) => void;
+  onVisibilityChange: (value: ResourceVisibility) => void;
 }
 
 export function CreatorPagePageInspector({
@@ -43,6 +47,7 @@ export function CreatorPagePageInspector({
   accentColor,
   backgroundStyle,
   fontStyle,
+  visibility,
   slugStatus,
   slugMessage,
   onTitleChange,
@@ -51,6 +56,7 @@ export function CreatorPagePageInspector({
   onAccentColorChange,
   onBackgroundStyleChange,
   onFontStyleChange,
+  onVisibilityChange,
 }: CreatorPagePageInspectorProps) {
   return (
     <>
@@ -132,6 +138,14 @@ export function CreatorPagePageInspector({
             placeholder="Describe this page..."
             minEditorHeightRem={6}
             className="min-h-[7rem]"
+          />
+        </div>
+
+        <div className="border-t border-border/60 pt-4">
+          <ResourceVisibilitySelect
+            value={visibility}
+            onChange={onVisibilityChange}
+            description="Who can open this published Creator Page. Publishing and visibility are separate: a private published page is still owner-only."
           />
         </div>
 

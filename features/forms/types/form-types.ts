@@ -2,6 +2,8 @@
 // Request Form Types
 // ----------------------------------------------------------------------------
 
+import type { ResourceVisibility } from "@/lib/resource-visibility";
+
 export type FormFieldType =
   | "text"
   | "textarea"
@@ -88,6 +90,7 @@ export interface RequestForm {
   appearance?: FormAppearance;
   shareableLink: string;
   isActive: boolean;
+  visibility: ResourceVisibility;
   deactivatedMessage?: string;
   deactivatedRedirectUrl?: string;
   deactivatedRedirectLabel?: string;

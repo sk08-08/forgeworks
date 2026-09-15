@@ -63,6 +63,7 @@ import {
   deleteBotAction,
 } from "@/features/bots/actions/bots";
 import { cn, formatDateTime } from "@/lib/utils";
+import { normalizeResourceVisibility } from "@/lib/resource-visibility";
 import {
   countBotTokens,
   exportCharacterCardPNG,
@@ -799,6 +800,28 @@ export function BotManager() {
   const [deleteConfirmBot, setDeleteConfirmBot] = useState<Bot | null>(null);
   const [forking, setForking] = useState(false);
 
+  const openBotEditor = useCallback(async (bot: Bot) => {
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("bots")
+        .select("visibility")
+        .eq("id", bot.id)
+        .is("deleted_at", null)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      setEditingBot({
+        ...bot,
+        visibility: normalizeResourceVisibility(data?.visibility ?? bot.visibility),
+      });
+    } catch (error) {
+      console.error("Failed to resolve bot visibility before editing:", error);
+      toast.error("Could not open this bot for editing");
+    }
+  }, []);
+
   // Check if we should open editing from external navigation
   const externalEditBot = selectedBotId
     ? bots.find((b) => b.id === selectedBotId)
@@ -806,10 +829,16 @@ export function BotManager() {
 
   useEffect(() => {
     if (externalEditBot && !editingBot && !isCreating) {
-      setEditingBot(externalEditBot);
+      void openBotEditor(externalEditBot);
       setSelectedBotId(null);
     }
-  }, [externalEditBot, editingBot, isCreating, setSelectedBotId]);
+  }, [
+    externalEditBot,
+    editingBot,
+    isCreating,
+    openBotEditor,
+    setSelectedBotId,
+  ]);
 
   // Handlers
   const handleCreateBot = async (data: BotFormData) => {
@@ -835,6 +864,7 @@ export function BotManager() {
       tags: Array.isArray(r.tags) ? r.tags : [],
       rating: r.rating === "NSFW" ? "NSFW" : "SFW",
       imageUrl: r.image_url || undefined,
+      visibility: normalizeResourceVisibility(r.visibility),
       createdAt: r.created_at ? new Date(r.created_at) : new Date(),
       updatedAt: r.updated_at ? new Date(r.updated_at) : new Date(),
     });
@@ -866,6 +896,7 @@ export function BotManager() {
       tags: Array.isArray(r.tags) ? r.tags : [],
       rating: r.rating === "NSFW" ? "NSFW" : "SFW",
       imageUrl: r.image_url || undefined,
+      visibility: normalizeResourceVisibility(r.visibility),
       createdAt: r.created_at ? new Date(r.created_at) : new Date(),
       updatedAt: r.updated_at ? new Date(r.updated_at) : new Date(),
     });
@@ -1101,7 +1132,7 @@ export function BotManager() {
                 key={bot.id}
                 bot={bot}
                 viewMode={viewMode}
-                onEdit={() => setEditingBot(bot)}
+                onEdit={() => void openBotEditor(bot)}
                 onDelete={() => setDeleteConfirmBot(bot)}
                 onExport={() => handleExportBot(bot)}
                 onWorkspace={() => {
@@ -1143,6 +1174,7 @@ export function BotManager() {
                           rating:
                             forkedBotData.rating === "NSFW" ? "NSFW" : "SFW",
                           imageUrl: forkedBotData.image_url || undefined,
+                          visibility: normalizeResourceVisibility(forkedBotData.visibility),
                           createdAt: forkedBotData.created_at
                             ? new Date(forkedBotData.created_at)
                             : new Date(),

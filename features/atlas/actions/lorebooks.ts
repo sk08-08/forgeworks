@@ -4,6 +4,10 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUserAccess } from "@/lib/access";
 import type { AtlasEntryKind } from "@/features/atlas/types/atlas-types";
+import {
+  normalizeResourceVisibility,
+  type ResourceVisibility,
+} from "@/lib/resource-visibility";
 import type {
   ForgeKnowledgePackage,
   ForgeLorebookActivationMode,
@@ -13,6 +17,7 @@ export type AtlasLorebookRecord = {
   id: string;
   title: string;
   description: string;
+  visibility: ResourceVisibility;
   entryCount: number;
   enabledCount: number;
   createdAt: string;
@@ -140,7 +145,7 @@ async function getOwnerContext() {
 async function assertLorebookOwner(supabase: any, userId: string, lorebookId: string) {
   const result = await supabase
     .from("atlas_lorebooks")
-    .select("id,title,description,summary,created_at,updated_at")
+    .select("id,title,description,summary,visibility,created_at,updated_at")
     .eq("id", lorebookId)
     .eq("user_id", userId)
     .is("deleted_at", null)
@@ -171,6 +176,7 @@ function mapLorebook(row: any, counts = { total: 0, enabled: 0 }): AtlasLorebook
     id: row.id,
     title: row.title,
     description: row.description ?? row.summary ?? "",
+    visibility: normalizeResourceVisibility(row.visibility),
     entryCount: counts.total,
     enabledCount: counts.enabled,
     createdAt: row.created_at,
@@ -184,7 +190,7 @@ export async function listAtlasLorebooksAction(): Promise<Result<AtlasLorebookRe
     if (!userId) return { success: false, error: "You must be signed in to use Atlas." };
     const { data, error } = await supabase
       .from("atlas_lorebooks")
-      .select("id,title,description,summary,created_at,updated_at")
+      .select("id,title,description,summary,visibility,created_at,updated_at")
       .eq("user_id", userId)
       .is("deleted_at", null)
       .order("updated_at", { ascending: false });
@@ -218,6 +224,7 @@ export async function getAtlasLorebookAction(lorebookId: string): Promise<Result
 export async function createAtlasLorebookAction(input: {
   title: string;
   description?: string;
+  visibility?: ResourceVisibility;
 }): Promise<Result<{ id: string }>> {
   try {
     const { supabase, userId } = await getOwnerContext();
@@ -236,6 +243,7 @@ export async function createAtlasLorebookAction(input: {
         format_version: 1,
         metadata: {},
         source_metadata: {},
+        visibility: normalizeResourceVisibility(input.visibility),
       })
       .select("id")
       .single();
@@ -253,6 +261,7 @@ export async function updateAtlasLorebookAction(input: {
   id: string;
   title: string;
   description: string;
+  visibility: ResourceVisibility;
 }): Promise<Result<AtlasLorebookRecord>> {
   try {
     const { supabase, userId } = await getOwnerContext();
@@ -266,12 +275,13 @@ export async function updateAtlasLorebookAction(input: {
         title,
         summary: description,
         description,
+        visibility: normalizeResourceVisibility(input.visibility),
         updated_at: new Date().toISOString(),
       })
       .eq("id", input.id)
       .eq("user_id", userId)
       .is("deleted_at", null)
-      .select("id,title,description,summary,created_at,updated_at")
+      .select("id,title,description,summary,visibility,created_at,updated_at")
       .maybeSingle();
     if (error) throw error;
     if (!data) return { success: false, error: "Lorebook not found." };

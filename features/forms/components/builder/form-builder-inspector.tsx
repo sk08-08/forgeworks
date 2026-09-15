@@ -2,6 +2,7 @@
 
 import { stripMarkdownToText } from "@/features/markdown/lib/markdown";
 import { FormGeneralInspector } from "../inspectors/form-general-inspector";
+import { ResourceVisibilitySelect } from "@/components/shared/resource-visibility-select";
 
 import type {
   FormBuilderDraft,
@@ -33,7 +34,18 @@ export function FormBuilderInspector({
         title="General"
         description="Basic information and media shown at the top of the public form."
       >
-        <FormGeneralInspector draft={draft} onDraftChange={onDraftChange} />
+        <div className="space-y-5">
+          <FormGeneralInspector draft={draft} onDraftChange={onDraftChange} />
+          <div className="border-t border-border/60 pt-5">
+            <ResourceVisibilitySelect
+              value={draft.visibility}
+              onChange={(visibility) =>
+                onDraftChange({ ...draft, visibility })
+              }
+              description="This Form has its own audience. Availability controls whether it accepts submissions; visibility controls who can access it."
+            />
+          </div>
+        </div>
       </InspectorShell>
     );
   }

@@ -32,6 +32,12 @@ import {
   ExternalLink,
   UsersRound,
   KeyRound,
+  Globe2,
+  BookOpen,
+  Layers3,
+  LibraryBig,
+  PanelsTopLeft,
+  Activity,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -246,6 +252,41 @@ function Pagination({ page, total, limit, onPageChange }: PaginationProps) {
           <ChevronRight className="ml-1 h-4 w-4 sm:ml-0" />
         </Button>
       </div>
+    </div>
+  );
+}
+
+
+function ResultsSummary({
+  page,
+  total,
+  limit,
+  filtered,
+  label,
+}: {
+  page: number;
+  total: number;
+  limit: number;
+  filtered: boolean;
+  label: string;
+}) {
+  const start = total === 0 ? 0 : (page - 1) * limit + 1;
+  const end = total === 0 ? 0 : Math.min(page * limit, total);
+
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+      <span>
+        Showing {start}–{end} of{" "}
+        <span className="font-medium text-foreground">{total}</span>{" "}
+        {filtered ? "matching " : ""}
+        {label}
+      </span>
+
+      {filtered && (
+        <Badge variant="secondary" className="h-6 px-2 text-[11px] font-normal">
+          {total} result{total === 1 ? "" : "s"}
+        </Badge>
+      )}
     </div>
   );
 }
@@ -865,8 +906,8 @@ function SubmissionsTab({
         </div>
 
         <Badge variant="outline" className="w-fit shrink-0">
-          {total} submission
-          {total === 1 ? "" : "s"}
+          {total} {statusFilter !== "all" || userFilter ? "matching " : ""}
+          submission{total === 1 ? "" : "s"}
         </Badge>
       </div>
 
@@ -933,8 +974,17 @@ function SubmissionsTab({
           </SelectTrigger>
 
           <SelectContent>
-            <SelectItem value="desc">Most recent / Z-A</SelectItem>
-            <SelectItem value="asc">Oldest / A-Z</SelectItem>
+            {sortBy === "created_at" ? (
+              <>
+                <SelectItem value="desc">Newest first</SelectItem>
+                <SelectItem value="asc">Oldest first</SelectItem>
+              </>
+            ) : (
+              <>
+                <SelectItem value="asc">A–Z</SelectItem>
+                <SelectItem value="desc">Z–A</SelectItem>
+              </>
+            )}
           </SelectContent>
         </Select>
 
@@ -952,6 +1002,14 @@ function SubmissionsTab({
           <span className="ml-2 sm:hidden">Refresh</span>
         </Button>
       </div>
+
+      <ResultsSummary
+        page={page}
+        total={total}
+        limit={LIMIT}
+        filtered={statusFilter !== "all" || Boolean(userFilter)}
+        label="submissions"
+      />
 
       <div className="rounded-md border overflow-x-auto">
         <Table>
@@ -1537,9 +1595,9 @@ function FormsTab({ staffRole }: { staffRole: StaffRole }) {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [userFilter, setUserFilter] = useState("");
-  const [sortBy, setSortBy] = useState<"created_at" | "title" | "is_active">(
-    "created_at",
-  );
+  const [sortBy, setSortBy] = useState<
+    "created_at" | "updated_at" | "title" | "is_active"
+  >("updated_at");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [loading, setLoading] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any | null>(null);
@@ -1605,8 +1663,8 @@ function FormsTab({ staffRole }: { staffRole: StaffRole }) {
         </div>
 
         <Badge variant="outline" className="w-fit shrink-0">
-          {total} form
-          {total === 1 ? "" : "s"}
+          {total} {userFilter ? "matching " : ""}
+          form{total === 1 ? "" : "s"}
         </Badge>
       </div>
 
@@ -1626,7 +1684,9 @@ function FormsTab({ staffRole }: { staffRole: StaffRole }) {
         <Select
           value={sortBy}
           onValueChange={(value) => {
-            setSortBy(value as "created_at" | "title" | "is_active");
+            setSortBy(
+              value as "created_at" | "updated_at" | "title" | "is_active",
+            );
             setPage(1);
           }}
         >
@@ -1635,9 +1695,10 @@ function FormsTab({ staffRole }: { staffRole: StaffRole }) {
           </SelectTrigger>
 
           <SelectContent>
-            <SelectItem value="created_at">Sort: Date</SelectItem>
+            <SelectItem value="updated_at">Sort: Last updated</SelectItem>
+            <SelectItem value="created_at">Sort: Created</SelectItem>
             <SelectItem value="title">Sort: Title</SelectItem>
-            <SelectItem value="is_active">Sort: Active</SelectItem>
+            <SelectItem value="is_active">Sort: Availability</SelectItem>
           </SelectContent>
         </Select>
 
@@ -1653,8 +1714,22 @@ function FormsTab({ staffRole }: { staffRole: StaffRole }) {
           </SelectTrigger>
 
           <SelectContent>
-            <SelectItem value="desc">Most recent / Z-A</SelectItem>
-            <SelectItem value="asc">Oldest / A-Z</SelectItem>
+            {sortBy === "created_at" || sortBy === "updated_at" ? (
+              <>
+                <SelectItem value="desc">Newest first</SelectItem>
+                <SelectItem value="asc">Oldest first</SelectItem>
+              </>
+            ) : sortBy === "title" ? (
+              <>
+                <SelectItem value="asc">A–Z</SelectItem>
+                <SelectItem value="desc">Z–A</SelectItem>
+              </>
+            ) : (
+              <>
+                <SelectItem value="desc">Active first</SelectItem>
+                <SelectItem value="asc">Inactive first</SelectItem>
+              </>
+            )}
           </SelectContent>
         </Select>
 
@@ -1672,6 +1747,14 @@ function FormsTab({ staffRole }: { staffRole: StaffRole }) {
           <span className="ml-2 sm:hidden">Refresh</span>
         </Button>
       </div>
+
+      <ResultsSummary
+        page={page}
+        total={total}
+        limit={LIMIT}
+        filtered={Boolean(userFilter)}
+        label="forms"
+      />
 
       <div className="rounded-md border overflow-x-auto">
         <Table>
@@ -2321,9 +2404,9 @@ function BotsTab({ staffRole }: { staffRole: StaffRole }) {
   const [page, setPage] = useState(1);
   const [userFilter, setUserFilter] = useState("");
   const [ratingFilter, setRatingFilter] = useState("all");
-  const [sortBy, setSortBy] = useState<"created_at" | "name" | "rating">(
-    "created_at",
-  );
+  const [sortBy, setSortBy] = useState<
+    "created_at" | "updated_at" | "name" | "rating"
+  >("updated_at");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [loading, setLoading] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any | null>(null);
@@ -2389,8 +2472,8 @@ function BotsTab({ staffRole }: { staffRole: StaffRole }) {
         </div>
 
         <Badge variant="outline" className="w-fit shrink-0">
-          {total} bot
-          {total === 1 ? "" : "s"}
+          {total} {ratingFilter !== "all" || userFilter ? "matching " : ""}
+          bot{total === 1 ? "" : "s"}
         </Badge>
       </div>
       <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
@@ -2427,7 +2510,9 @@ function BotsTab({ staffRole }: { staffRole: StaffRole }) {
         <Select
           value={sortBy}
           onValueChange={(value) => {
-            setSortBy(value as "created_at" | "name" | "rating");
+            setSortBy(
+              value as "created_at" | "updated_at" | "name" | "rating",
+            );
             setPage(1);
           }}
         >
@@ -2436,8 +2521,9 @@ function BotsTab({ staffRole }: { staffRole: StaffRole }) {
           </SelectTrigger>
 
           <SelectContent>
-            <SelectItem value="created_at">Sort: Date</SelectItem>
-            <SelectItem value="name">Sort: Bot Name</SelectItem>
+            <SelectItem value="updated_at">Sort: Last updated</SelectItem>
+            <SelectItem value="created_at">Sort: Created</SelectItem>
+            <SelectItem value="name">Sort: Bot name</SelectItem>
             <SelectItem value="rating">Sort: Rating</SelectItem>
           </SelectContent>
         </Select>
@@ -2454,8 +2540,22 @@ function BotsTab({ staffRole }: { staffRole: StaffRole }) {
           </SelectTrigger>
 
           <SelectContent>
-            <SelectItem value="desc">Most recent / Z-A</SelectItem>
-            <SelectItem value="asc">Oldest / A-Z</SelectItem>
+            {sortBy === "created_at" || sortBy === "updated_at" ? (
+              <>
+                <SelectItem value="desc">Newest first</SelectItem>
+                <SelectItem value="asc">Oldest first</SelectItem>
+              </>
+            ) : sortBy === "name" ? (
+              <>
+                <SelectItem value="asc">A–Z</SelectItem>
+                <SelectItem value="desc">Z–A</SelectItem>
+              </>
+            ) : (
+              <>
+                <SelectItem value="desc">SFW first</SelectItem>
+                <SelectItem value="asc">NSFW first</SelectItem>
+              </>
+            )}
           </SelectContent>
         </Select>
 
@@ -2473,6 +2573,14 @@ function BotsTab({ staffRole }: { staffRole: StaffRole }) {
           <span className="ml-2 sm:hidden">Refresh</span>
         </Button>
       </div>
+
+      <ResultsSummary
+        page={page}
+        total={total}
+        limit={LIMIT}
+        filtered={ratingFilter !== "all" || Boolean(userFilter)}
+        label="bots"
+      />
 
       <div className="rounded-md border overflow-x-auto">
         <Table>
@@ -3127,9 +3235,46 @@ interface UserItem {
   stats?: {
     bots: number;
     forms: number;
+    creator_pages: number;
     submissions: number;
     flags: number;
+    worlds: number;
+    lorebooks: number;
+    entries: number;
+    collections: number;
   };
+
+  last_activity?: {
+    id: string;
+    kind:
+      | "profile"
+      | "bot"
+      | "form"
+      | "creator_page"
+      | "world"
+      | "lorebook"
+      | "entry"
+      | "collection";
+    label: string;
+    at: string;
+    deleted: boolean;
+  } | null;
+
+  recent_activity?: Array<{
+    id: string;
+    kind:
+      | "profile"
+      | "bot"
+      | "form"
+      | "creator_page"
+      | "world"
+      | "lorebook"
+      | "entry"
+      | "collection";
+    label: string;
+    at: string;
+    deleted: boolean;
+  }>;
 
   staff_role: "owner" | "moderator" | null;
 }
@@ -3144,7 +3289,11 @@ function UsersTab({ staffRole }: { staffRole: StaffRole }) {
   const [copiedUserId, setCopiedUserId] = useState<string | null>(null);
 
   const [sortBy, setSortBy] = useState<
-    "created_at" | "updated_at" | "username" | "display_name"
+    | "created_at"
+    | "updated_at"
+    | "username"
+    | "display_name"
+    | "is_blocked"
   >("created_at");
 
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
@@ -3546,8 +3695,8 @@ function UsersTab({ staffRole }: { staffRole: StaffRole }) {
         </div>
 
         <Badge variant="outline" className="w-fit shrink-0">
-          {total} user
-          {total === 1 ? "" : "s"}
+          {total} {search ? "matching " : ""}
+          user{total === 1 ? "" : "s"}
         </Badge>
       </div>
 
@@ -3576,7 +3725,8 @@ function UsersTab({ staffRole }: { staffRole: StaffRole }) {
                 | "created_at"
                 | "updated_at"
                 | "username"
-                | "display_name",
+                | "display_name"
+                | "is_blocked",
             );
 
             setPage(1);
@@ -3589,11 +3739,13 @@ function UsersTab({ staffRole }: { staffRole: StaffRole }) {
           <SelectContent>
             <SelectItem value="created_at">Sort: Joined</SelectItem>
 
-            <SelectItem value="updated_at">Sort: Profile Updated</SelectItem>
+            <SelectItem value="updated_at">Sort: Profile updated</SelectItem>
 
             <SelectItem value="username">Sort: Username</SelectItem>
 
-            <SelectItem value="display_name">Sort: Display Name</SelectItem>
+            <SelectItem value="display_name">Sort: Display name</SelectItem>
+
+            <SelectItem value="is_blocked">Sort: Access state</SelectItem>
           </SelectContent>
         </Select>
 
@@ -3610,9 +3762,22 @@ function UsersTab({ staffRole }: { staffRole: StaffRole }) {
           </SelectTrigger>
 
           <SelectContent>
-            <SelectItem value="desc">Most recent / Z-A</SelectItem>
-
-            <SelectItem value="asc">Oldest / A-Z</SelectItem>
+            {sortBy === "created_at" || sortBy === "updated_at" ? (
+              <>
+                <SelectItem value="desc">Newest first</SelectItem>
+                <SelectItem value="asc">Oldest first</SelectItem>
+              </>
+            ) : sortBy === "is_blocked" ? (
+              <>
+                <SelectItem value="desc">Blocked first</SelectItem>
+                <SelectItem value="asc">Active first</SelectItem>
+              </>
+            ) : (
+              <>
+                <SelectItem value="asc">A–Z</SelectItem>
+                <SelectItem value="desc">Z–A</SelectItem>
+              </>
+            )}
           </SelectContent>
         </Select>
 
@@ -3635,6 +3800,14 @@ function UsersTab({ staffRole }: { staffRole: StaffRole }) {
       {/* ======================================================
           USERS TABLE
       ====================================================== */}
+
+      <ResultsSummary
+        page={page}
+        total={total}
+        limit={LIMIT}
+        filtered={Boolean(search)}
+        label="users"
+      />
 
       <div className="overflow-x-auto rounded-xl border">
         <Table>
@@ -3973,16 +4146,14 @@ function UsersTab({ staffRole }: { staffRole: StaffRole }) {
                     <p className="text-sm font-semibold">Platform Activity</p>
 
                     <p className="mt-0.5 text-xs text-muted-foreground">
-                      Content and activity currently associated with this
-                      account.
+                      Active content currently associated with this account.
+                      Soft-deleted resources are excluded from these totals.
                     </p>
                   </div>
 
                   {userDetailLoading ? (
-                    <div className="grid grid-cols-2 gap-3">
-                      {Array.from({
-                        length: 4,
-                      }).map((_, index) => (
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                      {Array.from({ length: 9 }).map((_, index) => (
                         <div key={index} className="rounded-xl border p-3">
                           <div className="h-4 w-16 animate-pulse rounded bg-muted" />
                           <div className="mt-2 h-7 w-10 animate-pulse rounded bg-muted" />
@@ -3990,88 +4161,94 @@ function UsersTab({ staffRole }: { staffRole: StaffRole }) {
                       ))}
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="rounded-xl border border-green-500/20 bg-green-500/[0.05] p-3">
-                        <div className="flex items-center justify-between gap-2">
-                          <div>
-                            <p className="text-xs font-medium text-muted-foreground">
-                              Bots
-                            </p>
+                    <>
+                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        {[
+                          { label: "Bots", value: selectedUser.stats?.bots ?? 0, icon: Bot },
+                          { label: "Forms", value: selectedUser.stats?.forms ?? 0, icon: FileText },
+                          {
+                            label: "Creator Pages",
+                            value: selectedUser.stats?.creator_pages ?? 0,
+                            icon: PanelsTopLeft,
+                          },
+                          {
+                            label: "Submissions",
+                            value: selectedUser.stats?.submissions ?? 0,
+                            icon: Inbox,
+                          },
+                          { label: "Worlds", value: selectedUser.stats?.worlds ?? 0, icon: Globe2 },
+                          {
+                            label: "Lorebooks",
+                            value: selectedUser.stats?.lorebooks ?? 0,
+                            icon: BookOpen,
+                          },
+                          { label: "Entries", value: selectedUser.stats?.entries ?? 0, icon: LibraryBig },
+                          {
+                            label: "Collections",
+                            value: selectedUser.stats?.collections ?? 0,
+                            icon: Layers3,
+                          },
+                          { label: "Flags", value: selectedUser.stats?.flags ?? 0, icon: ShieldAlert },
+                        ].map((stat) => {
+                          const Icon = stat.icon;
 
-                            <p className="mt-1 text-2xl font-semibold">
-                              {selectedUser.stats?.bots ?? 0}
-                            </p>
-                          </div>
+                          return (
+                            <div
+                              key={stat.label}
+                              className="min-w-0 rounded-xl border bg-muted/[0.06] p-3"
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="min-w-0">
+                                  <p className="truncate text-xs font-medium text-muted-foreground">
+                                    {stat.label}
+                                  </p>
+                                  <p className="mt-1 text-2xl font-semibold">{stat.value}</p>
+                                </div>
 
-                          <div className="rounded-lg bg-green-500/10 p-2">
-                            <Bot className="h-4 w-4 text-green-500" />
-                          </div>
-                        </div>
+                                <div className="shrink-0 rounded-lg bg-primary/10 p-2 text-primary">
+                                  <Icon className="h-4 w-4" />
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
 
-                      <div className="rounded-xl border border-muted-foreground/20 bg-muted-foreground/5 p-3">
-                        <div className="flex items-center justify-between gap-2">
-                          <div>
-                            <p className="text-xs font-medium text-muted-foreground">
-                              Forms
-                            </p>
+                      {selectedUser.recent_activity &&
+                        selectedUser.recent_activity.length > 0 && (
+                          <div className="rounded-xl border bg-muted/[0.06]">
+                            <div className="flex items-center gap-2 border-b px-3 py-2.5">
+                              <Activity className="h-4 w-4 text-primary" />
+                              <p className="text-xs font-semibold">
+                                Recent resource activity
+                              </p>
+                            </div>
 
-                            <p className="mt-1 text-2xl font-semibold">
-                              {selectedUser.stats?.forms ?? 0}
-                            </p>
+                            <div className="divide-y">
+                              {selectedUser.recent_activity.slice(0, 5).map((activity) => (
+                                <div
+                                  key={`${activity.kind}-${activity.id}-${activity.at}`}
+                                  className="flex min-w-0 items-center justify-between gap-3 px-3 py-2.5"
+                                >
+                                  <div className="min-w-0">
+                                    <p className="truncate text-xs font-medium">
+                                      {activity.label}
+                                    </p>
+                                    <p className="mt-0.5 text-[11px] capitalize text-muted-foreground">
+                                      {activity.kind.replace("_", " ")}
+                                      {activity.deleted ? " · deleted" : ""}
+                                    </p>
+                                  </div>
+
+                                  <span className="shrink-0 text-[11px] text-muted-foreground">
+                                    {formatDateTime(activity.at)}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-
-                          <div className="rounded-lg bg-muted-foreground/10 p-2">
-                            <FileText className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="rounded-xl border border-blue-500/20 bg-blue-500/[0.05] p-3">
-                        <div className="flex items-center justify-between gap-2">
-                          <div>
-                            <p className="text-xs font-medium text-muted-foreground">
-                              Submissions
-                            </p>
-
-                            <p className="mt-1 text-2xl font-semibold">
-                              {selectedUser.stats?.submissions ?? 0}
-                            </p>
-                          </div>
-
-                          <div className="rounded-lg bg-blue-500/10 p-2">
-                            <Inbox className="h-4 w-4 text-blue-500" />
-                          </div>
-                        </div>
-                      </div>
-
-                      <div
-                        className={`
-                    rounded-xl border p-3
-                    ${
-                      (selectedUser.stats?.flags ?? 0) > 0
-                        ? "border-orange-500/25 bg-orange-500/[0.06]"
-                        : "bg-muted/10"
-                    }
-                  `}
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <div>
-                            <p className="text-xs font-medium text-muted-foreground">
-                              Flags
-                            </p>
-
-                            <p className="mt-1 text-2xl font-semibold">
-                              {selectedUser.stats?.flags ?? 0}
-                            </p>
-                          </div>
-
-                          <div className="rounded-lg bg-orange-500/10 p-2">
-                            <ShieldAlert className="h-4 w-4 text-orange-500" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                        )}
+                    </>
                   )}
                 </section>
 
@@ -4099,14 +4276,23 @@ function UsersTab({ staffRole }: { staffRole: StaffRole }) {
 
                     <div className="rounded-xl border bg-muted/10 p-3 transition-colors hover:bg-muted/20">
                       <p className="text-xs text-muted-foreground">
-                        Profile Updated
+                        Last Platform Activity
                       </p>
 
                       <p className="mt-1 text-sm font-medium">
-                        {selectedUser.updated_at
-                          ? formatDateTime(selectedUser.updated_at)
-                          : "Never"}
+                        {selectedUser.last_activity
+                          ? formatDateTime(selectedUser.last_activity.at)
+                          : "No activity"}
                       </p>
+
+                      {selectedUser.last_activity && (
+                        <p className="mt-1 truncate text-[11px] text-muted-foreground">
+                          {selectedUser.last_activity.kind.replace("_", " ")}
+                          {" · "}
+                          {selectedUser.last_activity.label}
+                          {selectedUser.last_activity.deleted ? " · deleted" : ""}
+                        </p>
+                      )}
                     </div>
                   </div>
 

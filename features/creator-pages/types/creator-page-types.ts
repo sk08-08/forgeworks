@@ -3,6 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import type { Dispatch, SetStateAction } from "react";
+import type { ResourceVisibility } from "@/lib/resource-visibility";
 
 // ----------------------------------------------------------------------------
 // Core section/page types
@@ -32,6 +33,7 @@ export interface CreatorPage {
   description: string;
   config: Record<string, unknown>;
   is_published: boolean;
+  visibility: ResourceVisibility;
   created_at: string;
   updated_at: string;
 }

@@ -68,7 +68,6 @@ export async function fetchCreatorPageData(
         "id, title, slug, description, world_bot_links:atlas_world_bots(bot_id)",
       )
       .eq("user_id", creatorPage.user_id)
-      .eq("visibility", "public")
       .order("updated_at", { ascending: false }),
   ]);
 

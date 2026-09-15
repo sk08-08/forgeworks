@@ -2,6 +2,8 @@
 // Bot Types
 // ----------------------------------------------------------------------------
 
+import type { ResourceVisibility } from "@/lib/resource-visibility";
+
 export interface Bot {
   id: string;
   ownerId?: string;
@@ -19,6 +21,7 @@ export interface Bot {
   updatedAt: Date;
   imageUrl?: string;
   hideSensitiveFields?: boolean;
+  visibility?: ResourceVisibility;
 }
 
 export interface BotFormData {
@@ -34,6 +37,7 @@ export interface BotFormData {
   rating: "SFW" | "NSFW";
   imageUrl?: string;
   hideSensitiveFields?: boolean;
+  visibility: ResourceVisibility;
 }
 
 // Collaboration types

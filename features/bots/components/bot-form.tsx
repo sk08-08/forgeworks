@@ -49,6 +49,8 @@ import {
 } from "@/features/bots/lib/bot-utils";
 import { toast } from "sonner";
 import { EyeOff } from "lucide-react";
+import { ResourceVisibilitySelect } from "@/components/shared/resource-visibility-select";
+import { normalizeResourceVisibility } from "@/lib/resource-visibility";
 import {
   removeBotImageAction,
   uploadBotImageAction,
@@ -203,6 +205,9 @@ export function BotForm({
     initialData?.hideSensitiveFields || false,
   );
   const [tagInput, setTagInput] = useState("");
+  const [visibility, setVisibility] = useState(() =>
+    normalizeResourceVisibility(initialData?.visibility),
+  );
 
   const updateInitialMessage = useCallback((index: number, value: string) => {
     setInitialMessages((current) =>
@@ -359,6 +364,7 @@ export function BotForm({
         rating,
         imageUrl: imageUrl.trim() || undefined,
         hideSensitiveFields,
+        visibility,
       });
     },
     [
@@ -373,6 +379,7 @@ export function BotForm({
       rating,
       imageUrl,
       hideSensitiveFields,
+      visibility,
       syncTagsWithRating,
       onSubmit,
     ],
@@ -1017,14 +1024,19 @@ export function BotForm({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <EyeOff className="h-4 w-4" />
-            Profile Privacy
+            Visibility & Privacy
           </CardTitle>
           <CardDescription>
-            Hide prompt internals when this bot is shown in profiles and other
-            public previews.
+            Control who can access this bot and which prompt fields stay hidden in public surfaces.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          <ResourceVisibilitySelect
+            value={visibility}
+            onChange={setVisibility}
+            description="This bot has its own audience. Changing your Profile visibility does not change this setting."
+          />
+
           <div className="flex min-w-0 items-start justify-between gap-4 rounded-xl border p-3">
             <div className="min-w-0 space-y-1">
               <Label className="text-sm font-medium">

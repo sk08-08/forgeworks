@@ -14,6 +14,7 @@ import {
   getFormAssetPublicUrl,
 } from "@/features/forms/lib/form-assets";
 import { normalizeHttpUrl } from "@/lib/safe-url";
+import { normalizeResourceVisibility } from "@/lib/resource-visibility";
 
 const ALLOWED_FORM_IMAGE_TYPES = [
   "image/jpeg",
@@ -119,6 +120,8 @@ const formPayloadSchema = z.object({
   sections: z.array(formSectionSchema).min(1).max(MAX_FORM_SECTIONS),
 
   isActive: z.boolean(),
+
+  visibility: z.enum(["public", "followers", "private"]).default("private"),
 
   shareableLink: z.string().max(100).optional(),
 
@@ -313,6 +316,7 @@ export async function getFormForBuilderAction(formId: string) {
         appearance,
         shareable_link,
         is_active,
+        visibility,
         deactivated_message,
         deactivated_redirect_url,
         deactivated_redirect_label,
@@ -353,6 +357,7 @@ export async function getFormForBuilderAction(formId: string) {
       appearance: resolveFormAppearance(data.appearance || null),
       shareableLink: data.shareable_link || "",
       isActive: data.is_active !== false,
+      visibility: normalizeResourceVisibility(data.visibility),
 
       deactivatedMessage: data.deactivated_message || "",
       deactivatedRedirectUrl: data.deactivated_redirect_url || "",
@@ -664,6 +669,8 @@ export async function createFormAction(
 
     is_active: !!safeForm.isActive,
 
+    visibility: normalizeResourceVisibility(safeForm.visibility),
+
     deactivated_message: safeForm.deactivatedMessage ?? "",
 
     deactivated_redirect_url: normalizedRedirectUrl || "",
@@ -804,6 +811,8 @@ export async function updateFormAction(id: string, data: Partial<RequestForm>) {
   if (data.shareableLink !== undefined)
     payload.shareable_link = ensureShareableLink(data.shareableLink as any);
   if (data.isActive !== undefined) payload.is_active = data.isActive;
+  if (data.visibility !== undefined)
+    payload.visibility = normalizeResourceVisibility(data.visibility);
   if (data.deactivatedMessage !== undefined)
     payload.deactivated_message = data.deactivatedMessage ?? "";
   if (data.deactivatedRedirectUrl !== undefined) {

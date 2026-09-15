@@ -33,6 +33,10 @@ import { Loader2, RefreshCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getCreatorSectionAnchor } from "@/features/creator-pages/lib/creator-page-links";
 import { stripMarkdownToText } from "@/features/markdown/lib/markdown";
+import {
+  normalizeResourceVisibility,
+  type ResourceVisibility,
+} from "@/lib/resource-visibility";
 
 import { UnavailableCreatorPageEditorStatusPage } from "@/components/shared/status-page";
 
@@ -90,6 +94,7 @@ interface CreatorPageEditorValues {
   canvasWidth: CreatorPageCanvasWidth;
   sectionGap: CreatorPageSectionGap;
   pagePadding: CreatorPagePadding;
+  visibility: ResourceVisibility;
 }
 
 function resolvePageEditorValues(page: CreatorPage): CreatorPageEditorValues {
@@ -129,6 +134,7 @@ function resolvePageEditorValues(page: CreatorPage): CreatorPageEditorValues {
       cfg.pagePadding === "compact" || cfg.pagePadding === "spacious"
         ? cfg.pagePadding
         : "normal",
+    visibility: normalizeResourceVisibility(page.visibility),
   };
 }
 
@@ -172,6 +178,8 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
     useState<CreatorPageBackgroundStyle>("default");
   const [editFontStyle, setEditFontStyle] =
     useState<CreatorPageFontStyle>("default");
+  const [editVisibility, setEditVisibility] =
+    useState<ResourceVisibility>("private");
 
   // Creator Pages V3 canvas/editor state
   const [editCanvasWidth, setEditCanvasWidth] =
@@ -246,7 +254,7 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
         supabase
           .from("active_creator_pages")
           .select(
-            "id, user_id, slug, title, description, config, is_published, created_at, updated_at",
+            "id, user_id, slug, title, description, config, is_published, visibility, created_at, updated_at",
           )
           .eq("id", pageId)
           .eq("user_id", access.user.id)
@@ -284,6 +292,7 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
       setEditCanvasWidth(editorValues.canvasWidth);
       setEditSectionGap(editorValues.sectionGap);
       setEditPagePadding(editorValues.pagePadding);
+      setEditVisibility(editorValues.visibility);
 
       setSavedPageSnapshot(getPageSnapshot(editorValues));
       setSavedBlockSnapshot("");
@@ -323,6 +332,7 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
         canvasWidth: editCanvasWidth,
         sectionGap: editSectionGap,
         pagePadding: editPagePadding,
+        visibility: editVisibility,
       }),
     [
       editAccentColor,
@@ -332,6 +342,7 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
       editFontStyle,
       editPagePadding,
       editSectionGap,
+      editVisibility,
       editSlug,
       editTitle,
     ],
@@ -423,6 +434,7 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
           slug: normalizedSlug,
           description: normalizedDescription,
           config: pageConfig,
+          visibility: editVisibility,
         })
         .eq("id", editingPage.id)
         .eq("user_id", currentUserId);
@@ -435,6 +447,7 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
         slug: normalizedSlug,
         description: normalizedDescription,
         config: pageConfig,
+        visibility: editVisibility,
         updated_at: new Date().toISOString(),
       };
       setEditingPage(updated);
@@ -453,6 +466,7 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
           canvasWidth: editCanvasWidth,
           sectionGap: editSectionGap,
           pagePadding: editPagePadding,
+          visibility: editVisibility,
         }),
       );
 
@@ -1500,6 +1514,7 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
                   accentColor={editAccentColor}
                   backgroundStyle={editBgStyle}
                   fontStyle={editFontStyle}
+                  visibility={editVisibility}
                   slugStatus={slugStatus}
                   slugMessage={slugMessage}
                   onTitleChange={setEditTitle}
@@ -1508,6 +1523,7 @@ export function CreatorPageBuilder({ pageId }: { pageId: string }) {
                   onAccentColorChange={setEditAccentColor}
                   onBackgroundStyleChange={setEditBgStyle}
                   onFontStyleChange={setEditFontStyle}
+                  onVisibilityChange={setEditVisibility}
                 />
               }
             />

@@ -10,6 +10,7 @@ import {
   type BotCollaborationField,
 } from "@/features/bots/lib/collaboration-permissions";
 import { friendlySupabaseError } from "@/lib/error-utils";
+import { normalizeResourceVisibility } from "@/lib/resource-visibility";
 import { captureBotVersion } from "@/features/bots/actions/bot-history";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -59,6 +60,7 @@ export async function createBotAction(data: BotFormData) {
     rating: data.rating,
     image_url: data.imageUrl || null,
     hide_sensitive_fields: data.hideSensitiveFields === true,
+    visibility: normalizeResourceVisibility(data.visibility),
   };
 
   const { data: inserted, error } = await supabase
@@ -183,6 +185,13 @@ export async function updateBotAction(id: string, data: Partial<BotFormData>) {
   if (data.imageUrl !== undefined) setField("image_url", data.imageUrl || null);
   if (data.hideSensitiveFields !== undefined)
     setField("hide_sensitive_fields", data.hideSensitiveFields);
+
+  // Visibility is an ownership-level setting, not collaborative character
+  // content. Collaborators can keep editing allowed fields without being able
+  // to change who can access the resource.
+  if (isOwner && data.visibility !== undefined) {
+    payload.visibility = normalizeResourceVisibility(data.visibility);
+  }
 
   if (Object.keys(payload).length === 0) {
     return { success: false, error: "No editable changes to save" };

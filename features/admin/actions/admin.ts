@@ -250,6 +250,7 @@ export async function getRecentActivity() {
         .select(
           "id, status, submitter_name, created_at, deleted_at, form_id, request_forms(title, user_id)",
         )
+        .is("deleted_at", null)
         .order("created_at", { ascending: false })
         .limit(8),
       supabase
@@ -405,7 +406,7 @@ export async function getAllForms(
   page = 1,
   limit = 25,
   userFilter?: string,
-  sortBy: "created_at" | "title" | "is_active" = "created_at",
+  sortBy: "created_at" | "updated_at" | "title" | "is_active" = "updated_at",
   sortDirection: "asc" | "desc" = "desc",
 ) {
   const { supabase, error } = await requireStaff();
@@ -426,7 +427,7 @@ export async function getAllForms(
       return { success: true, items: [], total: 0 };
   }
 
-  const safeSortBy = ["created_at", "title", "is_active"].includes(sortBy)
+  const safeSortBy = ["created_at", "updated_at", "title", "is_active"].includes(sortBy)
     ? sortBy
     : "created_at";
   const ascending = sortDirection === "asc";
@@ -505,7 +506,8 @@ export async function getAdminUsers(
     | "created_at"
     | "updated_at"
     | "username"
-    | "display_name" = "created_at",
+    | "display_name"
+    | "is_blocked" = "created_at",
   sortDirection: "asc" | "desc" = "desc",
 ) {
   const { supabase, error } = await requireStaff();
@@ -519,6 +521,7 @@ export async function getAdminUsers(
     "updated_at",
     "username",
     "display_name",
+    "is_blocked",
   ].includes(sortBy)
     ? sortBy
     : "created_at";
@@ -559,11 +562,7 @@ export async function getAdminUserById(userId: string) {
   const { supabase, error } = await requireStaff();
 
   if (error) {
-    return {
-      success: false,
-      error,
-      user: null,
-    };
+    return { success: false, error, user: null };
   }
 
   const { data: profile, error: profileError } = await supabase
@@ -584,74 +583,254 @@ updated_at
     .maybeSingle();
 
   if (profileError) {
-    return {
-      success: false,
-      error: profileError.message,
-      user: null,
-    };
+    return { success: false, error: profileError.message, user: null };
   }
 
   if (!profile) {
-    return {
-      success: false,
-      error: "User not found",
-      user: null,
-    };
+    return { success: false, error: "User not found", user: null };
   }
 
-  const [botsResult, formsResult] = await Promise.all([
+  /*
+   * Current stats exclude soft-deleted resources.
+   * Admin management tables still read raw tables so deleted rows remain
+   * available for restore / hard delete.
+   */
+  const [
+    botsResult,
+    activeFormsResult,
+    creatorPagesResult,
+    worldsResult,
+    lorebooksResult,
+    entriesResult,
+    collectionsResult,
+    botActivityResult,
+    formActivityResult,
+    creatorPageActivityResult,
+    worldActivityResult,
+    lorebookActivityResult,
+    entryActivityResult,
+    collectionActivityResult,
+  ] = await Promise.all([
     supabase
       .from("bots")
-      .select("id", {
-        count: "exact",
-        head: true,
-      })
-      .eq("user_id", userId),
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .is("deleted_at", null),
 
-    supabase.from("request_forms").select("id").eq("user_id", userId),
+    supabase
+      .from("request_forms")
+      .select("id")
+      .eq("user_id", userId)
+      .is("deleted_at", null),
+
+    supabase
+      .from("creator_pages")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .is("deleted_at", null),
+
+    supabase
+      .from("atlas_worlds")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .is("deleted_at", null),
+
+    supabase
+      .from("atlas_lorebooks")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .is("deleted_at", null),
+
+    supabase
+      .from("atlas_entries")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .is("deleted_at", null),
+
+    supabase
+      .from("atlas_collections")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .is("deleted_at", null),
+
+    supabase
+      .from("bots")
+      .select("id,name,created_at,updated_at,deleted_at")
+      .eq("user_id", userId)
+      .order("updated_at", { ascending: false })
+      .limit(6),
+
+    supabase
+      .from("request_forms")
+      .select("id,title,created_at,updated_at,deleted_at")
+      .eq("user_id", userId)
+      .order("updated_at", { ascending: false })
+      .limit(6),
+
+    supabase
+      .from("creator_pages")
+      .select("id,title,created_at,updated_at,deleted_at")
+      .eq("user_id", userId)
+      .order("updated_at", { ascending: false })
+      .limit(6),
+
+    supabase
+      .from("atlas_worlds")
+      .select("id,title,created_at,updated_at,deleted_at")
+      .eq("user_id", userId)
+      .order("updated_at", { ascending: false })
+      .limit(6),
+
+    supabase
+      .from("atlas_lorebooks")
+      .select("id,title,created_at,updated_at,deleted_at")
+      .eq("user_id", userId)
+      .order("updated_at", { ascending: false })
+      .limit(6),
+
+    supabase
+      .from("atlas_entries")
+      .select("id,title,created_at,updated_at,deleted_at")
+      .eq("user_id", userId)
+      .order("updated_at", { ascending: false })
+      .limit(6),
+
+    supabase
+      .from("atlas_collections")
+      .select("id,title,created_at,updated_at,deleted_at")
+      .eq("user_id", userId)
+      .order("updated_at", { ascending: false })
+      .limit(6),
   ]);
 
-  const formIds = formsResult.data?.map((form) => form.id) ?? [];
+  // Use every owned form only to establish ownership of submissions.
+  // The submission itself must still be non-deleted to count.
+  const { data: allOwnedForms } = await supabase
+    .from("request_forms")
+    .select("id")
+    .eq("user_id", userId);
+
+  const allFormIds = allOwnedForms?.map((form) => form.id) ?? [];
 
   let submissionsCount = 0;
   let flaggedCount = 0;
 
-  if (formIds.length > 0) {
+  if (allFormIds.length > 0) {
     const [submissionsResult, flagsResult] = await Promise.all([
       supabase
         .from("requests")
-        .select("id", {
-          count: "exact",
-          head: true,
-        })
-        .in("form_id", formIds),
+        .select("id", { count: "exact", head: true })
+        .in("form_id", allFormIds)
+        .is("deleted_at", null),
 
       supabase
         .from("flagged_requests")
-        .select("id, requests!inner(id)", {
-          count: "exact",
-          head: true,
-        })
-        .in("form_id", formIds)
+        .select("id, requests!inner(id)", { count: "exact", head: true })
+        .in("form_id", allFormIds)
         .is("requests.deleted_at", null),
     ]);
 
     submissionsCount = submissionsResult.count ?? 0;
-
     flaggedCount = flagsResult.count ?? 0;
   }
+
+  type ActivityKind =
+    | "profile"
+    | "bot"
+    | "form"
+    | "creator_page"
+    | "world"
+    | "lorebook"
+    | "entry"
+    | "collection";
+
+  type ActivityItem = {
+    id: string;
+    kind: ActivityKind;
+    label: string;
+    at: string;
+    deleted: boolean;
+  };
+
+  const toActivity = (
+    kind: Exclude<ActivityKind, "profile">,
+    rows: any[] | null,
+    labelFor: (row: any) => string,
+  ): ActivityItem[] =>
+    (rows ?? []).flatMap((row) => {
+      const normalAt = row.updated_at || row.created_at;
+      const deletedAt = row.deleted_at || null;
+
+      if (!normalAt && !deletedAt) return [];
+
+      const useDeleted =
+        Boolean(deletedAt) &&
+        (!normalAt ||
+          new Date(deletedAt).getTime() > new Date(normalAt).getTime());
+
+      return [
+        {
+          id: row.id,
+          kind,
+          label: labelFor(row),
+          at: useDeleted ? deletedAt : normalAt,
+          deleted: useDeleted,
+        },
+      ];
+    });
+
+  const recentActivity: ActivityItem[] = [
+    ...(profile.updated_at
+      ? [
+          {
+            id: profile.id,
+            kind: "profile" as const,
+            label: "Profile",
+            at: profile.updated_at,
+            deleted: false,
+          },
+        ]
+      : []),
+    ...toActivity("bot", botActivityResult.data, (row) => row.name || "Untitled bot"),
+    ...toActivity("form", formActivityResult.data, (row) => row.title || "Untitled form"),
+    ...toActivity(
+      "creator_page",
+      creatorPageActivityResult.data,
+      (row) => row.title || "Untitled Creator Page",
+    ),
+    ...toActivity("world", worldActivityResult.data, (row) => row.title || "Untitled World"),
+    ...toActivity(
+      "lorebook",
+      lorebookActivityResult.data,
+      (row) => row.title || "Untitled Lorebook",
+    ),
+    ...toActivity("entry", entryActivityResult.data, (row) => row.title || "Untitled Entry"),
+    ...toActivity(
+      "collection",
+      collectionActivityResult.data,
+      (row) => row.title || "Untitled Collection",
+    ),
+  ]
+    .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
+    .slice(0, 8);
 
   return {
     success: true,
     user: {
       ...profile,
-
       stats: {
         bots: botsResult.count ?? 0,
-        forms: formIds.length,
+        forms: activeFormsResult.data?.length ?? 0,
+        creator_pages: creatorPagesResult.count ?? 0,
         submissions: submissionsCount,
         flags: flaggedCount,
+        worlds: worldsResult.count ?? 0,
+        lorebooks: lorebooksResult.count ?? 0,
+        entries: entriesResult.count ?? 0,
+        collections: collectionsResult.count ?? 0,
       },
+      last_activity: recentActivity[0] ?? null,
+      recent_activity: recentActivity,
     },
   };
 }
@@ -1739,7 +1918,7 @@ export async function getAllBots(
   limit = 25,
   userFilter?: string,
   ratingFilter?: string,
-  sortBy: "created_at" | "name" | "rating" = "created_at",
+  sortBy: "created_at" | "updated_at" | "name" | "rating" = "updated_at",
   sortDirection: "asc" | "desc" = "desc",
 ) {
   const { supabase, error } = await requireStaff();
@@ -1760,7 +1939,7 @@ export async function getAllBots(
       return { success: true, items: [], total: 0 };
   }
 
-  const safeSortBy = ["created_at", "name", "rating"].includes(sortBy)
+  const safeSortBy = ["created_at", "updated_at", "name", "rating"].includes(sortBy)
     ? sortBy
     : "created_at";
   const ascending = sortDirection === "asc";

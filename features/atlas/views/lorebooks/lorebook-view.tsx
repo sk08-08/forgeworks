@@ -71,6 +71,8 @@ import {
 } from "@/features/atlas/components/entries/entry-type-badge";
 import type { ForgeLorebookActivationMode } from "@/features/atlas/fkf/fkf-types";
 import { AtlasLorebookDetailSkeleton } from "@/features/atlas/components/loading/atlas-loading-skeletons";
+import { ResourceVisibilitySelect } from "@/components/shared/resource-visibility-select";
+import type { ResourceVisibility } from "@/lib/resource-visibility";
 
 function splitTokens(value: string) {
   return Array.from(
@@ -112,6 +114,7 @@ export function LorebookView({ lorebookId }: { lorebookId: string }) {
   const [lorebook, setLorebook] = useState<AtlasLorebookRecord | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [visibility, setVisibility] = useState<ResourceVisibility>("private");
   const [entries, setEntries] = useState<AtlasLorebookEntryRecord[]>([]);
   const [candidates, setCandidates] = useState<AtlasLorebookEntryCandidate[]>(
     [],
@@ -135,6 +138,7 @@ export function LorebookView({ lorebookId }: { lorebookId: string }) {
     setLorebook(lorebookResult.data);
     setTitle(lorebookResult.data.title);
     setDescription(lorebookResult.data.description);
+    setVisibility(lorebookResult.data.visibility);
     if (entriesResult.success) {
       setEntries(entriesResult.data.entries);
       setCandidates(entriesResult.data.candidates);
@@ -164,9 +168,11 @@ export function LorebookView({ lorebookId }: { lorebookId: string }) {
   const lorebookDirty = useMemo(() => {
     if (!lorebook) return false;
     return (
-      title.trim() !== lorebook.title || description !== lorebook.description
+      title.trim() !== lorebook.title ||
+      description !== lorebook.description ||
+      visibility !== lorebook.visibility
     );
-  }, [lorebook, title, description]);
+  }, [lorebook, title, description, visibility]);
 
   const filteredCandidates = useMemo(() => {
     const needle = candidateQuery.trim().toLowerCase();
@@ -185,6 +191,7 @@ export function LorebookView({ lorebookId }: { lorebookId: string }) {
         id: lorebook.id,
         title,
         description,
+        visibility,
       });
       if (!result.success) {
         toast.error(result.error);
@@ -193,6 +200,7 @@ export function LorebookView({ lorebookId }: { lorebookId: string }) {
       setLorebook(result.data);
       setTitle(result.data.title);
       setDescription(result.data.description);
+      setVisibility(result.data.visibility);
       toast.success("Lorebook saved");
       router.refresh();
     });
@@ -431,7 +439,7 @@ export function LorebookView({ lorebookId }: { lorebookId: string }) {
               </div>
             </div>
 
-            <div className="grid gap-4 p-4 sm:p-5 lg:grid-cols-[minmax(14rem,0.8fr)_minmax(0,1.5fr)]">
+            <div className="grid gap-4 p-4 sm:p-5 lg:grid-cols-2">
               <div className="space-y-2">
                 <Label>Title</Label>
                 <Input
@@ -449,6 +457,14 @@ export function LorebookView({ lorebookId }: { lorebookId: string }) {
                   onChange={(event) => setDescription(event.target.value)}
                   rows={2}
                   className="min-h-10 resize-y"
+                />
+              </div>
+
+              <div className="lg:col-span-2">
+                <ResourceVisibilitySelect
+                  value={visibility}
+                  onChange={setVisibility}
+                  description="This Lorebook has its own audience. Adding it to a Creator Page does not make a private Lorebook public."
                 />
               </div>
             </div>

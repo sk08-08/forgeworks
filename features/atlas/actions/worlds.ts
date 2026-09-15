@@ -4,8 +4,12 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUserAccess } from "@/lib/access";
 import type { AtlasEntryKind } from "@/features/atlas/types/atlas-types";
+import {
+  normalizeResourceVisibility,
+  type ResourceVisibility,
+} from "@/lib/resource-visibility";
 
-export type AtlasWorldVisibility = "private" | "public";
+export type AtlasWorldVisibility = ResourceVisibility;
 
 export type AtlasWorldRecord = {
   id: string;
@@ -160,7 +164,7 @@ function mapWorld(row: any, entryCount = 0, botCount = 0): AtlasWorldRecord {
     slug: row.slug,
     description: row.description ?? "",
     loreSummary: row.lore_summary ?? "",
-    visibility: row.visibility === "public" ? "public" : "private",
+    visibility: normalizeResourceVisibility(row.visibility),
     iconName: row.icon_name ?? null,
     accentColor: row.accent_color ?? null,
     entryCount,
@@ -325,7 +329,7 @@ export async function updateAtlasWorldAction(input: {
         title,
         description: input.description.slice(0, 10_000),
         lore_summary: input.loreSummary.slice(0, 500_000),
-        visibility: input.visibility === "public" ? "public" : "private",
+        visibility: normalizeResourceVisibility(input.visibility),
         updated_at: new Date().toISOString(),
       })
       .eq("id", input.id)

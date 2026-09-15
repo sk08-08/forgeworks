@@ -278,7 +278,6 @@ export default async function UserProfilePage({ params }: PageProps) {
     .from("atlas_worlds")
     .select("id, title, slug, description")
     .eq("user_id", normalizedProfile.id)
-    .eq("visibility", "public")
     .order("updated_at", { ascending: false });
 
   if (worldsError) {
