@@ -429,6 +429,12 @@ export const MarkdownField = React.forwardRef<
               "rounded-lg bg-muted p-4 font-mono text-sm my-2 overflow-x-auto",
           },
         },
+
+        horizontalRule: {
+          HTMLAttributes: {
+            class: "my-6 border-border/80",
+          },
+        },
       }),
     [],
   );
@@ -497,6 +503,9 @@ export const MarkdownField = React.forwardRef<
           "[&_h3]:mt-2 [&_h3]:mb-1",
           "[&_h3]:text-base [&_h3]:font-semibold",
 
+          // Horizontal rules need their own vertical rhythm.
+          "[&_hr]:my-6 [&_hr]:border-border/80",
+
           // Rich image node
           "[&_[data-type=markdown-image]]:my-4",
 
@@ -526,7 +535,126 @@ export const MarkdownField = React.forwardRef<
           return true;
         }
 
+        if (!editor || disabled) {
+          return false;
+        }
+
+        /*
+         * StarterKit already includes normal input rules, but these explicit
+         * block shortcuts make the MarkdownField predictable even when a
+         * browser/input method does not trigger those rules as expected.
+         *
+         * They only fire while the cursor is at the end of a plain paragraph,
+         * so they don't interfere with normal text containing these symbols.
+         */
+        if (event.key === " " || event.key === "Enter") {
+          const { $from } = editor.state.selection;
+
+          if (
+            $from.parent.type.name === "paragraph" &&
+            $from.parentOffset === $from.parent.content.size
+          ) {
+            const textBefore = $from.parent.textBetween(
+              0,
+              $from.parentOffset,
+              undefined,
+              "\ufffc",
+            );
+
+            const paragraphStart = $from.start();
+
+            const replaceMarker = (
+              run: (chain: ReturnType<typeof editor.chain>) => void,
+            ) => {
+              event.preventDefault();
+
+              const chain = editor
+                .chain()
+                .focus()
+                .deleteRange({
+                  from: paragraphStart,
+                  to: $from.pos,
+                });
+
+              run(chain);
+
+              return true;
+            };
+
+            if (event.key === " " && hasFeature("heading")) {
+              if (textBefore === "#") {
+                return replaceMarker((chain) =>
+                  chain.setHeading({ level: 1 }).run(),
+                );
+              }
+
+              if (textBefore === "##") {
+                return replaceMarker((chain) =>
+                  chain.setHeading({ level: 2 }).run(),
+                );
+              }
+
+              if (textBefore === "###") {
+                return replaceMarker((chain) =>
+                  chain.setHeading({ level: 3 }).run(),
+                );
+              }
+            }
+
+            if (
+              event.key === " " &&
+              hasFeature("blockquote") &&
+              textBefore === ">"
+            ) {
+              return replaceMarker((chain) => chain.setBlockquote().run());
+            }
+
+            if (
+              hasFeature("horizontalRule") &&
+              /^(?:-{3,}|\*{3,}|_{3,})$/.test(textBefore.trim())
+            ) {
+              return replaceMarker((chain) => chain.setHorizontalRule().run());
+            }
+          }
+        }
+
         return false;
+      },
+
+      handlePaste: (_view, event) => {
+        if (!editor || disabled) {
+          return false;
+        }
+
+        const text = event.clipboardData?.getData("text/plain");
+
+        if (!text) {
+          return false;
+        }
+
+        /*
+         * Tiptap's Markdown extension parses Markdown perfectly when content is
+         * loaded, but browser paste can otherwise land as literal text. Detect
+         * block Markdown and explicitly insert it as Markdown so headings,
+         * quotes, rules, lists and fenced code arrive as rich nodes.
+         */
+        const looksLikeBlockMarkdown =
+          /(^|\n)\s{0,3}(?:#{1,3}\s+|>\s?|[-*+]\s+|\d+\.\s+|```|(?:-{3,}|\*{3,}|_{3,})\s*$)/m.test(
+            text,
+          );
+
+        if (!looksLikeBlockMarkdown) {
+          return false;
+        }
+
+        event.preventDefault();
+
+        editor.commands.insertContent(text, {
+          contentType: "markdown",
+          updateSelection: true,
+        });
+
+        return true;
       },
     },
     onUpdate: ({ editor }) => {

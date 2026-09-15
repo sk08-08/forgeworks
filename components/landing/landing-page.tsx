@@ -291,7 +291,12 @@ function Navbar() {
           </button>
         </div>
       </nav>
-      <div id="fw-mobile-nav" className="fw-mobile-nav" hidden={!open}>
+      <div
+        id="fw-mobile-nav"
+        className="fw-mobile-nav"
+        data-open={open ? "true" : "false"}
+        aria-hidden={!open}
+      >
         <nav aria-label="Mobile navigation">
           {navLinks.map((link) => (
             <a key={link.href} href={link.href} onClick={() => setOpen(false)}>
@@ -305,6 +310,14 @@ function Navbar() {
           </Link>
         </nav>
       </div>
+      <button
+        type="button"
+        className="fw-mobile-nav-backdrop"
+        data-open={open ? "true" : "false"}
+        aria-label="Close navigation"
+        tabIndex={open ? 0 : -1}
+        onClick={() => setOpen(false)}
+      />
     </header>
   );
 }

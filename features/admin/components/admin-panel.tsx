@@ -121,6 +121,7 @@ import {
 } from "@/features/admin/actions/admin";
 import { getFormBannerPublicUrl } from "@/features/forms/lib/form-assets";
 import { BadgeAdminTab } from "./badge-admin-tab";
+import { ChangelogAdminHub } from "@/features/changelog/components/changelog-admin-hub";
 import { toast } from "sonner";
 
 // ============================================================================
@@ -133,6 +134,7 @@ type AdminTab =
   | "forms"
   | "bots"
   | "badges"
+  | "changelog"
   | "users"
   | "moderation";
 
@@ -143,6 +145,7 @@ const ADMIN_TAB_IDS: AdminTab[] = [
   "forms",
   "bots",
   "badges",
+  "changelog",
   "users",
   "moderation",
 ];
@@ -4761,7 +4764,7 @@ export function AdminPanel() {
   }, [activeTab]);
 
   useEffect(() => {
-    if (staffRole === "moderator" && activeTab === "badges") {
+    if (staffRole === "moderator" && (activeTab === "badges" || activeTab === "changelog")) {
       setActiveTab("overview");
     }
   }, [staffRole, activeTab]);
@@ -4834,6 +4837,14 @@ export function AdminPanel() {
       icon: Award,
       color: "text-amber-500",
       style: "border-amber-500 text-amber-500",
+      roles: ["owner"],
+    },
+    {
+      id: "changelog",
+      label: "Changelog",
+      icon: FileText,
+      color: "text-fuchsia-500",
+      style: "border-fuchsia-500 text-fuchsia-500",
       roles: ["owner"],
     },
     {
@@ -4926,6 +4937,7 @@ export function AdminPanel() {
       {activeTab === "forms" && <FormsTab staffRole={staffRole} />}
       {activeTab === "bots" && <BotsTab staffRole={staffRole} />}
       {activeTab === "badges" && staffRole === "owner" && <BadgeAdminTab />}
+      {activeTab === "changelog" && staffRole === "owner" && <ChangelogAdminHub />}
       {activeTab === "users" && <UsersTab staffRole={staffRole} />}
       {activeTab === "moderation" && (
         <ModerationAdminTab staffRole={staffRole} />

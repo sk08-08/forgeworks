@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import { Check, Link2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -11,10 +12,18 @@ import rehypeSanitize from "rehype-sanitize";
 // Renders GFM markdown safely with proper styling
 // ---------------------------------------------------------------------------
 
+export type MarkdownHeading = {
+  level: 1 | 2;
+  title: string;
+  id: string;
+  line: number;
+};
+
 interface MarkdownRendererProps {
   content: string;
   className?: string;
   style?: React.CSSProperties;
+  headingIdPrefix?: string;
 }
 
 interface MarkdownInlineRendererProps {
@@ -30,14 +39,133 @@ function injectColorLinks(md: string) {
   );
 }
 
+function plainHeadingText(value: string) {
+  return value
+    .replace(/\[([^\]]+)\]\{#[0-9a-fA-F]{3,6}\}/g, "$1")
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/[*_~]+/g, "")
+    .replace(/\\([\\`*_{}\[\]()#+.!>|-])/g, "$1")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function slugifyHeading(value: string) {
+  const slug = plainHeadingText(value)
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return slug || "section";
+}
+
+export function extractMarkdownHeadings(
+  content: string,
+  prefix = "",
+): MarkdownHeading[] {
+  const counts = new Map<string, number>();
+  const safePrefix = prefix
+    ? `${slugifyHeading(prefix)}--`
+    : "";
+
+  return String(content || "")
+    .split(/\r?\n/)
+    .map((line, index) => {
+      const match = line.match(/^\s{0,3}(#{1,2})\s+(.+?)\s*#*\s*$/);
+      if (!match) return null;
+
+      const level = match[1].length as 1 | 2;
+      const title = plainHeadingText(match[2]);
+      if (!title) return null;
+
+      const base = slugifyHeading(title);
+      const occurrence = (counts.get(base) || 0) + 1;
+      counts.set(base, occurrence);
+
+      return {
+        level,
+        title,
+        id: `${safePrefix}${base}${occurrence > 1 ? `-${occurrence}` : ""}`,
+        line: index + 1,
+      } satisfies MarkdownHeading;
+    })
+    .filter((heading): heading is MarkdownHeading => Boolean(heading));
+}
+
+function reactNodeText(node: React.ReactNode): string {
+  if (typeof node === "string" || typeof node === "number") {
+    return String(node);
+  }
+
+  if (Array.isArray(node)) {
+    return node.map(reactNodeText).join("");
+  }
+
+  if (React.isValidElement(node)) {
+    return reactNodeText((node.props as { children?: React.ReactNode }).children);
+  }
+
+  return "";
+}
+
 export function MarkdownRenderer({
   content,
   className = "",
   style,
+  headingIdPrefix,
 }: MarkdownRendererProps) {
   if (!content?.trim()) return null;
 
+  const [copiedHeadingId, setCopiedHeadingId] = useState<string | null>(null);
+
   const renderedContent = injectColorLinks(content);
+  const headings = headingIdPrefix
+    ? extractMarkdownHeadings(content, headingIdPrefix)
+    : [];
+  const headingByLine = new Map(
+    headings.map((heading) => [heading.line, heading]),
+  );
+
+  const copyHeadingLink = async (id: string) => {
+    if (typeof window === "undefined") return;
+
+    const url = `${window.location.origin}${window.location.pathname}${window.location.search}#${id}`;
+    window.history.replaceState(null, "", `#${id}`);
+
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedHeadingId(id);
+      window.setTimeout(() => {
+        setCopiedHeadingId((current) => (current === id ? null : current));
+      }, 1400);
+    } catch {
+      setCopiedHeadingId(null);
+    }
+  };
+
+  const resolveHeading = (
+    node: any,
+    children: React.ReactNode,
+    level: 1 | 2,
+  ) => {
+    const line = node?.position?.start?.line;
+    const extracted = typeof line === "number" ? headingByLine.get(line) : undefined;
+
+    if (extracted) return extracted;
+
+    const title = reactNodeText(children).trim();
+    return {
+      level,
+      title,
+      id: headingIdPrefix
+        ? `${slugifyHeading(headingIdPrefix)}--${slugifyHeading(title)}`
+        : undefined,
+      line: typeof line === "number" ? line : -1,
+    };
+  };
 
   return (
     <div
@@ -53,16 +181,90 @@ export function MarkdownRenderer({
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeSanitize as any]}
         components={{
-          h1: ({ children, ...props }: any) => (
-            <h1 className="text-xl font-bold mt-4 mb-2" {...props}>
-              {children}
-            </h1>
-          ),
-          h2: ({ children, ...props }: any) => (
-            <h2 className="text-lg font-bold mt-3 mb-1.5" {...props}>
-              {children}
-            </h2>
-          ),
+          h1: ({ children, node, ...props }: any) => {
+            const heading = resolveHeading(node, children, 1);
+
+            return (
+              <h1
+                id={headingIdPrefix ? heading.id : undefined}
+                data-changelog-section={
+                  headingIdPrefix ? "true" : undefined
+                }
+                data-changelog-section-level={
+                  headingIdPrefix ? "1" : undefined
+                }
+                className="text-xl font-bold mt-4 mb-2"
+                {...props}
+              >
+                <span className="fw-changelog-heading-text">{children}</span>
+                {headingIdPrefix && heading.id && (
+                  <button
+                    type="button"
+                    className="fw-changelog-heading-link"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      void copyHeadingLink(heading.id);
+                    }}
+                    aria-label={`Copy link to ${heading.title}`}
+                    title={
+                      copiedHeadingId === heading.id
+                        ? "Link copied"
+                        : "Copy section link"
+                    }
+                  >
+                    {copiedHeadingId === heading.id ? (
+                      <Check size={14} />
+                    ) : (
+                      <Link2 size={14} />
+                    )}
+                  </button>
+                )}
+              </h1>
+            );
+          },
+          h2: ({ children, node, ...props }: any) => {
+            const heading = resolveHeading(node, children, 2);
+
+            return (
+              <h2
+                id={headingIdPrefix ? heading.id : undefined}
+                data-changelog-section={
+                  headingIdPrefix ? "true" : undefined
+                }
+                data-changelog-section-level={
+                  headingIdPrefix ? "2" : undefined
+                }
+                className="text-lg font-bold mt-3 mb-1.5"
+                {...props}
+              >
+                <span className="fw-changelog-heading-text">{children}</span>
+                {headingIdPrefix && heading.id && (
+                  <button
+                    type="button"
+                    className="fw-changelog-heading-link"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      void copyHeadingLink(heading.id);
+                    }}
+                    aria-label={`Copy link to ${heading.title}`}
+                    title={
+                      copiedHeadingId === heading.id
+                        ? "Link copied"
+                        : "Copy section link"
+                    }
+                  >
+                    {copiedHeadingId === heading.id ? (
+                      <Check size={14} />
+                    ) : (
+                      <Link2 size={14} />
+                    )}
+                  </button>
+                )}
+              </h2>
+            );
+          },
           h3: ({ children, ...props }: any) => (
             <h3 className="text-base font-semibold mt-2 mb-1" {...props}>
               {children}

@@ -1131,6 +1131,126 @@ export type Database = {
         }
         Relationships: []
       }
+      changelog_entries: {
+        Row: {
+          areas: string[]
+          body_markdown: string
+          change_types: string[]
+          created_at: string
+          created_by: string | null
+          headline: string
+          id: string
+          is_featured: boolean
+          published_at: string | null
+          release_number: number | null
+          release_type: string
+          slug: string
+          status: string
+          summary: string
+          technical_markdown: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+          version: string | null
+        }
+        Insert: {
+          areas?: string[]
+          body_markdown?: string
+          change_types?: string[]
+          created_at?: string
+          created_by?: string | null
+          headline?: string
+          id?: string
+          is_featured?: boolean
+          published_at?: string | null
+          release_number?: number | null
+          release_type?: string
+          slug: string
+          status?: string
+          summary?: string
+          technical_markdown?: string
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: string | null
+        }
+        Update: {
+          areas?: string[]
+          body_markdown?: string
+          change_types?: string[]
+          created_at?: string
+          created_by?: string | null
+          headline?: string
+          id?: string
+          is_featured?: boolean
+          published_at?: string | null
+          release_number?: number | null
+          release_type?: string
+          slug?: string
+          status?: string
+          summary?: string
+          technical_markdown?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "changelog_entries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "changelog_entries_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      changelog_reads: {
+        Row: {
+          last_seen_entry_id: string | null
+          last_seen_published_at: string | null
+          seen_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          last_seen_entry_id?: string | null
+          last_seen_published_at?: string | null
+          seen_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          last_seen_entry_id?: string | null
+          last_seen_published_at?: string | null
+          seen_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "changelog_reads_last_seen_entry_id_fkey"
+            columns: ["last_seen_entry_id"]
+            isOneToOne: false
+            referencedRelation: "changelog_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "changelog_reads_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       creator_page_sections: {
         Row: {
           config: Json

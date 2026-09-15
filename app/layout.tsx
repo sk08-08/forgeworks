@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import Script from "next/script";
 import { Toaster } from "@/components/ui/sonner";
 import { CustomScrollbar } from "@/components/ui/custom-scrollbar";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -120,7 +121,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark bg-background" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <Script
+          id="forgeworks-theme-init"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: themeScript }}
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}

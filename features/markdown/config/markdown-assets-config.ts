@@ -5,6 +5,7 @@ export const MARKDOWN_IMAGE_CONTEXTS = [
   "creator-page",
   "resource",
   "community",
+  "changelog",
   "generic",
 ] as const;
 

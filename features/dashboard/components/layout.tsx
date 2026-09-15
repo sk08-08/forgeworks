@@ -49,6 +49,7 @@ import { createClient } from "@/lib/supabase/client";
 import { getCurrentUserAccess } from "@/lib/access";
 import { getOwnProfile } from "@/features/profile/actions/profile";
 import { NotificationBell } from "@/features/notifications/components/notification-bell";
+import { WhatsNewButton } from "@/features/changelog/components/whats-new";
 import { SettingsDialog } from "@/features/settings/components/settings-dialog";
 import { Settings } from "lucide-react";
 
@@ -632,6 +633,14 @@ export function DashboardLayout({ children, username }: DashboardLayoutProps) {
                       <TooltipContent side="top">Settings</TooltipContent>
                     </Tooltip>
                     <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span>
+                          <WhatsNewButton />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">What&apos;s new</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
                       <TooltipTrigger>
                         <NotificationBell />
                       </TooltipTrigger>
@@ -688,7 +697,10 @@ export function DashboardLayout({ children, username }: DashboardLayoutProps) {
               >
                 <Menu className="h-5 w-5" />
               </Button>
-              <NotificationBell />
+              <div className="flex items-center gap-1">
+                <WhatsNewButton />
+                <NotificationBell />
+              </div>
             </div>
           )}
 
@@ -776,6 +788,10 @@ export function DashboardLayout({ children, username }: DashboardLayoutProps) {
                       {userDisplayName || username}
                     </span>
                   </button>
+                  <WhatsNewButton
+                    compact={false}
+                    className="w-full justify-start"
+                  />
                   <Button
                     variant="ghost"
                     size="sm"
