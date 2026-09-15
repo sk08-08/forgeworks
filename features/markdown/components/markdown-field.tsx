@@ -469,7 +469,7 @@ export const MarkdownField = React.forwardRef<
     [],
   );
 
-  const editor = useEditor({
+  const editor: ReturnType<typeof useEditor> = useEditor({
     editable: !disabled,
     extensions: [
       starterKitExtension,

@@ -162,7 +162,7 @@ export function MarkdownRenderer({
       title,
       id: headingIdPrefix
         ? `${slugifyHeading(headingIdPrefix)}--${slugifyHeading(title)}`
-        : undefined,
+        : "",
       line: typeof line === "number" ? line : -1,
     };
   };
