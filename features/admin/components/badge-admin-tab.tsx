@@ -7,6 +7,9 @@ import {
   Layers3,
   Loader2,
   Pencil,
+  Sparkles,
+  WandSparkles,
+  Settings2,
   Plus,
   RefreshCw,
   Search,
@@ -69,6 +72,12 @@ import {
 } from "@/features/profile/lib/profile-badge-icons";
 import type { ProfileBadgeRecord } from "@/features/profile/lib/profile-badges";
 import { cn } from "@/lib/utils";
+import {
+  getBadgeAutomationOverview,
+  reconcileAutomaticBadges,
+  updateBadgeAutomationConfig,
+  type BadgeAutomationMetric,
+} from "@/features/admin/actions/admin";
 
 type EditableBadgeForm = {
   slug: string;
@@ -79,6 +88,12 @@ type EditableBadgeForm = {
   category: string;
   sortOrder: string;
   isActive: boolean;
+  awardMode: "manual" | "automatic";
+  automationType: "metric_threshold" | "created_before";
+  automationMetric: BadgeAutomationMetric;
+  automationThreshold: string;
+  automationBefore: string;
+  automationSticky: boolean;
 };
 
 type ProfileSearchResult = {
@@ -90,7 +105,35 @@ type ProfileSearchResult = {
 };
 
 type CatalogStatusFilter = "all" | "active" | "inactive";
+type CatalogAwardingFilter = "all" | "automatic" | "manual";
 type BadgeEditorMode = "idle" | "create" | "edit";
+
+type BadgeAutomationAdminRecord = {
+  slug: string;
+  is_system: boolean;
+  is_manual_only: boolean;
+  rarity: string;
+  is_active: boolean;
+  automation:
+    | {
+        enabled: false;
+        mode: "manual";
+        sticky: true;
+      }
+    | {
+        enabled: true;
+        mode: "automatic";
+        type: "metric_threshold" | "created_before";
+        metric: string | null;
+        threshold: number;
+        before: string | null;
+        sticky: boolean;
+      };
+  awards: {
+    total: number;
+    automatic: number;
+  };
+};
 
 const EMPTY_FORM: EditableBadgeForm = {
   slug: "",
@@ -101,9 +144,96 @@ const EMPTY_FORM: EditableBadgeForm = {
   category: "general",
   sortOrder: "0",
   isActive: true,
+  awardMode: "manual",
+  automationType: "metric_threshold",
+  automationMetric: "active_bots",
+  automationThreshold: "1",
+  automationBefore: "",
+  automationSticky: true,
 };
 
 const PROFILE_PAGE_SIZE = 12;
+
+const BADGE_AUTOMATION_METRICS: Array<{
+  value: BadgeAutomationMetric;
+  label: string;
+  description: string;
+}> = [
+  {
+    value: "profile_completeness",
+    label: "Profile completeness",
+    description: "Percentage of profile completion.",
+  },
+  {
+    value: "active_bots",
+    label: "Active bots",
+    description: "Current non-deleted bots owned by the user.",
+  },
+  {
+    value: "active_forms",
+    label: "Active Forms",
+    description: "Current non-deleted Forms owned by the user.",
+  },
+  {
+    value: "active_creator_pages",
+    label: "Creator Pages",
+    description: "Current non-deleted Creator Pages.",
+  },
+  {
+    value: "atlas_worlds",
+    label: "Atlas Worlds",
+    description: "Current non-deleted Worlds.",
+  },
+  {
+    value: "atlas_lorebooks",
+    label: "Atlas Lorebooks",
+    description: "Current non-deleted Lorebooks.",
+  },
+  {
+    value: "atlas_entries",
+    label: "Atlas Entries",
+    description: "Current non-deleted Entries.",
+  },
+  {
+    value: "atlas_collections",
+    label: "Atlas Collections",
+    description: "Current non-deleted Collections.",
+  },
+  {
+    value: "atlas_resources",
+    label: "Any Atlas resource",
+    description: "Worlds + Lorebooks + Entries + Collections combined.",
+  },
+  {
+    value: "account_age_days",
+    label: "Account age",
+    description: "Days since the account was created.",
+  },
+];
+
+function getAutomationMetricLabel(metric?: string | null) {
+  return (
+    BADGE_AUTOMATION_METRICS.find((item) => item.value === metric)?.label ||
+    metric ||
+    "Unknown metric"
+  );
+}
+
+function getAutomationRuleSummary(record?: BadgeAutomationAdminRecord | null) {
+  if (!record || record.automation.mode === "manual") {
+    return "Manual award";
+  }
+
+  if (record.automation.type === "created_before") {
+    return record.automation.before
+      ? `Joined before ${formatDateLabel(record.automation.before)}`
+      : "Joined before a cutoff date";
+  }
+
+  return `${getAutomationMetricLabel(record.automation.metric)} ≥ ${
+    record.automation.threshold
+  }`;
+}
 
 function slugify(value: string) {
   return String(value || "")
@@ -125,7 +255,12 @@ function formatDateLabel(value?: string) {
   });
 }
 
-function badgeRecordToForm(badge: BadgeDefinitionRecord): EditableBadgeForm {
+function badgeRecordToForm(
+  badge: BadgeDefinitionRecord,
+  automationRecord?: BadgeAutomationAdminRecord | null,
+): EditableBadgeForm {
+  const automation = automationRecord?.automation;
+
   return {
     slug: badge.slug,
     label: badge.label,
@@ -135,6 +270,30 @@ function badgeRecordToForm(badge: BadgeDefinitionRecord): EditableBadgeForm {
     category: badge.category || "general",
     sortOrder: String(badge.sort_order ?? 0),
     isActive: badge.is_active !== false,
+    awardMode: automation?.mode === "automatic" ? "automatic" : "manual",
+    automationType:
+      automation?.mode === "automatic" && automation.type === "created_before"
+        ? "created_before"
+        : "metric_threshold",
+    automationMetric:
+      automation?.mode === "automatic" &&
+      automation.type === "metric_threshold" &&
+      automation.metric
+        ? (automation.metric as BadgeAutomationMetric)
+        : "active_bots",
+    automationThreshold:
+      automation?.mode === "automatic" &&
+      automation.type === "metric_threshold"
+        ? String(automation.threshold ?? 1)
+        : "1",
+    automationBefore:
+      automation?.mode === "automatic" &&
+      automation.type === "created_before" &&
+      automation.before
+        ? automation.before.slice(0, 10)
+        : "",
+    automationSticky:
+      automation?.mode === "automatic" ? automation.sticky !== false : true,
   };
 }
 
@@ -148,6 +307,12 @@ function getBadgeFormSnapshot(value: EditableBadgeForm) {
     category: value.category,
     sortOrder: value.sortOrder,
     isActive: value.isActive,
+    awardMode: value.awardMode,
+    automationType: value.automationType,
+    automationMetric: value.automationMetric,
+    automationThreshold: value.automationThreshold,
+    automationBefore: value.automationBefore,
+    automationSticky: value.automationSticky,
   });
 }
 
@@ -173,10 +338,12 @@ function AwardedBadgePill({
   badge,
   onRevoke,
   revoking,
+  automatic,
 }: {
   badge: ProfileBadgeRecord;
   onRevoke: (slug: string) => void;
   revoking: boolean;
+  automatic: boolean;
 }) {
   const Icon = getProfileBadgeIcon(badge.icon);
   const accent = badge.color || "#7c3aed";
@@ -195,9 +362,21 @@ function AwardedBadgePill({
         </div>
         <div className="min-w-0">
           <p className="truncate text-sm font-medium">{badge.label}</p>
-          <p className="truncate text-xs text-muted-foreground">
-            {badge.slug} • {formatDateLabel(badge.awardedAt)}
-          </p>
+          <div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-1.5">
+            <p className="truncate text-xs text-muted-foreground">
+              {badge.slug} • {formatDateLabel(badge.awardedAt)}
+            </p>
+
+            {automatic && (
+              <Badge
+                variant="secondary"
+                className="h-5 gap-1 px-1.5 text-[10px] font-medium"
+              >
+                <Sparkles className="h-2.5 w-2.5" />
+                Automatic
+              </Badge>
+            )}
+          </div>
         </div>
       </div>
       <Button
@@ -205,10 +384,23 @@ function AwardedBadgePill({
         variant="ghost"
         size="icon"
         onClick={() => onRevoke(badge.slug)}
-        disabled={revoking}
-        className="h-9 w-9 shrink-0 cursor-pointer text-destructive hover:text-destructive"
-        aria-label={`Revoke ${badge.label}`}
-        title={`Revoke ${badge.label}`}
+        disabled={revoking || automatic}
+        className={cn(
+          "h-9 w-9 shrink-0",
+          automatic
+            ? "cursor-not-allowed text-muted-foreground"
+            : "cursor-pointer text-destructive hover:text-destructive",
+        )}
+        aria-label={
+          automatic
+            ? `${badge.label} is managed automatically`
+            : `Revoke ${badge.label}`
+        }
+        title={
+          automatic
+            ? "Automatic badges are managed by their earning rule"
+            : `Revoke ${badge.label}`
+        }
       >
         {revoking ? (
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -230,6 +422,19 @@ export function BadgeAdminTab() {
   const [catalogStatus, setCatalogStatus] =
     useState<CatalogStatusFilter>("all");
   const [catalogCategory, setCatalogCategory] = useState<string>("all");
+  const [catalogAwarding, setCatalogAwarding] =
+    useState<CatalogAwardingFilter>("all");
+
+  const [automationRecords, setAutomationRecords] = useState<
+    BadgeAutomationAdminRecord[]
+  >([]);
+  const [automationTotals, setAutomationTotals] = useState({
+    automatic: 0,
+    manual: 0,
+    totalAwards: 0,
+    automaticAwards: 0,
+  });
+  const [reconcilingAutomation, setReconcilingAutomation] = useState(false);
 
   const [selectedBadgeSlug, setSelectedBadgeSlug] = useState<string | null>(
     null,
@@ -289,20 +494,32 @@ export function BadgeAdminTab() {
     setLoading(true);
 
     try {
-      const result = await listBadgeDefinitions({
-        includeInactive: true,
-      });
+      const [definitionsResult, automationResult] = await Promise.all([
+        listBadgeDefinitions({
+          includeInactive: true,
+        }),
+        getBadgeAutomationOverview(),
+      ]);
 
-      if (!result.success) {
-        toast.error(result.error || "Failed to load badges");
-
+      if (!definitionsResult.success) {
+        toast.error(definitionsResult.error || "Failed to load badges");
         return;
       }
 
-      setBadges(result.badges || []);
+      setBadges(definitionsResult.badges || []);
+
+      if (automationResult.success) {
+        setAutomationRecords(
+          (automationResult.definitions || []) as BadgeAutomationAdminRecord[],
+        );
+        setAutomationTotals(automationResult.totals);
+      } else {
+        toast.error(
+          automationResult.error || "Failed to load badge automation state",
+        );
+      }
     } catch (error) {
       console.error("Failed to load badges:", error);
-
       toast.error("Something went wrong while loading badges");
     } finally {
       setLoading(false);
@@ -473,6 +690,14 @@ export function BadgeAdminTab() {
     return Array.from(unique).sort((a, b) => a.localeCompare(b));
   }, [badges]);
 
+  const automationBySlug = useMemo(
+    () =>
+      new Map(
+        automationRecords.map((record) => [record.slug, record] as const),
+      ),
+    [automationRecords],
+  );
+
   const filteredBadges = useMemo(() => {
     const query = catalogQuery.trim().toLowerCase();
 
@@ -487,6 +712,16 @@ export function BadgeAdminTab() {
         return false;
       }
 
+      const automationRecord = automationBySlug.get(badge.slug);
+      const awardingMode =
+        automationRecord?.automation.mode === "automatic"
+          ? "automatic"
+          : "manual";
+
+      if (catalogAwarding !== "all" && awardingMode !== catalogAwarding) {
+        return false;
+      }
+
       if (!query) return true;
 
       return [badge.slug, badge.label, badge.category, badge.description || ""]
@@ -494,11 +729,23 @@ export function BadgeAdminTab() {
         .toLowerCase()
         .includes(query);
     });
-  }, [badges, catalogQuery, catalogStatus, catalogCategory]);
+  }, [
+    badges,
+    catalogQuery,
+    catalogStatus,
+    catalogCategory,
+    catalogAwarding,
+    automationBySlug,
+  ]);
 
   const activeBadgeOptions = useMemo(
-    () => badges.filter((badge) => badge.is_active !== false),
-    [badges],
+    () =>
+      badges.filter(
+        (badge) =>
+          badge.is_active !== false &&
+          automationBySlug.get(badge.slug)?.automation.mode !== "automatic",
+      ),
+    [automationBySlug, badges],
   );
 
   const alreadyAwarded = useMemo(
@@ -511,15 +758,19 @@ export function BadgeAdminTab() {
 
   const catalogMetrics = useMemo(() => {
     const active = badges.filter((badge) => badge.is_active !== false).length;
-    const inactive = badges.length - active;
 
     return {
       total: badges.length,
       active,
-      inactive,
-      categories: categories.length,
+      automatic: automationRecords.filter(
+        (record) => record.automation.mode === "automatic",
+      ).length,
+      manual: automationRecords.filter(
+        (record) => record.automation.mode !== "automatic",
+      ).length,
     };
-  }, [badges, categories.length]);
+  }, [automationRecords, badges]);
+
 
   const currentBadgeFormSnapshot = getBadgeFormSnapshot(form);
 
@@ -553,7 +804,10 @@ export function BadgeAdminTab() {
   };
 
   const openExistingBadgeEditor = (badge: BadgeDefinitionRecord) => {
-    const nextForm = badgeRecordToForm(badge);
+    const nextForm = badgeRecordToForm(
+      badge,
+      automationBySlug.get(badge.slug),
+    );
 
     setSelectedBadgeSlug(badge.slug);
     setEditorMode("edit");
@@ -629,13 +883,37 @@ export function BadgeAdminTab() {
 
       const savedBadge = result.badge;
 
-      const savedForm = savedBadge
-        ? badgeRecordToForm(savedBadge)
-        : {
-            ...form,
-            slug: input.slug || selectedBadgeSlug || "",
-            sortOrder: String(input.sortOrder),
-          };
+      const savedSlug =
+        savedBadge?.slug || input.slug || selectedBadgeSlug || "";
+
+      const automationThreshold = Number(form.automationThreshold);
+
+      const automationResult = await updateBadgeAutomationConfig({
+        slug: savedSlug,
+        mode: form.awardMode,
+        type: form.automationType,
+        metric: form.automationMetric,
+        threshold: Number.isFinite(automationThreshold)
+          ? automationThreshold
+          : undefined,
+        before: form.automationBefore,
+        sticky: form.automationSticky,
+      });
+
+      if (!automationResult.success) {
+        toast.error(
+          automationResult.error ||
+            "Badge saved, but automation settings could not be updated",
+        );
+        await loadBadges();
+        return;
+      }
+
+      const savedForm = {
+        ...form,
+        slug: savedSlug,
+        sortOrder: String(input.sortOrder),
+      };
 
       setSelectedBadgeSlug(savedForm.slug);
 
@@ -656,6 +934,40 @@ export function BadgeAdminTab() {
       toast.error("Something went wrong while saving the badge");
     } finally {
       setSavingBadge(false);
+    }
+  };
+
+  const handleReconcileAutomaticBadges = async () => {
+    setReconcilingAutomation(true);
+
+    try {
+      const result = await reconcileAutomaticBadges();
+
+      if (!result.success) {
+        toast.error(result.error || "Failed to reconcile automatic badges");
+        return;
+      }
+
+      toast.success(
+        result.awarded > 0
+          ? `${result.awarded} automatic badge${
+              result.awarded === 1 ? "" : "s"
+            } awarded`
+          : "Automatic badges are already up to date",
+      );
+
+      await loadBadges();
+
+      if (selectedProfile) {
+        await loadProfileBadges(selectedProfile.id, {
+          showError: false,
+        });
+      }
+    } catch (error) {
+      console.error("Failed to reconcile automatic badges:", error);
+      toast.error("Something went wrong while reconciling automatic badges");
+    } finally {
+      setReconcilingAutomation(false);
     }
   };
 
@@ -870,8 +1182,8 @@ export function BadgeAdminTab() {
           </div>
 
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-            Create and organize profile badges, then assign them to users when
-            needed.
+            Define badge rules, monitor automatic awards, and keep manual
+            recognition available for staff-only cases.
           </p>
         </div>
 
@@ -896,10 +1208,10 @@ export function BadgeAdminTab() {
             setActiveSection(nextSection);
           }}
         >
-          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 rounded-xl p-1">
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 rounded-2xl border bg-muted/25 p-1.5">
             <TabsTrigger
               value="catalog"
-              className="min-w-0 cursor-pointer px-3 py-2.5 sm:px-4"
+              className="min-w-0 cursor-pointer rounded-xl px-3 py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:px-4"
             >
               <Award className="mr-2 h-4 w-4 shrink-0" />
               <span className="truncate">Catalog</span>
@@ -907,7 +1219,7 @@ export function BadgeAdminTab() {
 
             <TabsTrigger
               value="awards"
-              className="min-w-0 cursor-pointer px-3 py-2.5 sm:px-4"
+              className="min-w-0 cursor-pointer rounded-xl px-3 py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:px-4"
             >
               <UserRound className="mr-2 h-4 w-4 shrink-0" />
               <span className="truncate">Awards</span>
@@ -922,77 +1234,92 @@ export function BadgeAdminTab() {
             className="mt-4 space-y-5 sm:mt-6 sm:space-y-6"
           >
             {/* Metrics */}
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-              <div className="rounded-xl border border-border/60 bg-card/80 p-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground">
-                      Total badges
-                    </p>
+            <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+              {[
+                {
+                  label: "Total badges",
+                  value: catalogMetrics.total,
+                  icon: Award,
+                  helper: "Definitions in the catalog",
+                },
+                {
+                  label: "Automatic",
+                  value: catalogMetrics.automatic,
+                  icon: Sparkles,
+                  helper: "Awarded from earning rules",
+                },
+                {
+                  label: "Manual",
+                  value: catalogMetrics.manual,
+                  icon: UserRound,
+                  helper: "Staff-managed recognition",
+                },
+                {
+                  label: "Active",
+                  value: catalogMetrics.active,
+                  icon: Check,
+                  helper: "Currently available badges",
+                },
+              ].map((metric) => {
+                const Icon = metric.icon;
 
-                    <p className="mt-1 text-2xl font-semibold">
-                      {catalogMetrics.total}
+                return (
+                  <div
+                    key={metric.label}
+                    className="rounded-2xl border border-border/60 bg-card/70 p-4 shadow-sm"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium text-muted-foreground">
+                          {metric.label}
+                        </p>
+                        <p className="mt-1 text-2xl font-semibold">
+                          {metric.value}
+                        </p>
+                        <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+                          {metric.helper}
+                        </p>
+                      </div>
+
+                      <div className="rounded-xl border border-primary/15 bg-primary/10 p-2 text-primary">
+                        <Icon className="h-4 w-4" />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="rounded-2xl border border-primary/20 bg-primary/[0.035] p-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <WandSparkles className="h-4 w-4 text-primary" />
+                    <p className="text-sm font-semibold">
+                      Automatic badge engine
                     </p>
                   </div>
-
-                  <div className="rounded-lg bg-primary/10 p-2">
-                    <Award className="h-4 w-4 text-primary" />
-                  </div>
+                  <p className="mt-1 max-w-2xl text-xs leading-relaxed text-muted-foreground">
+                    Rules are evaluated when relevant profile or resource data
+                    changes. Achievement badges stay awarded once earned.
+                  </p>
                 </div>
-              </div>
 
-              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-medium text-emerald-600">
-                      Active
-                    </p>
-
-                    <p className="mt-1 text-2xl font-semibold text-emerald-600">
-                      {catalogMetrics.active}
-                    </p>
-                  </div>
-
-                  <div className="rounded-lg bg-emerald-500/10 p-2">
-                    <Check className="h-4 w-4 text-emerald-600" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-xl border border-border/60 bg-muted/30 p-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground">
-                      Inactive
-                    </p>
-
-                    <p className="mt-1 text-2xl font-semibold">
-                      {catalogMetrics.inactive}
-                    </p>
-                  </div>
-
-                  <div className="rounded-lg bg-muted p-2">
-                    <Slash className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-xl border border-blue-500/30 bg-blue-500/5 p-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-medium text-blue-600">
-                      Categories
-                    </p>
-
-                    <p className="mt-1 text-2xl font-semibold text-blue-600">
-                      {catalogMetrics.categories}
-                    </p>
-                  </div>
-
-                  <div className="rounded-lg bg-blue-500/10 p-2">
-                    <Layers3 className="h-4 w-4 text-blue-600" />
-                  </div>
-                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void handleReconcileAutomaticBadges()}
+                  disabled={reconcilingAutomation}
+                  className="w-full cursor-pointer sm:w-auto"
+                >
+                  {reconcilingAutomation ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                  )}
+                  Reconcile now
+                </Button>
               </div>
             </div>
 
@@ -1049,13 +1376,13 @@ export function BadgeAdminTab() {
                   </div>
 
                   {/* Filters */}
-                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_170px_170px]">
+                  <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_160px_160px_160px]">
                     <SearchInput
                       value={catalogQuery}
                       onChange={setCatalogQuery}
                       placeholder="Search by label, slug, category..."
                       debounce={120}
-                      className="w-full sm:col-span-2 lg:col-span-1"
+                      className="w-full sm:col-span-2 xl:col-span-1"
                     />
 
                     <Select
@@ -1095,6 +1422,23 @@ export function BadgeAdminTab() {
                         ))}
                       </SelectContent>
                     </Select>
+
+                    <Select
+                      value={catalogAwarding}
+                      onValueChange={(value) =>
+                        setCatalogAwarding(value as CatalogAwardingFilter)
+                      }
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Awarding" />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        <SelectItem value="all">All awarding</SelectItem>
+                        <SelectItem value="automatic">Automatic</SelectItem>
+                        <SelectItem value="manual">Manual</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </CardHeader>
 
@@ -1122,6 +1466,11 @@ export function BadgeAdminTab() {
                           const Icon = getProfileBadgeIcon(badge.icon);
 
                           const isSelected = selectedBadgeSlug === badge.slug;
+                          const automationRecord = automationBySlug.get(
+                            badge.slug,
+                          );
+                          const isAutomatic =
+                            automationRecord?.automation.mode === "automatic";
 
                           const stateColor = badge.is_active
                             ? "text-emerald-600"
@@ -1194,6 +1543,18 @@ export function BadgeAdminTab() {
                                     </Badge>
                                   )}
 
+                                  <Badge
+                                    variant={isAutomatic ? "secondary" : "outline"}
+                                    className="gap-1 text-xs"
+                                  >
+                                    {isAutomatic ? (
+                                      <Sparkles className="h-3 w-3" />
+                                    ) : (
+                                      <UserRound className="h-3 w-3" />
+                                    )}
+                                    {isAutomatic ? "Automatic" : "Manual"}
+                                  </Badge>
+
                                   <Badge variant="outline" className="text-xs">
                                     {badge.category}
                                   </Badge>
@@ -1207,8 +1568,17 @@ export function BadgeAdminTab() {
                                 </div>
                               </div>
 
-                              <div className="mt-3 text-xs text-muted-foreground">
-                                Sort order: {badge.sort_order}
+                              <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                                <span>{getAutomationRuleSummary(automationRecord)}</span>
+                                <span>•</span>
+                                <span>
+                                  {automationRecord?.awards.total ?? 0} award
+                                  {(automationRecord?.awards.total ?? 0) === 1
+                                    ? ""
+                                    : "s"}
+                                </span>
+                                <span>•</span>
+                                <span>Sort {badge.sort_order}</span>
                               </div>
                             </button>
                           );
@@ -1280,8 +1650,8 @@ export function BadgeAdminTab() {
 
                           <p className="mt-1 text-sm text-muted-foreground">
                             {editorMode === "edit"
-                              ? "Update this badge's appearance, category, and availability."
-                              : "Create a new reusable badge for profiles."}
+                              ? "Update appearance, availability, and how this badge is earned."
+                              : "Create a reusable badge and choose whether staff or Forgeworks awards it."}
                           </p>
                         </div>
 
@@ -1453,6 +1823,216 @@ export function BadgeAdminTab() {
 
                       <Separator />
 
+                      <div className="space-y-4">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <Settings2 className="h-4 w-4 text-primary" />
+                            <p className="text-sm font-semibold">
+                              Awarding & automation
+                            </p>
+                          </div>
+                          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                            Manual badges are controlled by staff. Automatic
+                            badges are awarded when their earning rule becomes
+                            true.
+                          </p>
+                        </div>
+
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setForm((current) => ({
+                                ...current,
+                                awardMode: "manual",
+                              }))
+                            }
+                            className={cn(
+                              "rounded-xl border p-3 text-left transition-colors",
+                              form.awardMode === "manual"
+                                ? "border-primary bg-primary/5"
+                                : "border-border/70 hover:bg-muted/30",
+                            )}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className="rounded-lg bg-muted p-2">
+                                <UserRound className="h-4 w-4" />
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium">Manual</p>
+                                <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">
+                                  Staff decides who receives this badge.
+                                </p>
+                              </div>
+                            </div>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setForm((current) => ({
+                                ...current,
+                                awardMode: "automatic",
+                              }))
+                            }
+                            className={cn(
+                              "rounded-xl border p-3 text-left transition-colors",
+                              form.awardMode === "automatic"
+                                ? "border-primary bg-primary/5"
+                                : "border-border/70 hover:bg-muted/30",
+                            )}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className="rounded-lg bg-primary/10 p-2 text-primary">
+                                <Sparkles className="h-4 w-4" />
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium">Automatic</p>
+                                <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">
+                                  Forgeworks awards it when the rule is met.
+                                </p>
+                              </div>
+                            </div>
+                          </button>
+                        </div>
+
+                        {form.awardMode === "automatic" && (
+                          <div className="space-y-4 rounded-xl border border-primary/15 bg-primary/[0.025] p-4">
+                            <div className="space-y-2">
+                              <Label>Rule type</Label>
+                              <Select
+                                value={form.automationType}
+                                onValueChange={(value) =>
+                                  setForm((current) => ({
+                                    ...current,
+                                    automationType: value as
+                                      | "metric_threshold"
+                                      | "created_before",
+                                  }))
+                                }
+                              >
+                                <SelectTrigger className="w-full">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="metric_threshold">
+                                    Metric reaches a threshold
+                                  </SelectItem>
+                                  <SelectItem value="created_before">
+                                    Account created before a date
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            {form.automationType === "metric_threshold" ? (
+                              <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_140px]">
+                                <div className="space-y-2">
+                                  <Label>Metric</Label>
+                                  <Select
+                                    value={form.automationMetric}
+                                    onValueChange={(value) =>
+                                      setForm((current) => ({
+                                        ...current,
+                                        automationMetric:
+                                          value as BadgeAutomationMetric,
+                                      }))
+                                    }
+                                  >
+                                    <SelectTrigger className="w-full">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent className="max-h-80">
+                                      {BADGE_AUTOMATION_METRICS.map((metric) => (
+                                        <SelectItem
+                                          key={metric.value}
+                                          value={metric.value}
+                                        >
+                                          <div className="min-w-0">
+                                            <p className="text-sm">
+                                              {metric.label}
+                                            </p>
+                                            <p className="max-w-xs whitespace-normal text-[11px] text-muted-foreground">
+                                              {metric.description}
+                                            </p>
+                                          </div>
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label htmlFor="badge-threshold">
+                                    Threshold
+                                  </Label>
+                                  <Input
+                                    id="badge-threshold"
+                                    type="number"
+                                    min={0}
+                                    value={form.automationThreshold}
+                                    onChange={(event) =>
+                                      setForm((current) => ({
+                                        ...current,
+                                        automationThreshold:
+                                          event.target.value,
+                                      }))
+                                    }
+                                  />
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                <Label htmlFor="badge-before">
+                                  Account created before
+                                </Label>
+                                <Input
+                                  id="badge-before"
+                                  type="date"
+                                  value={form.automationBefore}
+                                  onChange={(event) =>
+                                    setForm((current) => ({
+                                      ...current,
+                                      automationBefore: event.target.value,
+                                    }))
+                                  }
+                                />
+                                <p className="text-[11px] leading-relaxed text-muted-foreground">
+                                  Useful for cohorts such as Early Adopter. Pick
+                                  the actual cutoff date instead of hard-coding
+                                  it in application code.
+                                </p>
+                              </div>
+                            )}
+
+                            <div className="flex items-start justify-between gap-4 rounded-lg border bg-background/70 px-3 py-3">
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium">
+                                  Keep once earned
+                                </p>
+                                <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                                  Recommended for achievements. Users keep the
+                                  badge even if their current count later drops.
+                                </p>
+                              </div>
+
+                              <Switch
+                                checked={form.automationSticky}
+                                onCheckedChange={(checked) =>
+                                  setForm((current) => ({
+                                    ...current,
+                                    automationSticky: checked,
+                                  }))
+                                }
+                                className="shrink-0"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <Separator />
+
                       {/* Preview */}
                       <div className="min-w-0 rounded-xl border border-border/70 bg-card/60 p-4">
                         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -1555,14 +2135,58 @@ export function BadgeAdminTab() {
                 <Layers3 className="h-5 w-5 text-primary" />
 
                 <h3 className="text-base font-semibold sm:text-lg">
-                  Badge Awards
+                  Awards & Overrides
                 </h3>
               </div>
 
               <p className="mt-1 text-sm text-muted-foreground">
-                Search for a profile, assign active badges, and manage its
-                current awards.
+                Automatic rules handle earned badges. Use this workspace for
+                manual recognition, exceptions, and reviewing a user’s awards.
               </p>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-3">
+              <div className="rounded-2xl border bg-card/70 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground">
+                      Automatic definitions
+                    </p>
+                    <p className="mt-1 text-2xl font-semibold">
+                      {automationTotals.automatic}
+                    </p>
+                  </div>
+                  <Sparkles className="h-5 w-5 text-primary" />
+                </div>
+              </div>
+
+              <div className="rounded-2xl border bg-card/70 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground">
+                      Automatic awards
+                    </p>
+                    <p className="mt-1 text-2xl font-semibold">
+                      {automationTotals.automaticAwards}
+                    </p>
+                  </div>
+                  <WandSparkles className="h-5 w-5 text-primary" />
+                </div>
+              </div>
+
+              <div className="rounded-2xl border bg-card/70 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground">
+                      Manual definitions
+                    </p>
+                    <p className="mt-1 text-2xl font-semibold">
+                      {automationTotals.manual}
+                    </p>
+                  </div>
+                  <UserRound className="h-5 w-5 text-muted-foreground" />
+                </div>
+              </div>
             </div>
 
             {/* Main awards workspace */}
@@ -1806,14 +2430,14 @@ export function BadgeAdminTab() {
 
                         <div className="grid gap-4 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
                           <div className="space-y-2">
-                            <Label>Award badge</Label>
+                            <Label>Manual badge</Label>
 
                             <Select
                               value={selectedAwardBadgeSlug}
                               onValueChange={setSelectedAwardBadgeSlug}
                             >
                               <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Select a badge" />
+                                <SelectValue placeholder="Select a manual badge" />
                               </SelectTrigger>
 
                               <SelectContent className="max-h-72">
@@ -1865,6 +2489,15 @@ export function BadgeAdminTab() {
                           </div>
                         )}
 
+                        {activeBadgeOptions.length === 0 && (
+                          <div className="rounded-lg border border-dashed bg-muted/10 px-3 py-3">
+                            <p className="text-xs text-muted-foreground">
+                              There are no active manual badges. Create one in
+                              Catalog or change an existing badge to Manual.
+                            </p>
+                          </div>
+                        )}
+
                         <Button
                           type="button"
                           onClick={handleAwardBadge}
@@ -1903,7 +2536,8 @@ export function BadgeAdminTab() {
                             </div>
 
                             <p className="mt-0.5 text-xs text-muted-foreground">
-                              Badges currently assigned to this profile.
+                              Automatic achievements and manual awards currently
+                              attached to this profile.
                             </p>
                           </div>
 
@@ -1939,6 +2573,10 @@ export function BadgeAdminTab() {
                                   key={`${badge.slug}-${badge.awardedAt || ""}`}
                                   badge={badge}
                                   revoking={revokingSlug === badge.slug}
+                                  automatic={
+                                    automationBySlug.get(badge.slug)?.automation
+                                      .mode === "automatic"
+                                  }
                                   onRevoke={() => setBadgePendingRevoke(badge)}
                                 />
                               ))}

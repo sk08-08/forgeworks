@@ -338,6 +338,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                 appearance: r.appearance || undefined,
                 shareableLink: r.shareable_link || "",
                 isActive: !!r.is_active,
+                visibility: r.visibility === "private" ? "private" : "public",
                 deactivatedMessage: r.deactivated_message || "",
                 deactivatedRedirectUrl: r.deactivated_redirect_url || "",
                 deactivatedRedirectLabel: r.deactivated_redirect_label || "",

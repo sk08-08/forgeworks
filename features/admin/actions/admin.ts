@@ -835,6 +835,312 @@ updated_at
   };
 }
 
+
+// ============================================================================
+// Badge Automation
+// ============================================================================
+
+export type BadgeAutomationMetric =
+  | "profile_completeness"
+  | "active_bots"
+  | "active_forms"
+  | "active_creator_pages"
+  | "atlas_worlds"
+  | "atlas_lorebooks"
+  | "atlas_entries"
+  | "atlas_collections"
+  | "atlas_resources"
+  | "account_age_days";
+
+export async function getBadgeAutomationOverview() {
+  const { supabase, error } = await requireStaff();
+
+  if (error) {
+    return {
+      success: false,
+      error,
+      definitions: [],
+      totals: {
+        automatic: 0,
+        manual: 0,
+        totalAwards: 0,
+        automaticAwards: 0,
+      },
+    };
+  }
+
+  const [definitionsResult, awardsResult] = await Promise.all([
+    supabase
+      .from("badge_definitions")
+      .select("slug,is_system,is_manual_only,rarity,metadata,is_active")
+      .order("sort_order", { ascending: true }),
+    supabase.from("profile_badge_awards").select("badge_slug,metadata"),
+  ]);
+
+  if (definitionsResult.error) {
+    return {
+      success: false,
+      error: definitionsResult.error.message,
+      definitions: [],
+      totals: {
+        automatic: 0,
+        manual: 0,
+        totalAwards: 0,
+        automaticAwards: 0,
+      },
+    };
+  }
+
+  if (awardsResult.error) {
+    return {
+      success: false,
+      error: awardsResult.error.message,
+      definitions: [],
+      totals: {
+        automatic: 0,
+        manual: 0,
+        totalAwards: 0,
+        automaticAwards: 0,
+      },
+    };
+  }
+
+  const awardCounts = new Map<
+    string,
+    { total: number; automatic: number }
+  >();
+
+  for (const award of awardsResult.data ?? []) {
+    const current = awardCounts.get(award.badge_slug) ?? {
+      total: 0,
+      automatic: 0,
+    };
+
+    current.total += 1;
+
+    const metadata =
+      award.metadata && typeof award.metadata === "object"
+        ? (award.metadata as Record<string, unknown>)
+        : {};
+
+    if (metadata.source === "automatic") {
+      current.automatic += 1;
+    }
+
+    awardCounts.set(award.badge_slug, current);
+  }
+
+  const definitions = (definitionsResult.data ?? []).map((definition) => {
+    const metadata =
+      definition.metadata && typeof definition.metadata === "object"
+        ? (definition.metadata as Record<string, any>)
+        : {};
+
+    const automation =
+      metadata.automation && typeof metadata.automation === "object"
+        ? metadata.automation
+        : {};
+
+    const enabled =
+      definition.is_manual_only !== true && automation.enabled === true;
+
+    return {
+      slug: definition.slug,
+      is_system: definition.is_system === true,
+      is_manual_only: definition.is_manual_only === true,
+      rarity: definition.rarity || "common",
+      is_active: definition.is_active !== false,
+      automation: enabled
+        ? {
+            enabled: true,
+            mode: "automatic" as const,
+            type:
+              automation.type === "created_before"
+                ? ("created_before" as const)
+                : ("metric_threshold" as const),
+            metric: automation.metric || null,
+            threshold:
+              typeof automation.threshold === "number"
+                ? automation.threshold
+                : Number(automation.threshold || 1),
+            before:
+              typeof automation.before === "string"
+                ? automation.before
+                : null,
+            sticky: automation.sticky !== false,
+          }
+        : {
+            enabled: false,
+            mode: "manual" as const,
+            sticky: true,
+          },
+      awards: awardCounts.get(definition.slug) ?? {
+        total: 0,
+        automatic: 0,
+      },
+    };
+  });
+
+  return {
+    success: true,
+    definitions,
+    totals: {
+      automatic: definitions.filter(
+        (item) => item.automation.mode === "automatic",
+      ).length,
+      manual: definitions.filter(
+        (item) => item.automation.mode === "manual",
+      ).length,
+      totalAwards: (awardsResult.data ?? []).length,
+      automaticAwards: (awardsResult.data ?? []).filter((award) => {
+        const metadata =
+          award.metadata && typeof award.metadata === "object"
+            ? (award.metadata as Record<string, unknown>)
+            : {};
+
+        return metadata.source === "automatic";
+      }).length,
+    },
+  };
+}
+
+export async function updateBadgeAutomationConfig(input: {
+  slug: string;
+  mode: "manual" | "automatic";
+  type?: "metric_threshold" | "created_before";
+  metric?: BadgeAutomationMetric;
+  threshold?: number;
+  before?: string;
+  sticky?: boolean;
+}) {
+  const { supabase, error } = await requireStaff();
+  if (error) return { success: false, error };
+
+  const slug = String(input.slug || "")
+    .trim()
+    .toLowerCase();
+
+  if (!slug) {
+    return { success: false, error: "Badge slug is required" };
+  }
+
+  const { data: current, error: currentError } = await supabase
+    .from("badge_definitions")
+    .select("metadata")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (currentError) {
+    return { success: false, error: currentError.message };
+  }
+
+  if (!current) {
+    return { success: false, error: "Badge not found" };
+  }
+
+  const currentMetadata =
+    current.metadata && typeof current.metadata === "object"
+      ? (current.metadata as Record<string, unknown>)
+      : {};
+
+  let automation: Record<string, unknown>;
+
+  if (input.mode === "manual") {
+    automation = {
+      enabled: false,
+      sticky: true,
+    };
+  } else if (input.type === "created_before") {
+    const before = String(input.before || "").trim();
+
+    if (!before || Number.isNaN(new Date(before).getTime())) {
+      return {
+        success: false,
+        error: "A valid cutoff date is required for this automatic rule",
+      };
+    }
+
+    automation = {
+      enabled: true,
+      type: "created_before",
+      before: new Date(before).toISOString(),
+      sticky: input.sticky !== false,
+    };
+  } else {
+    const metric = input.metric;
+    const allowedMetrics: BadgeAutomationMetric[] = [
+      "profile_completeness",
+      "active_bots",
+      "active_forms",
+      "active_creator_pages",
+      "atlas_worlds",
+      "atlas_lorebooks",
+      "atlas_entries",
+      "atlas_collections",
+      "atlas_resources",
+      "account_age_days",
+    ];
+
+    if (!metric || !allowedMetrics.includes(metric)) {
+      return { success: false, error: "Choose a valid automatic metric" };
+    }
+
+    const threshold = Number(input.threshold);
+
+    if (!Number.isFinite(threshold) || threshold < 0) {
+      return {
+        success: false,
+        error: "Automatic threshold must be zero or greater",
+      };
+    }
+
+    automation = {
+      enabled: true,
+      type: "metric_threshold",
+      metric,
+      threshold,
+      sticky: input.sticky !== false,
+    };
+  }
+
+  const { error: updateError } = await supabase
+    .from("badge_definitions")
+    .update({
+      is_manual_only: input.mode === "manual",
+      metadata: {
+        ...currentMetadata,
+        automation,
+      },
+      updated_at: new Date().toISOString(),
+    })
+    .eq("slug", slug);
+
+  if (updateError) {
+    return { success: false, error: updateError.message };
+  }
+
+  return { success: true };
+}
+
+export async function reconcileAutomaticBadges() {
+  const { supabase, error } = await requireStaff();
+  if (error) return { success: false, error, awarded: 0 };
+
+  const { data, error: rpcError } = await supabase.rpc(
+    "reconcile_all_profile_badges",
+  );
+
+  if (rpcError) {
+    return { success: false, error: rpcError.message, awarded: 0 };
+  }
+
+  return {
+    success: true,
+    awarded: Number(data || 0),
+  };
+}
+
+
 // ============================================================================
 // User Admin/Block actions
 // ============================================================================

@@ -3750,6 +3750,14 @@ export type Database = {
         }
         Returns: undefined
       }
+      badge_metric_value: {
+        Args: { p_metric: string; p_profile_id: string }
+        Returns: number
+      }
+      badge_rule_matches: {
+        Args: { p_profile_id: string; p_rule: Json }
+        Returns: boolean
+      }
       calculate_profile_completeness: {
         Args: { p_user_id: string }
         Returns: number
@@ -3809,6 +3817,10 @@ export type Database = {
       dismiss_notification: {
         Args: { p_notification_id: string }
         Returns: undefined
+      }
+      evaluate_profile_badges: {
+        Args: { p_profile_id: string }
+        Returns: number
       }
       get_active_badge_definitions: {
         Args: never
@@ -4102,6 +4114,7 @@ export type Database = {
         Args: { p_days?: number; p_table: string }
         Returns: number
       }
+      reconcile_all_profile_badges: { Args: never; Returns: number }
       record_flagged_submission: {
         Args: {
           p_flagged_fields: Json
