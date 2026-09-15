@@ -362,7 +362,7 @@ function Hero() {
             make it with.
           </p>
           <div className="fw-hero-actions">
-            <Link href="/login" className="fw-button">
+            <Link href="/login" className="fw-button w-full sm:w-auto">
               Try Forgeworks
               <ArrowUpRight size={20} />
             </Link>

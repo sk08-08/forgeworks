@@ -934,7 +934,7 @@ export function LorebookView({ lorebookId }: { lorebookId: string }) {
           <Button
             onClick={saveLorebook}
             disabled={!lorebookDirty || pending || !title.trim()}
-            className="h-10 shrink-0 rounded-xl px-3 sm:px-4"
+            className="h-10 shrink-0 rounded-xl px-3 sm:px-4 cursor-pointer"
           >
             <Save className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">

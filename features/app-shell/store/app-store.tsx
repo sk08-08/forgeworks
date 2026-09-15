@@ -29,6 +29,7 @@ import type {
 import type { NavigationView } from "@/features/app-shell/types/navigation";
 import { getCurrentUserAccess } from "@/lib/access";
 import { createClient } from "@/lib/supabase/client";
+import { normalizeResourceVisibility } from "@/lib/resource-visibility";
 
 const validNavigationViews: NavigationView[] = [
   "profiles",
@@ -338,7 +339,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                 appearance: r.appearance || undefined,
                 shareableLink: r.shareable_link || "",
                 isActive: !!r.is_active,
-                visibility: r.visibility === "private" ? "private" : "public",
+                visibility: normalizeResourceVisibility(r.visibility),
                 deactivatedMessage: r.deactivated_message || "",
                 deactivatedRedirectUrl: r.deactivated_redirect_url || "",
                 deactivatedRedirectLabel: r.deactivated_redirect_label || "",

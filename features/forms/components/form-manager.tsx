@@ -66,6 +66,7 @@ import { createClient } from "@/lib/supabase/client";
 import { getCurrentUserAccess } from "@/lib/access";
 import { stripMarkdownToText } from "@/features/markdown/lib/markdown";
 import { normalizeHttpUrl } from "@/lib/safe-url";
+import { normalizeResourceVisibility } from "@/lib/resource-visibility";
 
 // ----------------------------------------------------------------------------
 
@@ -273,6 +274,7 @@ function mapDbFormToRequestForm(r: any): RequestForm {
     sections: r.sections || [],
     shareableLink: r.shareable_link || "",
     isActive: !!r.is_active,
+    visibility: normalizeResourceVisibility(r.visibility),
 
     deactivatedMessage: r.deactivated_message || "",
     deactivatedRedirectUrl: r.deactivated_redirect_url || "",
