@@ -511,11 +511,11 @@ async function removeObsoleteCommunityRecordAssets(
   return { success: true };
 }
 
-async function requireAdmin() {
+async function requireStaff() {
   const supabase = await createClient();
   const access = await getCurrentUserAccess(supabase);
 
-  if (!access.user || !access.isAdmin) {
+  if (!access.user || !access.isStaff) {
     return {
       supabase,
       access,
@@ -537,7 +537,7 @@ export async function createCommunityRecordDirect(
   >,
 ) {
   try {
-    const auth = await requireAdmin();
+    const auth = await requireStaff();
 
     if (auth.error || !auth.access.user) {
       return {
@@ -740,7 +740,7 @@ export async function updateCommunityRecordDirect(
   input: UpdateCommunityRecordDirectInput,
 ) {
   try {
-    const auth = await requireAdmin();
+    const auth = await requireStaff();
 
     if (auth.error || !auth.access.user) {
       return { success: false, error: auth.error || "Not authorized." };
@@ -922,7 +922,7 @@ export async function updateCommunityRecordDirect(
 
 export async function deleteCommunityCommentDirect(commentIdInput: string) {
   try {
-    const auth = await requireAdmin();
+    const auth = await requireStaff();
 
     if (auth.error || !auth.access.user) {
       return { success: false, error: auth.error || "Not authorized." };
@@ -984,7 +984,7 @@ export async function deleteCommunityCommentDirect(commentIdInput: string) {
 
 export async function archiveCommunityRecordDirect(recordIdInput: string) {
   try {
-    const auth = await requireAdmin();
+    const auth = await requireStaff();
 
     if (auth.error || !auth.access.user) {
       return { success: false, error: auth.error || "Not authorized." };
@@ -1043,7 +1043,7 @@ export async function archiveCommunityRecordDirect(recordIdInput: string) {
 
 export async function unarchiveCommunityRecordDirect(recordIdInput: string) {
   try {
-    const auth = await requireAdmin();
+    const auth = await requireStaff();
 
     if (auth.error || !auth.access.user) {
       return { success: false, error: auth.error || "Not authorized." };
@@ -1102,7 +1102,7 @@ export async function unarchiveCommunityRecordDirect(recordIdInput: string) {
 
 export async function deleteCommunityRecordDirect(recordIdInput: string) {
   try {
-    const auth = await requireAdmin();
+    const auth = await requireStaff();
 
     if (auth.error || !auth.access.user) {
       return { success: false, error: auth.error || "Not authorized." };
@@ -1197,7 +1197,7 @@ export async function createCommunitySourceDirect(
   input: CreateCommunitySourceDirectInput,
 ) {
   try {
-    const auth = await requireAdmin();
+    const auth = await requireStaff();
 
     if (auth.error || !auth.access.user) {
       return { success: false, error: auth.error || "Not authorized." };
@@ -1272,7 +1272,7 @@ export async function createCommunityTimelineUpdateDirect(
   input: CreateCommunityTimelineUpdateDirectInput,
 ) {
   try {
-    const auth = await requireAdmin();
+    const auth = await requireStaff();
 
     if (auth.error || !auth.access.user) {
       return { success: false, error: auth.error || "Not authorized." };
@@ -1779,7 +1779,7 @@ export async function submitCommunitySubmission(
 
 export async function getPendingCommunitySubmissions() {
   try {
-    const auth = await requireAdmin();
+    const auth = await requireStaff();
 
     if (auth.error) {
       return {
@@ -1892,7 +1892,7 @@ export async function reviewCommunitySubmission(
   input: ReviewCommunitySubmissionInput,
 ) {
   try {
-    const auth = await requireAdmin();
+    const auth = await requireStaff();
 
     if (auth.error || !auth.access.user) {
       return {

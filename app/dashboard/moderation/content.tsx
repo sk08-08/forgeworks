@@ -28,13 +28,14 @@ import type { RequestForm } from "@/features/forms/types/form-types";
 import { getCurrentUserAccess } from "@/lib/access";
 import { cachedBrowserRequest } from "@/lib/browser-request-cache";
 import { stripMarkdownToText } from "@/features/markdown/lib/markdown";
+import { normalizeResourceVisibility } from "@/lib/resource-visibility";
 
 interface ModerationPageContentProps {
-  adminView?: boolean;
+  staffView?: boolean;
 }
 
 export default function ModerationPageContent({
-  adminView = false,
+  staffView = false,
 }: ModerationPageContentProps) {
   const [forms, setForms] = useState<RequestForm[]>([]);
   const [selectedFormId, setSelectedFormId] = useState<string | null>(null);
@@ -49,13 +50,13 @@ export default function ModerationPageContent({
     setLoading(true);
     try {
       const result = await cachedBrowserRequest(
-        adminView ? "moderation:forms:admin" : "moderation:forms:owned",
+        staffView ? "moderation:forms:staff" : "moderation:forms:owned",
         10_000,
         async () => {
           const supabase = createClient();
-          const { user, isAdmin } = await getCurrentUserAccess(supabase);
+          const { user, isStaff } = await getCurrentUserAccess(supabase);
           const activeUserId = user?.id ?? null;
-          const canSeeAllForms = adminView && isAdmin;
+          const canViewAllForms = staffView && isStaff;
 
           if (!user) {
             return {
@@ -69,7 +70,7 @@ export default function ModerationPageContent({
             .select("*")
             .order("created_at", { ascending: false });
 
-          if (!canSeeAllForms) {
+          if (!canViewAllForms) {
             query = query.eq("user_id", user.id);
           }
 
@@ -89,6 +90,7 @@ export default function ModerationPageContent({
               appearance: form.appearance || undefined,
               shareableLink: form.shareable_link || "",
               isActive: !!form.is_active,
+              visibility: normalizeResourceVisibility(form.visibility),
               securitySensitivity: form.security_sensitivity || undefined,
               createdAt: form.created_at
                 ? new Date(form.created_at)
@@ -98,7 +100,7 @@ export default function ModerationPageContent({
                 : new Date(),
             })) as RequestForm[],
             activeUserId,
-            canSeeAllForms,
+            canViewAllForms,
           };
         },
         force,
@@ -118,7 +120,7 @@ export default function ModerationPageContent({
         ? result.forms.filter((form) => form.ownerId === result.activeUserId)
         : result.forms;
 
-      const preferredForms = result.canSeeAllForms ? result.forms : ownForms;
+      const preferredForms = result.canViewAllForms ? result.forms : ownForms;
 
       setSelectedFormId((currentSelected) => {
         if (
@@ -172,7 +174,7 @@ export default function ModerationPageContent({
           <div className="flex flex-col items-center gap-3 text-muted-foreground">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             <p className="text-sm">
-              {adminView ? "Loading forms…" : "Loading your forms…"}
+              {staffView ? "Loading forms…" : "Loading your forms…"}
             </p>
           </div>
         </div>

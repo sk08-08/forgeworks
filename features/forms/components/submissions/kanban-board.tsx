@@ -106,7 +106,7 @@ interface RequestCardProps {
   onViewDetails: () => void;
   isSelected: boolean;
   onSelectionChange: (selected: boolean) => void;
-  isAdmin?: boolean;
+  staffView?: boolean;
   className?: string;
 }
 
@@ -118,7 +118,7 @@ function RequestCard({
   onViewDetails,
   isSelected,
   onSelectionChange,
-  isAdmin,
+  staffView,
   className,
 }: RequestCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -355,7 +355,7 @@ function RequestCard({
               <Badge variant="outline" className="text-xs">
                 {stripMarkdownToText(request.formTitle) || "Untitled form"}
               </Badge>
-              {isAdmin && request.ownerId && (
+              {staffView && request.ownerId && (
                 <Badge variant="secondary" className="text-[10px]">
                   Admin view
                 </Badge>
@@ -427,7 +427,7 @@ interface KanbanColumnProps {
   onSelectAllInColumn: (requestIds: string[], selected: boolean) => void;
   isCollapsed: boolean;
   onToggleCollapsed: () => void;
-  isAdmin?: boolean;
+  staffView?: boolean;
 }
 
 function KanbanColumn({
@@ -442,7 +442,7 @@ function KanbanColumn({
   onSelectAllInColumn,
   isCollapsed,
   onToggleCollapsed,
-  isAdmin,
+  staffView,
 }: KanbanColumnProps) {
   const Icon = config.icon;
   const selectedCount = requests.filter((request) =>
@@ -532,7 +532,7 @@ function KanbanColumn({
                   onSelectionChange={(selected) =>
                     onToggleRequestSelection(request.id, selected)
                   }
-                  isAdmin={isAdmin}
+                  staffView={staffView}
                   className="w-[85vw] max-w-[18rem] shrink-0 sm:w-80"
                 />
               ))
@@ -776,7 +776,7 @@ interface KanbanBoardProps {
   ) => void;
   onDelete: (requestId: string) => void;
   collapseStateKey?: string;
-  isAdmin?: boolean;
+  staffView?: boolean;
 }
 
 // ----------------------------------------------------------------------------
@@ -788,7 +788,7 @@ export function KanbanBoard({
   onStatusChange,
   onDelete,
   collapseStateKey = "kanban-collapsed-columns",
-  isAdmin = false,
+  staffView = false,
 }: KanbanBoardProps) {
   const { forms, updateRequestNotes } = useStore();
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
@@ -1123,7 +1123,7 @@ export function KanbanBoard({
                 [column.id]: !prev[column.id],
               }))
             }
-            isAdmin={isAdmin}
+            staffView={staffView}
           />
         ))}
       </div>

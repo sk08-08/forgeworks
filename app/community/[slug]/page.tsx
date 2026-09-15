@@ -55,7 +55,7 @@ export default async function CommunityRecordRoute({ params }: PageProps) {
     )
     .eq("slug", slug);
 
-  if (!access.isAdmin) {
+  if (!access.isStaff) {
     query = query.eq("is_published", true);
   }
 
@@ -76,7 +76,7 @@ export default async function CommunityRecordRoute({ params }: PageProps) {
     <CommunityRecordPage
       record={record}
       initialAuthUserId={access.user?.id || null}
-      initialIsAdmin={access.isAdmin}
+      initialIsStaff={access.isStaff}
     />
   );
 }

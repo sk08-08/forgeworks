@@ -147,7 +147,7 @@ const ADMIN_TAB_IDS: AdminTab[] = [
   "moderation",
 ];
 
-function isAdminTab(value: string): value is AdminTab {
+function isValidAdminTab(value: string): value is AdminTab {
   return ADMIN_TAB_IDS.includes(value as AdminTab);
 }
 
@@ -4717,7 +4717,7 @@ export function AdminPanel() {
     if (typeof window === "undefined") return "overview";
 
     const savedTab = window.localStorage.getItem(ADMIN_TAB_STORAGE_KEY);
-    if (savedTab && isAdminTab(savedTab)) {
+    if (savedTab && isValidAdminTab(savedTab)) {
       return savedTab;
     }
 

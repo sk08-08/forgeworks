@@ -250,7 +250,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const currentLoad = ++loadVersion;
       try {
         // Get current authenticated user; if not authenticated, do not fetch private data.
-        const { user, isAdmin } = await getCurrentUserAccess(supabase);
+        const { user, isStaff } = await getCurrentUserAccess(supabase);
 
         if (!mounted || currentLoad !== loadVersion) return;
 
@@ -270,14 +270,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }
 
         // Fetch only data belonging to the authenticated user
-        const formsQuery = isAdmin
+        const formsQuery = isStaff
           ? supabase.from("request_forms").select("*").is("deleted_at", null)
           : supabase
               .from("request_forms")
               .select("*")
               .eq("user_id", user.id)
               .is("deleted_at", null);
-        const requestsQuery = isAdmin
+        const requestsQuery = isStaff
           ? supabase.from("active_requests").select("*")
           : supabase.from("active_requests").select("*").eq("user_id", user.id);
         const [

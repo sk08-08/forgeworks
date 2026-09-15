@@ -1,10 +1,15 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+export type StaffRole = "owner" | "moderator" | null;
+
 type CurrentUserAccess = {
   user:
     | Awaited<ReturnType<SupabaseClient["auth"]["getUser"]>>["data"]["user"]
     | null;
-  isAdmin: boolean;
+  staffRole: StaffRole;
+  isStaff: boolean;
+  isOwner: boolean;
+  isModerator: boolean;
   isBlocked: boolean;
   profile: UserProfile | null;
 };
@@ -23,7 +28,7 @@ export interface UserProfile {
   display_name: string | null;
   avatar_url: string | null;
   slug: string | null;
-  is_admin: boolean | null;
+  staff_role: StaffRole;
   is_blocked: boolean | null;
 }
 
@@ -42,7 +47,10 @@ async function loadCurrentUserAccess(
   if (!user) {
     return {
       user: null as null,
-      isAdmin: false,
+      staffRole: null,
+      isStaff: false,
+      isOwner: false,
+      isModerator: false,
       isBlocked: false,
       profile: null as null,
     };
@@ -52,24 +60,41 @@ async function loadCurrentUserAccess(
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "id, username, display_name, avatar_url, slug, is_admin, is_blocked",
+      "id, username, display_name, avatar_url, slug, staff_role, is_blocked",
     )
     .eq("id", user.id)
     .maybeSingle<UserProfile>();
 
-  const isAdmin = !!profile?.is_admin;
+  const staffRole: StaffRole =
+    profile?.staff_role === "owner" || profile?.staff_role === "moderator"
+      ? profile.staff_role
+      : null;
+  const isOwner = staffRole === "owner";
+  const isModerator = staffRole === "moderator";
+  const isStaff = isOwner || isModerator;
   const isBlocked = !!profile?.is_blocked;
 
   if (isBlocked) {
     return {
       user: null as null,
-      isAdmin: false,
+      staffRole: null,
+      isStaff: false,
+      isOwner: false,
+      isModerator: false,
       isBlocked: true,
       profile: null as null,
     };
   }
 
-  return { user, isAdmin, isBlocked: false, profile };
+  return {
+    user,
+    staffRole,
+    isStaff,
+    isOwner,
+    isModerator,
+    isBlocked: false,
+    profile,
+  };
 }
 
 function getAccessCacheKey(sessionToken: string | null | undefined) {

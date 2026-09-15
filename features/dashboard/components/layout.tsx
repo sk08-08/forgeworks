@@ -173,7 +173,7 @@ export function DashboardLayout({ children, username }: DashboardLayoutProps) {
   >({ hub: false, forge: false, admin: false });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isStaff, setIsStaff] = useState(false);
   const [pendingModerationCount, setPendingModerationCount] = useState(0);
   const [accessLoaded, setAccessLoaded] = useState(false);
   const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
@@ -239,16 +239,16 @@ export function DashboardLayout({ children, username }: DashboardLayoutProps) {
           router.replace("/login");
           router.refresh();
           setCurrentUserId(null);
-          setIsAdmin(false);
+          setIsStaff(false);
           return;
         }
 
         setCurrentUserId(access.user?.id ?? null);
-        setIsAdmin(access.isAdmin);
+        setIsStaff(access.isStaff);
       } catch {
         if (!mounted) return;
         setCurrentUserId(null);
-        setIsAdmin(false);
+        setIsStaff(false);
       } finally {
         if (mounted) setAccessLoaded(true);
       }
@@ -564,7 +564,7 @@ export function DashboardLayout({ children, username }: DashboardLayoutProps) {
             <div className="border-t border-sidebar-border/60 pt-2">
               {renderNavSection("forge", "Forge", forgeNavItems)}
             </div>
-            {isAdmin && (
+            {isStaff && (
               <div className="border-t border-sidebar-border/60 pt-2">
                 {renderNavSection("admin", "Admin", [
                   {
@@ -727,7 +727,7 @@ export function DashboardLayout({ children, username }: DashboardLayoutProps) {
                   <div className="border-t border-sidebar-border/60 pt-2">
                     {renderNavSection("forge", "Forge", forgeNavItems)}
                   </div>
-                  {isAdmin && (
+                  {isStaff && (
                     <div className="border-t border-sidebar-border/60 pt-2">
                       {renderNavSection("admin", "Admin", [
                         {

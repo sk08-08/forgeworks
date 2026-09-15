@@ -469,7 +469,7 @@ export function FeedbackInbox() {
   const LIMIT = 25;
   const [items, setItems] = useState<FeedbackItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isStaff, setIsStaff] = useState(false);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [sortBy, setSortBy] = useState<
@@ -537,7 +537,7 @@ export function FeedbackInbox() {
         sortDirection,
       });
 
-      setIsAdmin(result.isAdmin ?? false);
+      setIsStaff(result.isStaff ?? false);
       setCurrentUserId(result.userId ?? null);
 
       if (!result.success) {
@@ -932,7 +932,7 @@ export function FeedbackInbox() {
   const hasNewFields = true;
 
   // No access
-  if (!loading && !isAdmin) {
+  if (!loading && !isStaff) {
     return (
       <div className="min-w-0 overflow-x-clip p-3 sm:p-6 md:p-8 lg:p-10">
         <div className="mx-auto w-full max-w-[92rem]">

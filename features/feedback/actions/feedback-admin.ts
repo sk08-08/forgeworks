@@ -54,11 +54,11 @@ const DEFAULT_FEEDBACK_STATS: FeedbackInboxStats = {
 // Guard: require admin
 // ---------------------------------------------------------------------------
 
-async function requireAdmin() {
+async function requireStaff() {
   const supabase = await createClient();
   const access = await getCurrentUserAccess(supabase);
-  if (!access.user || !access.isAdmin) {
-    throw new Error("Admin access required");
+  if (!access.user || !access.isStaff) {
+    throw new Error("Staff access required");
   }
   return { supabase, userId: access.user.id };
 }
@@ -67,7 +67,7 @@ export async function getAdminFeedbackInbox(
   params: GetAdminFeedbackInboxParams = {},
 ) {
   try {
-    const { supabase, userId } = await requireAdmin();
+    const { supabase, userId } = await requireStaff();
 
     const page = Math.max(1, params.page ?? 1);
     const limit = Math.min(100, Math.max(1, params.limit ?? 25));
@@ -157,7 +157,7 @@ export async function getAdminFeedbackInbox(
       return {
         success: false,
         error: listRes.error.message,
-        isAdmin: true,
+        isStaff: true,
         items: [],
         total: 0,
         page,
@@ -210,7 +210,7 @@ export async function getAdminFeedbackInbox(
 
     return {
       success: true,
-      isAdmin: true,
+      isStaff: true,
       userId,
       items: enrichedItems,
       total: listRes.count ?? 0,
@@ -229,7 +229,7 @@ export async function getAdminFeedbackInbox(
     return {
       success: false,
       error: err.message || "Unauthorized",
-      isAdmin: false,
+      isStaff: false,
       userId: null,
       items: [],
       total: 0,
@@ -246,7 +246,7 @@ export async function getAdminFeedbackInbox(
 
 export async function assignFeedbackToMe(feedbackId: string) {
   try {
-    const { supabase, userId } = await requireAdmin();
+    const { supabase, userId } = await requireStaff();
     const { error } = await supabase
       .from("feedback_submissions")
       .update({ assigned_to: userId })
@@ -264,7 +264,7 @@ export async function assignFeedbackToMe(feedbackId: string) {
 
 export async function unassignFeedback(feedbackId: string) {
   try {
-    const { supabase } = await requireAdmin();
+    const { supabase } = await requireStaff();
     const { error } = await supabase
       .from("feedback_submissions")
       .update({ assigned_to: null })
@@ -289,7 +289,7 @@ export async function updateFeedbackStatus(
   status: FeedbackStatus,
 ) {
   try {
-    const { supabase } = await requireAdmin();
+    const { supabase } = await requireStaff();
     const { error } = await supabase
       .from("feedback_submissions")
       .update({ status })
@@ -313,7 +313,7 @@ export async function updateFeedbackPriority(
   priority: FeedbackPriority,
 ) {
   try {
-    const { supabase } = await requireAdmin();
+    const { supabase } = await requireStaff();
     const { error } = await supabase
       .from("feedback_submissions")
       .update({ priority })
@@ -334,7 +334,7 @@ export async function updateFeedbackPriority(
 
 export async function markFeedbackRead(feedbackId: string, isRead: boolean) {
   try {
-    const { supabase } = await requireAdmin();
+    const { supabase } = await requireStaff();
     const { error } = await supabase
       .from("feedback_submissions")
       .update({ is_read: isRead })
@@ -355,7 +355,7 @@ export async function markFeedbackRead(feedbackId: string, isRead: boolean) {
 
 export async function markMultipleRead(feedbackIds: string[], isRead: boolean) {
   try {
-    const { supabase } = await requireAdmin();
+    const { supabase } = await requireStaff();
     const { error } = await supabase
       .from("feedback_submissions")
       .update({ is_read: isRead })
@@ -379,7 +379,7 @@ export async function bulkUpdateStatus(
   status: FeedbackStatus,
 ) {
   try {
-    const { supabase } = await requireAdmin();
+    const { supabase } = await requireStaff();
     const { error } = await supabase
       .from("feedback_submissions")
       .update({ status })
@@ -400,7 +400,7 @@ export async function bulkUpdateStatus(
 
 export async function addFeedbackNote(feedbackId: string, note: string) {
   try {
-    const { supabase, userId } = await requireAdmin();
+    const { supabase, userId } = await requireStaff();
     if (!note.trim()) {
       return { success: false, error: "Note cannot be empty" };
     }
@@ -430,7 +430,7 @@ export async function addFeedbackNote(feedbackId: string, note: string) {
 
 export async function getFeedbackNotes(feedbackId: string) {
   try {
-    const { supabase } = await requireAdmin();
+    const { supabase } = await requireStaff();
     const { data, error } = await supabase
       .from("feedback_notes")
       .select("id, author_id, note, created_at")
@@ -452,7 +452,7 @@ export async function getFeedbackNotes(feedbackId: string) {
 
 export async function deleteFeedback(feedbackId: string) {
   try {
-    const { supabase } = await requireAdmin();
+    const { supabase } = await requireStaff();
     const { error } = await supabase
       .from("feedback_submissions")
       .update({ deleted_at: new Date().toISOString() })

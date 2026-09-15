@@ -2985,7 +2985,6 @@ export type Database = {
           custom_css: string | null
           display_name: string | null
           id: string
-          is_admin: boolean
           is_blocked: boolean
           location: string | null
           profile_badges: Json | null
@@ -3011,7 +3010,6 @@ export type Database = {
           custom_css?: string | null
           display_name?: string | null
           id: string
-          is_admin?: boolean
           is_blocked?: boolean
           location?: string | null
           profile_badges?: Json | null
@@ -3037,7 +3035,6 @@ export type Database = {
           custom_css?: string | null
           display_name?: string | null
           id?: string
-          is_admin?: boolean
           is_blocked?: boolean
           location?: string | null
           profile_badges?: Json | null
@@ -4072,7 +4069,6 @@ export type Database = {
         Args: { p_template_id: string }
         Returns: undefined
       }
-      is_admin_user: { Args: { p_user_id: string }; Returns: boolean }
       is_bot_co_owner: {
         Args: { p_bot_id: string; p_user_id: string }
         Returns: boolean
@@ -4089,7 +4085,9 @@ export type Database = {
         Args: { p_bot_id: string; p_user_id: string }
         Returns: boolean
       }
-      is_current_user_admin: { Args: never; Returns: boolean }
+      is_current_user_moderator: { Args: never; Returns: boolean }
+      is_current_user_owner: { Args: never; Returns: boolean }
+      is_current_user_staff: { Args: never; Returns: boolean }
       is_following: {
         Args: { p_follower: string; p_following: string }
         Returns: boolean
@@ -4098,6 +4096,7 @@ export type Database = {
         Args: { p_form_id: string; p_ip_address: string }
         Returns: boolean
       }
+      is_moderator_user: { Args: { p_user_id: string }; Returns: boolean }
       is_notification_type_enabled: {
         Args: { p_type: string; p_user_id: string }
         Returns: boolean

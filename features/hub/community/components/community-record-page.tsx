@@ -396,15 +396,15 @@ function SectionHeading({
 export function CommunityRecordPage({
   record,
   initialAuthUserId,
-  initialIsAdmin,
+  initialIsStaff,
 }: {
   record: CommunityRecordPageRecord;
   initialAuthUserId: string | null;
-  initialIsAdmin: boolean;
+  initialIsStaff: boolean;
 }) {
   const router = useRouter();
   const [authUserId] = useState(initialAuthUserId);
-  const [isAdmin] = useState(initialIsAdmin);
+  const [isStaff] = useState(initialIsStaff);
 
   const [sources, setSources] = useState<CommunitySource[]>([]);
   const [updates, setUpdates] = useState<CommunityUpdate[]>([]);
@@ -741,7 +741,7 @@ export function CommunityRecordPage({
   };
 
   const deleteComment = async () => {
-    if (!isAdmin || !commentDeleteId || deletingComment) return;
+    if (!isStaff || !commentDeleteId || deletingComment) return;
 
     setDeletingComment(true);
 
@@ -775,7 +775,7 @@ export function CommunityRecordPage({
   };
 
   const archiveRecord = async () => {
-    if (!isAdmin || recordAdminAction) return;
+    if (!isStaff || recordAdminAction) return;
 
     setRecordAdminAction("archive");
 
@@ -805,7 +805,7 @@ export function CommunityRecordPage({
   };
 
   const restoreRecord = async () => {
-    if (!isAdmin || recordAdminAction) return;
+    if (!isStaff || recordAdminAction) return;
 
     setRecordAdminAction("restore");
 
@@ -834,7 +834,7 @@ export function CommunityRecordPage({
   };
 
   const deleteRecord = async () => {
-    if (!isAdmin || recordAdminAction) return;
+    if (!isStaff || recordAdminAction) return;
 
     setRecordAdminAction("delete");
 
@@ -995,7 +995,7 @@ export function CommunityRecordPage({
                 Share
               </Button>
 
-              {isAdmin && (
+              {isStaff && (
                 <Button
                   type="button"
                   size="sm"
@@ -1043,7 +1043,7 @@ export function CommunityRecordPage({
                     </Badge>
                   )}
 
-                  {isAdmin && !record.is_published && (
+                  {isStaff && !record.is_published && (
                     <Badge variant="outline" className="rounded-full">
                       Draft
                     </Badge>
@@ -1158,7 +1158,7 @@ export function CommunityRecordPage({
             </div>
 
             <div className="relative flex flex-wrap items-center gap-2 border-t border-border/50 bg-background/25 px-6 py-3.5 backdrop-blur sm:px-8 lg:px-10">
-              {isAdmin ? (
+              {isStaff ? (
                 <>
                   <div className="mr-1 inline-flex items-center gap-1.5 rounded-full border border-primary/15 bg-primary/[0.055] px-2.5 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-primary">
                     <ShieldCheck className="h-3.5 w-3.5" />
@@ -1673,7 +1673,7 @@ export function CommunityRecordPage({
                                   </span>
                                 </div>
 
-                                {isAdmin && (
+                                {isStaff && (
                                   <Button
                                     type="button"
                                     size="icon"
@@ -1871,14 +1871,14 @@ export function CommunityRecordPage({
         onOpenChange={setSubmissionOpen}
         mode={submissionMode}
         record={record}
-        staffDirect={isAdmin}
+        staffDirect={isStaff}
         onSubmitted={async () => {
           await loadDetail();
           router.refresh();
         }}
       />
 
-      {isAdmin && (
+      {isStaff && (
         <AlertDialog
           open={Boolean(commentDeleteId)}
           onOpenChange={(open) => {
@@ -1942,7 +1942,7 @@ export function CommunityRecordPage({
         </AlertDialog>
       )}
 
-      {isAdmin && (
+      {isStaff && (
         <>
           <AlertDialog
             open={archiveConfirmOpen}
@@ -2074,7 +2074,7 @@ export function CommunityRecordPage({
         </>
       )}
 
-      {isAdmin && (
+      {isStaff && (
         <CommunityStaffControlsDialog
           open={staffControlsOpen}
           onOpenChange={setStaffControlsOpen}

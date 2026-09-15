@@ -322,7 +322,7 @@ function getEvidenceBadgeClass(status: CommunityEvidenceStatus) {
 export function CommunityHub() {
   const [records, setRecords] = useState<CommunityRecordRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isStaff, setIsStaff] = useState(false);
   const [authUserId, setAuthUserId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<
@@ -439,10 +439,10 @@ export function CommunityHub() {
       const supabase = createClient();
       const access = await getCurrentUserAccess(supabase);
 
-      setIsAdmin(access.isAdmin);
+      setIsStaff(access.isStaff);
       setAuthUserId(access.user?.id || null);
 
-      if (access.isAdmin) {
+      if (access.isStaff) {
         const { count, error: pendingCountError } = await supabase
           .from("hub_community_submissions")
           .select("id", {
@@ -502,7 +502,7 @@ export function CommunityHub() {
         .order("published_at", { ascending: false, nullsFirst: false })
         .order("created_at", { ascending: false });
 
-      if (!access.isAdmin) {
+      if (!access.isStaff) {
         query = query.eq("is_published", true);
       }
 
@@ -778,7 +778,7 @@ export function CommunityHub() {
                     </span>
                   )}
 
-                  {isAdmin && !record.is_published && (
+                  {isStaff && !record.is_published && (
                     <span className="inline-flex rounded-full border border-border/60 bg-muted/35 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
                       Draft
                     </span>
@@ -986,7 +986,7 @@ export function CommunityHub() {
               </div>
 
               <div className="mt-4 flex flex-wrap items-center gap-2">
-                {authUserId && !isAdmin && (
+                {authUserId && !isStaff && (
                   <Button
                     type="button"
                     size="sm"
@@ -998,7 +998,7 @@ export function CommunityHub() {
                   </Button>
                 )}
 
-                {isAdmin && (
+                {isStaff && (
                   <Button
                     type="button"
                     size="sm"
@@ -1010,7 +1010,7 @@ export function CommunityHub() {
                   </Button>
                 )}
 
-                {isAdmin && (
+                {isStaff && (
                   <Button
                     type="button"
                     size="sm"
@@ -1192,7 +1192,7 @@ export function CommunityHub() {
               </p>
             </div>
 
-            {isAdmin && (
+            {isStaff && (
               <Badge
                 variant="outline"
                 className="w-fit shrink-0 rounded-full border-primary/20 bg-primary/5"
@@ -1459,7 +1459,7 @@ export function CommunityHub() {
         )}
       </div>
 
-      {isAdmin && (
+      {isStaff && (
         <CommunitySubmissionDialog
           open={staffCreateOpen}
           onOpenChange={setStaffCreateOpen}
@@ -1486,7 +1486,7 @@ export function CommunityHub() {
         onSubmitted={loadData}
       />
 
-      {isAdmin && (
+      {isStaff && (
         <CommunityReviewDialog
           open={reviewOpen}
           onOpenChange={setReviewOpen}
