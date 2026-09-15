@@ -10293,3 +10293,143 @@ html::-webkit-scrollbar-thumb:hover {
     transition: none !important;
   }
 }
+
+/* ==========================================================================
+   Changelog mobile cleanup + reveal reliability
+   ========================================================================== */
+
+/*
+ * Release content must never depend on IntersectionObserver to become visible.
+ * The old reveal gate could leave body/technical content at opacity:0 after
+ * hash navigation, fast scrolls or certain mobile viewport states.
+ */
+.fw-changelog-v3 [data-changelog-reveal] {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+/* Small screens: the filter/search chrome is the only header we keep. */
+@media (max-width: 899px) {
+  .fw-changelog-v3 .fw-changelog-topbar {
+    display: none !important;
+  }
+
+  .fw-changelog-v3 .fw-changelog-controls,
+  .fw-changelog-v3[data-header-hidden="true"] .fw-changelog-controls {
+    top: 0 !important;
+    transform: none !important;
+    margin-top: 0 !important;
+  }
+
+  .fw-changelog-v3 .fw-changelog-hero {
+    padding-top: 4rem !important;
+  }
+
+  /* The mobile release rail is drawn at left:.28rem. Keep the marker centered
+     exactly on that same coordinate. */
+  .fw-changelog-v3 .fw-changelog-release::before {
+    left: 0.28rem !important;
+  }
+
+  .fw-changelog-v3 .fw-changelog-release-marker {
+    left: 0.28rem !important;
+    top: 0.18rem !important;
+    translate: -50% 0 !important;
+  }
+}
+
+@media (max-width: 640px) {
+  /*
+   * On phones the decorative satellites and hero status pills compete with
+   * the headline and search navigation. The hero is stronger without them.
+   */
+  .fw-changelog-v3 .fw-cl-hero-symbols,
+  .fw-changelog-v3 .fw-changelog-hero-meta {
+    display: none !important;
+  }
+
+  .fw-changelog-v3 .fw-changelog-hero {
+    min-height: 31rem !important;
+    padding: 3.4rem 1rem 4.5rem !important;
+  }
+
+  .fw-changelog-v3 .fw-changelog-hero-lede {
+    margin-top: 1.35rem !important;
+  }
+
+  /* No visual seam between the page and the sticky search/filter surface. */
+  .fw-changelog-v3 .fw-changelog-controls {
+    border-top: 1px solid var(--cl-line) !important;
+  }
+}
+
+/* ==========================================================================
+   Changelog mobile — topbar stays with hero, only search follows scroll
+   ========================================================================== */
+
+@media (max-width: 899px) {
+  /*
+   * Keep the Forgeworks header in the document flow on mobile.
+   * It appears once above the hero and then scrolls away naturally.
+   */
+  .fw-changelog-v3 .fw-changelog-topbar,
+  .fw-changelog-v3[data-header-hidden="true"] .fw-changelog-topbar {
+    display: flex !important;
+    position: relative !important;
+    top: auto !important;
+    transform: none !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  /*
+   * Search / filters are the only mobile chrome that remains sticky.
+   */
+  .fw-changelog-v3 .fw-changelog-controls,
+  .fw-changelog-v3[data-header-hidden="true"] .fw-changelog-controls {
+    position: sticky !important;
+    top: 0 !important;
+    transform: none !important;
+    margin-top: 0 !important;
+  }
+
+  /* The hero no longer needs extra top compensation because the topbar
+     occupies its normal place in document flow. */
+  .fw-changelog-v3 .fw-changelog-hero {
+    padding-top: 3.4rem !important;
+  }
+}
+
+/* ==========================================================================
+   Changelog — measured anchor navigation + flush mobile sticky search
+   ========================================================================== */
+
+.fw-changelog-v3 .fw-changelog-release,
+.fw-changelog-v3 .fw-changelog-body [data-changelog-section],
+.fw-changelog-v3 .fw-changelog-technical[data-changelog-section] {
+  /*
+   * JS now measures the real sticky controls for clicks/hash navigation.
+   * Keep a modest native fallback for no-JS/browser-native anchor behavior.
+   */
+  scroll-margin-top: 6rem !important;
+}
+
+@media (max-width: 899px) {
+  /*
+   * Compensate for sub-pixel sticky rounding: the search/filter surface should
+   * visually touch the viewport edge with no 1px dark seam above it.
+   */
+  .fw-changelog-v3 .fw-changelog-controls,
+  .fw-changelog-v3[data-header-hidden="true"] .fw-changelog-controls {
+    top: -1px !important;
+    inset-block-start: -1px !important;
+    box-shadow: 0 -2px 0 var(--background);
+  }
+
+  .fw-changelog-v3 .fw-changelog-release,
+  .fw-changelog-v3 .fw-changelog-body [data-changelog-section],
+  .fw-changelog-v3 .fw-changelog-technical[data-changelog-section] {
+    scroll-margin-top: 4rem !important;
+  }
+}

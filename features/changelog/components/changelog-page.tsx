@@ -214,30 +214,36 @@ export function ChangelogPage({ entries }: { entries: ChangelogEntry[] }) {
   const activeSection =
     activeSections.find((section) => section.id === activeSectionId) || null;
 
+  const scrollToChangelogTarget = (target: HTMLElement) => {
+    const controls = rootRef.current?.querySelector<HTMLElement>(
+      ".fw-changelog-controls",
+    );
+    const isMobile = window.matchMedia("(max-width: 899px)").matches;
+    const gap = isMobile ? 16 : 24;
+
+    const controlsRect = controls?.getBoundingClientRect();
+    const controlsBottom = controlsRect
+      ? Math.max(0, controlsRect.bottom)
+      : 0;
+
+    const targetTop = target.getBoundingClientRect().top + window.scrollY;
+    const top = Math.max(0, targetTop - controlsBottom - gap);
+
+    window.scrollTo({
+      top,
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "auto"
+        : "smooth",
+    });
+  };
+
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
 
-    const revealNodes = Array.from(
-      root.querySelectorAll<HTMLElement>("[data-changelog-reveal]"),
-    );
     const releaseNodes = Array.from(
       root.querySelectorAll<HTMLElement>("[data-changelog-release]"),
     );
-
-    const revealObserver = new IntersectionObserver(
-      (items) => {
-        for (const item of items) {
-          if (item.isIntersecting) {
-            (item.target as HTMLElement).dataset.visible = "true";
-            revealObserver.unobserve(item.target);
-          }
-        }
-      },
-      { rootMargin: "0px 0px -8% 0px", threshold: 0.08 },
-    );
-
-    revealNodes.forEach((node) => revealObserver.observe(node));
 
     let frame = 0;
 
@@ -368,7 +374,6 @@ export function ChangelogPage({ entries }: { entries: ChangelogEntry[] }) {
     updateActiveRelease();
 
     return () => {
-      revealObserver.disconnect();
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
       if (frame) cancelAnimationFrame(frame);
@@ -398,12 +403,7 @@ export function ChangelogPage({ entries }: { entries: ChangelogEntry[] }) {
     setActiveSlug(slug);
     setActiveSectionId("");
     window.history.replaceState(null, "", `#${slug}`);
-    target.scrollIntoView({
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "auto"
-        : "smooth",
-      block: "start",
-    });
+    scrollToChangelogTarget(target);
   };
 
   const navigateToSection = (
@@ -425,13 +425,35 @@ export function ChangelogPage({ entries }: { entries: ChangelogEntry[] }) {
     setMobileSectionsOpen(false);
     window.history.replaceState(null, "", `#${sectionId}`);
 
-    target.scrollIntoView({
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "auto"
-        : "smooth",
-      block: "start",
-    });
+    scrollToChangelogTarget(target);
   };
+
+  useEffect(() => {
+    const correctHashPosition = () => {
+      const rawHash = window.location.hash.slice(1);
+      if (!rawHash) return;
+
+      const target = document.getElementById(decodeURIComponent(rawHash));
+      if (!target) return;
+
+      /*
+       * Let the browser perform its native hash jump first, then correct it
+       * against the real sticky search/filter height.
+       */
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+          scrollToChangelogTarget(target);
+        });
+      });
+    };
+
+    correctHashPosition();
+    window.addEventListener("hashchange", correctHashPosition);
+
+    return () => {
+      window.removeEventListener("hashchange", correctHashPosition);
+    };
+  }, [filtered]);
 
   const copyAnchor = async (slug: string) => {
     const url = `${window.location.origin}/changelog#${slug}`;
