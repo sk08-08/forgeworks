@@ -21,6 +21,7 @@ import {
   AlertTriangle,
   UsersRound,
   SlidersHorizontal,
+  Braces,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -814,7 +815,9 @@ export function BotManager() {
 
       setEditingBot({
         ...bot,
-        visibility: normalizeResourceVisibility(data?.visibility ?? bot.visibility),
+        visibility: normalizeResourceVisibility(
+          data?.visibility ?? bot.visibility,
+        ),
       });
     } catch (error) {
       console.error("Failed to resolve bot visibility before editing:", error);
@@ -953,13 +956,26 @@ export function BotManager() {
               Create, edit, and manage your bot characters
             </p>
           </div>
-          <Button
-            onClick={() => setIsCreating(true)}
-            className="w-full cursor-pointer sm:w-auto"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            New Bot
-          </Button>
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push("/bio-studio")}
+              className="w-full cursor-pointer sm:w-auto"
+            >
+              <Braces className="h-4 w-4 text-primary" />
+              Bio Studio
+            </Button>
+
+            <Button
+              type="button"
+              onClick={() => setIsCreating(true)}
+              className="w-full cursor-pointer sm:w-auto"
+            >
+              <Plus className="h-4 w-4" />
+              New Bot
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -1174,7 +1190,9 @@ export function BotManager() {
                           rating:
                             forkedBotData.rating === "NSFW" ? "NSFW" : "SFW",
                           imageUrl: forkedBotData.image_url || undefined,
-                          visibility: normalizeResourceVisibility(forkedBotData.visibility),
+                          visibility: normalizeResourceVisibility(
+                            forkedBotData.visibility,
+                          ),
                           createdAt: forkedBotData.created_at
                             ? new Date(forkedBotData.created_at)
                             : new Date(),

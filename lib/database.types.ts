@@ -618,6 +618,72 @@ export type Database = {
         }
         Relationships: []
       }
+      bio_projects: {
+        Row: {
+          bot_id: string | null
+          created_at: string
+          deleted_at: string | null
+          id: string
+          jai_character_id: string | null
+          jai_character_name: string | null
+          original_html: string
+          revision: number
+          source_html: string
+          source_kind: string
+          source_metadata: Json
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bot_id?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          jai_character_id?: string | null
+          jai_character_name?: string | null
+          original_html?: string
+          revision?: number
+          source_html?: string
+          source_kind?: string
+          source_metadata?: Json
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bot_id?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          jai_character_id?: string | null
+          jai_character_name?: string | null
+          original_html?: string
+          revision?: number
+          source_html?: string
+          source_kind?: string
+          source_metadata?: Json
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bio_projects_bot_id_fkey"
+            columns: ["bot_id"]
+            isOneToOne: false
+            referencedRelation: "active_bots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bio_projects_bot_id_fkey"
+            columns: ["bot_id"]
+            isOneToOne: false
+            referencedRelation: "bots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blocked_ips: {
         Row: {
           blocked_at: string

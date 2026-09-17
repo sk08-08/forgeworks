@@ -53,12 +53,16 @@ export function ChangelogAdminHub() {
       return;
     }
 
-    toast.success(next === "published" ? "Release published" : "Release moved to draft");
+    toast.success(
+      next === "published" ? "Release published" : "Release moved to draft",
+    );
     await load();
     setWorkingId(null);
   };
 
-  const publishedCount = entries.filter((entry) => entry.status === "published").length;
+  const publishedCount = entries.filter(
+    (entry) => entry.status === "published",
+  ).length;
   const draftCount = entries.filter((entry) => entry.status === "draft").length;
   const latest = entries.slice(0, 6);
 
@@ -84,13 +88,17 @@ export function ChangelogAdminHub() {
               Changelog
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              Keep the release archive organized here. Long-form writing gets its own
-              workspace so the Admin Panel stays compact.
+              Keep the release archive organized here. Long-form writing gets
+              its own workspace so the Admin Panel stays compact.
             </p>
           </div>
 
           <div className="flex flex-col gap-2 sm:flex-row">
-            <Button asChild variant="outline" className="w-full cursor-pointer sm:w-auto">
+            <Button
+              asChild
+              variant="outline"
+              className="w-full cursor-pointer sm:w-auto"
+            >
               <Link href="/changelog" target="_blank">
                 Public changelog <ArrowUpRight className="ml-2 h-4 w-4" />
               </Link>
@@ -111,11 +119,15 @@ export function ChangelogAdminHub() {
           </div>
           <div className="rounded-xl border bg-background/65 p-4">
             <p className="text-xs text-muted-foreground">Published</p>
-            <p className="mt-1 text-2xl font-semibold text-green-600">{publishedCount}</p>
+            <p className="mt-1 text-2xl font-semibold text-green-600">
+              {publishedCount}
+            </p>
           </div>
           <div className="rounded-xl border bg-background/65 p-4">
             <p className="text-xs text-muted-foreground">Drafts</p>
-            <p className="mt-1 text-2xl font-semibold text-amber-600">{draftCount}</p>
+            <p className="mt-1 text-2xl font-semibold text-amber-600">
+              {draftCount}
+            </p>
           </div>
         </div>
       </section>
@@ -129,7 +141,7 @@ export function ChangelogAdminHub() {
             </p>
           </div>
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon-sm"
             onClick={() => void load()}
             disabled={loading}
@@ -171,23 +183,34 @@ export function ChangelogAdminHub() {
                       {entry.status}
                     </Badge>
                     <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                      {entry.version ? `v${entry.version.replace(/^v/i, "")}` : entry.releaseType}
+                      {entry.version
+                        ? `v${entry.version.replace(/^v/i, "")}`
+                        : entry.releaseType}
                     </span>
                   </div>
-                  <p className="mt-2 truncate text-sm font-medium">{entry.title}</p>
+                  <p className="mt-2 truncate text-sm font-medium">
+                    {entry.title}
+                  </p>
                   <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
                     {entry.summary || "No summary yet."}
                   </p>
                 </div>
 
                 <div className="flex w-full gap-2 sm:w-auto">
-                  <Button asChild variant="outline" size="sm" className="flex-1 cursor-pointer sm:flex-none">
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 cursor-pointer sm:flex-none"
+                  >
                     <Link href={`/admin/changelog?id=${entry.id}`}>Edit</Link>
                   </Button>
                   <Button
                     type="button"
                     size="sm"
-                    variant={entry.status === "published" ? "secondary" : "default"}
+                    variant={
+                      entry.status === "published" ? "secondary" : "default"
+                    }
                     className="flex-1 cursor-pointer sm:flex-none"
                     disabled={workingId === entry.id}
                     onClick={() => void toggleStatus(entry)}

@@ -30,6 +30,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -290,6 +300,7 @@ export function ChangelogEditorPage({
   const [mode, setMode] = useState<EditorMode>("write");
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [libraryCollapsed, setLibraryCollapsed] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [draftAssetKey, setDraftAssetKey] = useState(
     () => `draft-${crypto.randomUUID?.() || Date.now()}`,
   );
@@ -305,8 +316,7 @@ export function ChangelogEditorPage({
     return draftFingerprint(draft) !== draftFingerprint(baseline);
   }, [draft, savedSnapshot]);
 
-  const canSave =
-    hasUnsavedChanges && Boolean(draft.title.trim()) && !saving;
+  const canSave = hasUnsavedChanges && Boolean(draft.title.trim()) && !saving;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -508,7 +518,6 @@ export function ChangelogEditorPage({
 
   const remove = async () => {
     if (!draft.id) return;
-    if (!window.confirm(`Delete "${draft.title}" permanently?`)) return;
 
     setSaving(true);
     const result = await deleteChangelogEntry(draft.id);
@@ -519,6 +528,7 @@ export function ChangelogEditorPage({
       return;
     }
 
+    setDeleteOpen(false);
     startNew();
     await load();
     toast.success("Changelog entry deleted");
@@ -994,8 +1004,8 @@ export function ChangelogEditorPage({
                   <div>
                     <strong>Technical terminal</strong>
                     <small>
-                      Plain text terminal output. Prefix process lines with &gt;;
-                      they render with the Forgeworks prompt.
+                      Plain text terminal output. Prefix process lines with
+                      &gt;; they render with the Forgeworks prompt.
                     </small>
                   </div>
                 </div>
@@ -1047,7 +1057,7 @@ export function ChangelogEditorPage({
                     type="button"
                     variant="destructive"
                     className="cursor-pointer"
-                    onClick={() => void remove()}
+                    onClick={() => setDeleteOpen(true)}
                     disabled={saving}
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
@@ -1080,6 +1090,34 @@ export function ChangelogEditorPage({
           </section>
         </main>
       </div>
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this changelog release?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {draft.title
+                ? `"${draft.title}" will be permanently deleted. This action cannot be undone.`
+                : "This changelog release will be permanently deleted. This action cannot be undone."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel className="cursor-pointer" disabled={saving}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="cursor-pointer bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={saving}
+              onClick={(event) => {
+                event.preventDefault();
+                void remove();
+              }}
+            >
+              {saving ? "Deleting…" : "Delete release"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
