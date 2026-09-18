@@ -1,13 +1,7 @@
 "use client";
 
-import {
-  Image as ImageIcon,
-  Search,
-  Sparkles,
-  Trash2,
-  Upload,
-} from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Image as ImageIcon, Search, Sparkles, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
 import type { IGif } from "@giphy/js-types";
 import { GiphyFetch } from "@giphy/js-fetch-api";
@@ -35,6 +29,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 
 import { MarkdownField } from "@/features/markdown/components/markdown-field";
+import { MediaPicker } from "@/features/media/components/media-picker";
 
 import { getFormAssetPublicUrl } from "@/features/forms/lib/form-assets";
 
@@ -57,9 +52,8 @@ export function FormSectionInspector({
 }: FormSectionInspectorProps) {
   const section = draft.sections.find((item) => item.id === sectionId);
 
-  const sectionImageInputRef = useRef<HTMLInputElement | null>(null);
-
   const [gifDialogOpen, setGifDialogOpen] = useState(false);
+  const [mediaOpen, setMediaOpen] = useState(false);
 
   const [gifSearch, setGifSearch] = useState("");
 
@@ -112,18 +106,12 @@ export function FormSectionInspector({
     section.custom?.imageUrl ||
     "";
 
-  const handleSectionImageSelect = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const file = event.target.files?.[0];
-
-    if (!file) return;
-
-    const previewUrl = URL.createObjectURL(file);
-
+  const handleMediaImage = (url: string) => {
+    const nextPending = { ...(draft.pendingSectionImages || {}) };
+    delete nextPending[section.id];
     onDraftChange({
       ...draft,
-
+      pendingSectionImages: nextPending,
       sections: draft.sections.map((item) =>
         item.id === section.id
           ? {
@@ -131,21 +119,12 @@ export function FormSectionInspector({
               custom: {
                 ...(item.custom || {}),
                 imageAssetPath: undefined,
+                imageUrl: url,
               },
             }
           : item,
       ),
-
-      pendingSectionImages: {
-        ...(draft.pendingSectionImages || {}),
-        [section.id]: {
-          file,
-          previewUrl,
-        },
-      },
     });
-
-    event.target.value = "";
   };
 
   const handleRemoveImage = () => {
@@ -361,14 +340,6 @@ export function FormSectionInspector({
           title="Image"
           description="Optional supporting image for this section."
         >
-          <input
-            ref={sectionImageInputRef}
-            type="file"
-            accept="image/png,image/jpeg,image/jpg,image/webp,image/avif"
-            className="hidden"
-            onChange={handleSectionImageSelect}
-          />
-
           {sectionImageUrl ? (
             <div className="overflow-hidden rounded-xl border border-border/70 bg-muted/20">
               <img
@@ -380,7 +351,7 @@ export function FormSectionInspector({
           ) : (
             <button
               type="button"
-              onClick={() => sectionImageInputRef.current?.click()}
+              onClick={() => setMediaOpen(true)}
               className="flex w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/70 bg-muted/[0.12] px-4 py-6 transition-colors hover:bg-muted/30"
             >
               <ImageIcon className="h-5 w-5 text-muted-foreground" />
@@ -389,18 +360,27 @@ export function FormSectionInspector({
             </button>
           )}
 
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,9rem),1fr))] gap-2">
+          <MediaPicker
+            open={mediaOpen}
+            onOpenChange={setMediaOpen}
+            hideTrigger
+            selectedUrls={sectionImageUrl ? [sectionImageUrl] : []}
+            onSelect={(images) => {
+              if (images[0]) handleMediaImage(images[0].url);
+            }}
+          />
+
+          <div className="grid grid-cols-1 gap-2">
             <Button
               type="button"
               variant="outline"
               size="sm"
               className="cursor-pointer"
-              onClick={() => sectionImageInputRef.current?.click()}
+              onClick={() => setMediaOpen(true)}
             >
-              <Upload className="mr-2 h-3.5 w-3.5" />
-              {sectionImageUrl ? "Replace image" : "Upload image"}
+              <ImageIcon className="mr-2 h-3.5 w-3.5" />
+              Choose from My Media
             </Button>
-
             {sectionImageUrl && (
               <Button
                 type="button"

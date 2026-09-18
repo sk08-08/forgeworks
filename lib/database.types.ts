@@ -1138,6 +1138,7 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           example_dialogues: string
+          external_links: Json
           first_message: string
           hide_sensitive_fields: boolean
           id: string
@@ -1159,6 +1160,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           example_dialogues?: string
+          external_links?: Json
           first_message: string
           hide_sensitive_fields?: boolean
           id?: string
@@ -1180,6 +1182,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           example_dialogues?: string
+          external_links?: Json
           first_message?: string
           hide_sensitive_fields?: boolean
           id?: string
@@ -2723,6 +2726,110 @@ export type Database = {
           id?: string
           ip_address?: string
           reason?: string | null
+        }
+        Relationships: []
+      }
+      media_asset_references: {
+        Row: {
+          media_id: string
+          recorded_at: string
+          source_deleted: boolean
+          source_id: string
+          source_label: string
+          source_owner_id: string | null
+          source_table: string
+        }
+        Insert: {
+          media_id: string
+          recorded_at?: string
+          source_deleted?: boolean
+          source_id: string
+          source_label?: string
+          source_owner_id?: string | null
+          source_table: string
+        }
+        Update: {
+          media_id?: string
+          recorded_at?: string
+          source_deleted?: boolean
+          source_id?: string
+          source_label?: string
+          source_owner_id?: string | null
+          source_table?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_asset_references_media_id_fkey"
+            columns: ["media_id"]
+            isOneToOne: false
+            referencedRelation: "media_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      media_assets: {
+        Row: {
+          bucket: string
+          byte_size: number
+          content_type: string
+          created_at: string
+          id: string
+          original_name: string
+          sha256: string
+          storage_path: string
+          user_id: string
+        }
+        Insert: {
+          bucket?: string
+          byte_size: number
+          content_type: string
+          created_at?: string
+          id?: string
+          original_name: string
+          sha256: string
+          storage_path: string
+          user_id: string
+        }
+        Update: {
+          bucket?: string
+          byte_size?: number
+          content_type?: string
+          created_at?: string
+          id?: string
+          original_name?: string
+          sha256?: string
+          storage_path?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      media_upload_reservations: {
+        Row: {
+          byte_size: number
+          content_type: string
+          created_at: string
+          expires_at: string
+          id: string
+          sha256: string
+          user_id: string
+        }
+        Insert: {
+          byte_size: number
+          content_type: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          sha256: string
+          user_id: string
+        }
+        Update: {
+          byte_size?: number
+          content_type?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          sha256?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -4329,6 +4436,15 @@ export type Database = {
       release_bot_collaboration_lock: {
         Args: { p_bot_id: string; p_field_key: string }
         Returns: boolean
+      }
+      reserve_media_upload: {
+        Args: {
+          p_byte_size: number
+          p_content_type: string
+          p_sha256: string
+          p_user_id: string
+        }
+        Returns: string
       }
       restore_bot_version: {
         Args: { p_version_id: string }

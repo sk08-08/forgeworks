@@ -2,6 +2,7 @@
 // Bot Types
 // ----------------------------------------------------------------------------
 
+import type { BotExternalLink } from "@/features/bots/lib/bot-external-url";
 import type { ResourceVisibility } from "@/lib/resource-visibility";
 
 export interface Bot {
@@ -20,6 +21,7 @@ export interface Bot {
   createdAt: Date;
   updatedAt: Date;
   imageUrl?: string;
+  externalLinks?: BotExternalLink[];
   hideSensitiveFields?: boolean;
   visibility?: ResourceVisibility;
 }
@@ -36,6 +38,7 @@ export interface BotFormData {
   tags: string[];
   rating: "SFW" | "NSFW";
   imageUrl?: string;
+  externalLinks?: BotExternalLink[];
   hideSensitiveFields?: boolean;
   visibility: ResourceVisibility;
 }

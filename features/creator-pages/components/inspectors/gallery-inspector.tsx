@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { normalizeCreatorPageHttpUrl } from "@/features/creator-pages/lib/creator-page-links";
+import { MediaPicker } from "@/features/media/components/media-picker";
 import { cn } from "@/lib/utils";
 
 import type {
@@ -80,6 +81,26 @@ export function GalleryInspector({
               and add an optional visible caption separately.
             </p>
           </div>
+
+          <MediaPicker
+            multiple
+            maxSelection={20}
+            label="Choose or upload multiple images"
+            selectedUrls={editingImages.map((image) => image.url)}
+            onSelect={(images) =>
+              setEditingImages((current) => {
+                const used = new Set(current.map((image) => image.url));
+                const additions = images
+                  .filter((image) => {
+                    if (used.has(image.url)) return false;
+                    used.add(image.url);
+                    return true;
+                  })
+                  .map((image) => ({ url: image.url, alt: "", caption: "" }));
+                return additions.length ? [...current, ...additions] : current;
+              })
+            }
+          />
 
           <div className="space-y-2">
             {editingImages.map((image, index) => {

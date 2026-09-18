@@ -43,6 +43,7 @@ const validNavigationViews: NavigationView[] = [
   "feedback",
   "atlas",
   "creator-pages",
+  "media",
   "profile",
   "admin",
 ];

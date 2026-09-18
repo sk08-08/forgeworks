@@ -11,6 +11,7 @@ import {
 } from "@/features/bots/lib/collaboration-permissions";
 import { friendlySupabaseError } from "@/lib/error-utils";
 import { normalizeResourceVisibility } from "@/lib/resource-visibility";
+import { validateBotExternalLinks } from "@/features/bots/lib/bot-external-url";
 import { captureBotVersion } from "@/features/bots/actions/bot-history";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -46,6 +47,9 @@ export async function createBotAction(data: BotFormData) {
   const userId = await requireAuthenticatedUserId(supabase);
   if (!userId) return { success: false, error: "Unauthenticated" };
 
+  const externalLinks = validateBotExternalLinks(data.externalLinks);
+  if (externalLinks.error) return { success: false, error: externalLinks.error };
+
   const payload = {
     user_id: userId,
     name: data.name,
@@ -59,13 +63,14 @@ export async function createBotAction(data: BotFormData) {
     tags: data.tags,
     rating: data.rating,
     image_url: data.imageUrl || null,
+    external_links: externalLinks.links,
     hide_sensitive_fields: data.hideSensitiveFields === true,
     visibility: normalizeResourceVisibility(data.visibility),
   };
 
   const { data: inserted, error } = await supabase
     .from("bots")
-    .insert(payload)
+    .insert(payload as any)
     .select("*")
     .single();
 
@@ -185,6 +190,14 @@ export async function updateBotAction(id: string, data: Partial<BotFormData>) {
   if (data.imageUrl !== undefined) setField("image_url", data.imageUrl || null);
   if (data.hideSensitiveFields !== undefined)
     setField("hide_sensitive_fields", data.hideSensitiveFields);
+
+  // External destinations are owner-managed metadata, not versioned character fields.
+  // A collaborator cannot change where visitors are redirected.
+  if (data.externalLinks !== undefined && isOwner) {
+    const externalLinks = validateBotExternalLinks(data.externalLinks);
+    if (externalLinks.error) return { success: false, error: externalLinks.error };
+    payload.external_links = externalLinks.links;
+  }
 
   // Visibility is an ownership-level setting, not collaborative character
   // content. Collaborators can keep editing allowed fields without being able

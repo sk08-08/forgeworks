@@ -15,6 +15,7 @@ import {
 import { CreatorLinkActionField } from "@/features/creator-pages/components/shared/creator-link-action-field";
 import { CreatorNumberControl } from "@/features/creator-pages/components/shared/creator-number-control";
 import { normalizeCreatorPageHttpUrl } from "@/features/creator-pages/lib/creator-page-links";
+import { MediaPicker } from "@/features/media/components/media-picker";
 import { cn } from "@/lib/utils";
 
 import type {
@@ -266,6 +267,14 @@ export function HeroInspector({
           {sectionConfigEdit.backgroundType === "image" && (
             <>
               <div className="space-y-2">
+                <MediaPicker
+                  label="Choose / upload from My Media"
+                  selectedUrls={sectionConfigEdit.heroImage ? [sectionConfigEdit.heroImage] : []}
+                  onSelect={(images) => {
+                    if (!images[0]) return;
+                    setSectionConfigEdit((current) => ({ ...current, heroImage: images[0].url }));
+                  }}
+                />
                 <Label className="text-xs">Background image URL</Label>
                 <Input
                   value={sectionConfigEdit.heroImage || ""}

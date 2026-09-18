@@ -441,19 +441,6 @@ export async function updateProfile(input: UpdateProfileInput) {
     return { success: false, error: "Nothing to update" };
   }
 
-  let existingAssets: {
-    avatar_url: string | null;
-    banner_url: string | null;
-  } | null = null;
-  if (input.avatar_url !== undefined || input.banner_url !== undefined) {
-    const { data } = await supabase
-      .from("profiles")
-      .select("avatar_url, banner_url")
-      .eq("id", userId)
-      .maybeSingle();
-    existingAssets = data ?? null;
-  }
-
   if (requestedFeaturedBotIds !== undefined) {
     const normalizedFeaturedBotIds = Array.from(
       new Set((requestedFeaturedBotIds || []).filter(Boolean)),
@@ -899,39 +886,9 @@ export async function updateProfile(input: UpdateProfileInput) {
     }
   }
 
-  if (existingAssets) {
-    if (input.avatar_url !== undefined) {
-      const oldAvatarPath = extractStorageObjectPathFromPublicUrl(
-        existingAssets.avatar_url,
-        PROFILE_ASSETS_BUCKET,
-      );
-      const newAvatarPath = extractStorageObjectPathFromPublicUrl(
-        String(input.avatar_url ?? ""),
-        PROFILE_ASSETS_BUCKET,
-      );
-      if (oldAvatarPath && oldAvatarPath !== newAvatarPath) {
-        await supabase.storage
-          .from(PROFILE_ASSETS_BUCKET)
-          .remove([oldAvatarPath]);
-      }
-    }
-
-    if (input.banner_url !== undefined) {
-      const oldBannerPath = extractStorageObjectPathFromPublicUrl(
-        existingAssets.banner_url,
-        PROFILE_ASSETS_BUCKET,
-      );
-      const newBannerPath = extractStorageObjectPathFromPublicUrl(
-        String(input.banner_url ?? ""),
-        PROFILE_ASSETS_BUCKET,
-      );
-      if (oldBannerPath && oldBannerPath !== newBannerPath) {
-        await supabase.storage
-          .from(PROFILE_ASSETS_BUCKET)
-          .remove([oldBannerPath]);
-      }
-    }
-  }
+  // Retain existing profile objects after a successful update. Their public URLs
+  // might be used elsewhere, including old exports and other modules. Physical
+  // cleanup must be reference-aware and is intentionally not performed here.
 
   return { success: true };
 }
@@ -1107,22 +1064,9 @@ export async function removeProfileAssetAction(kind: "avatar" | "banner") {
   }
 
   const column = kind === "avatar" ? "avatar_url" : "banner_url";
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("avatar_url, banner_url")
-    .eq("id", access.user.id)
-    .maybeSingle();
-
-  const currentUrl = String((profile as any)?.[column] || "").trim();
-  const currentPath = extractStorageObjectPathFromPublicUrl(
-    currentUrl,
-    PROFILE_ASSETS_BUCKET,
-  );
-
-  if (currentPath) {
-    await supabase.storage.from(PROFILE_ASSETS_BUCKET).remove([currentPath]);
-  }
-
+  // Do not delete the underlying object here: its URL may have other
+  // references. First clear the profile field, leave garbage collection to
+  // the future reference-aware asset manager.
   const { error } = await supabase
     .from("profiles")
     .update({ [column]: null })

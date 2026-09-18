@@ -42,11 +42,21 @@ export function countBotTokens(bot: Partial<Bot>): number {
 // Variable Validation
 // ----------------------------------------------------------------------------
 
-const VALID_VARIABLES = ["{{char}}", "{{user}}"];
+// Tokens supported by the bot content validator and the initial-message preview.
+// Keep the original placeholders in saved content and exported character cards.
+const VALID_VARIABLES = new Set([
+  "{{char}}",
+  "{{user}}",
+  "{{subj}}",
+  "{{obj}}",
+  "{{poss}}",
+  "{{poss_pr}}",
+  "{{refl}}",
+]);
 const VARIABLE_PATTERN = /\{\{(\w+)\}\}/g;
 
 /**
- * Validates {{char}} and {{user}} variables in text
+ * Validates character, reader and pronoun placeholders in bot content
  * Returns validation result with counts and any invalid variables
  */
 export function validateVariables(text: string): TokenValidation {
@@ -80,7 +90,12 @@ export function validateVariables(text: string): TokenValidation {
   let match;
   while ((match = VARIABLE_PATTERN.exec(text)) !== null) {
     const fullMatch = match[0].toLowerCase();
-    if (!VALID_VARIABLES.includes(fullMatch)) {
+    if (VALID_VARIABLES.has(fullMatch) && match[0] !== fullMatch &&
+        fullMatch !== "{{char}}" && fullMatch !== "{{user}}") {
+      const warning = `Use lowercase ${fullMatch} for consistent macro support`;
+      if (!warnings.includes(warning)) warnings.push(warning);
+    }
+    if (!VALID_VARIABLES.has(fullMatch)) {
       if (!invalidVariables.includes(match[0])) {
         invalidVariables.push(match[0]);
       }

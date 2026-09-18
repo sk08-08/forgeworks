@@ -42,12 +42,20 @@ export function ProfileBotGridCard({
   return (
     <div
       className={cn(
-        "group min-w-0 max-w-full overflow-hidden cursor-pointer transition-all h-full flex flex-col",
+        "group min-w-0 max-w-full overflow-hidden cursor-pointer transition-all h-full flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
         cardClass,
         layout === "list" && "sm:flex-row sm:items-start sm:gap-4",
       )}
       style={cardStyleOverrides}
       onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={(event) => {
+        if (onClick && (event.key === "Enter" || event.key === " ")) {
+          event.preventDefault();
+          onClick();
+        }
+      }}
     >
       <div
         className={cn(
@@ -133,11 +141,19 @@ export function ProfileFeaturedBotListCard({
   return (
     <div
       className={cn(
-        "group flex w-full min-w-0 max-w-full items-center gap-3 overflow-hidden cursor-pointer",
+        "group flex w-full min-w-0 max-w-full items-center gap-3 overflow-hidden cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
         cardClass,
       )}
       style={cardStyleOverrides}
       onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={(event) => {
+        if (onClick && (event.key === "Enter" || event.key === " ")) {
+          event.preventDefault();
+          onClick();
+        }
+      }}
     >
       <div className="h-14 w-20 rounded bg-muted overflow-hidden shrink-0">
         {bot.imageUrl ? (

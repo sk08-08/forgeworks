@@ -1,0 +1,299 @@
+/* Scoped to the bot page. No global tokens or other Forgeworks screens are changed. */
+.page {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  background: var(--background);
+}
+.page::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background-image: radial-gradient(circle, color-mix(in oklch, var(--primary) 27%, transparent) 0.8px, transparent 1.2px);
+  background-size: 27px 27px;
+  opacity: .52;
+  mask-image: linear-gradient(to bottom, transparent 0, black 7rem, black 75%, transparent 100%);
+}
+.ambient {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.ambient::before,
+.ambient::after {
+  content: "";
+  position: absolute;
+  width: min(75vw, 46rem);
+  height: min(75vw, 46rem);
+  border-radius: 50%;
+  filter: blur(65px);
+  animation: drift 19s ease-in-out infinite alternate;
+}
+.ambient::before {
+  top: -17rem;
+  left: -16rem;
+  background: radial-gradient(circle, color-mix(in oklch, var(--primary) 23%, transparent), transparent 70%);
+}
+.ambient::after {
+  top: 18rem;
+  right: -22rem;
+  background: radial-gradient(circle, color-mix(in oklch, var(--accent) 18%, transparent), transparent 70%);
+  animation-delay: -9s;
+  animation-duration: 25s;
+}
+.hero {
+  animation: rise .65s cubic-bezier(.2,.75,.25,1) both;
+  transition: border-color .3s ease, box-shadow .3s ease;
+}
+.hero:hover {
+  border-color: color-mix(in oklch, var(--primary) 40%, var(--border));
+  box-shadow: 0 26px 70px -45px color-mix(in oklch, var(--primary) 35%, transparent);
+}
+.heroArt { position: relative; }
+.heroArt::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  inset: 0;
+  border: 1px solid color-mix(in oklch, var(--primary) 14%, transparent);
+  background: radial-gradient(circle at 70% 12%, color-mix(in oklch, var(--primary) 11%, transparent), transparent 53%);
+}
+.heroImage {
+  transition: transform .7s cubic-bezier(.2,.75,.25,1);
+}
+.hero:hover .heroImage { transform: scale(1.025); }
+.reveal { animation: rise .55s cubic-bezier(.2,.75,.25,1) both; }
+.sectionNav { animation: rise .55s .08s ease both; }
+.contentSection { transition: border-color .28s ease, box-shadow .28s ease; }
+.contentSection:hover { border-color: color-mix(in oklch, var(--primary) 32%, var(--border)); }
+.contentSection[data-open="true"] { border-color: color-mix(in oklch, var(--primary) 28%, var(--border)); box-shadow: 0 15px 55px -42px color-mix(in oklch, var(--primary) 30%, transparent); }
+.chevron { transition: transform .32s cubic-bezier(.2,.75,.25,1); }
+.contentSection[data-open="true"] > div > h2 .chevron,
+.messageCard[data-open="true"] > h3 .chevron { transform: rotate(180deg); }
+.accordion {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: grid-template-rows .4s cubic-bezier(.22,1,.36,1), opacity .28s ease, visibility 0s linear .4s;
+}
+.accordion[data-open="true"] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: grid-template-rows .4s cubic-bezier(.22,1,.36,1), opacity .32s ease, visibility 0s;
+}
+.accordionInner { min-height: 0; overflow: hidden; }
+.messageCard { transition: background-color .25s ease, border-color .25s ease; }
+.messageCard[data-open="true"] { border-color: color-mix(in oklch, var(--primary) 35%, var(--border)); background: color-mix(in oklch, var(--primary) 5%, var(--card)); }
+@keyframes drift { from { transform: translate3d(-2%,0,0) scale(1); } to { transform: translate3d(4%,3%,0) scale(1.07); } }
+@keyframes rise { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) {
+  .ambient::before,.ambient::after,.hero,.reveal,.sectionNav { animation: none !important; }
+  .hero,.heroImage,.contentSection,.chevron,.accordion,.messageCard { transition: none !important; }
+}
+
+/* Layout safety: keep the page and its rich Markdown inside the viewport.
+   These rules only affect the bot page, not Forgeworks globals. */
+.page { width: 100%; min-width: 0; overflow-x: clip; }
+.page :is(pre, table) { max-width: 100%; }
+.page pre { overflow-x: auto; }
+.contentSection, .messageCard, .accordion, .accordionInner { min-width: 0; max-width: 100%; }
+@media (max-width: 639px) {
+  .sectionNav { max-width: 100%; }
+  .contentSection { border-radius: 1rem; }
+  .ambient::before, .ambient::after { width: 20rem; height: 20rem; filter: blur(42px); }
+}
+
+/* v4 — reader, contextual navigation and responsive actions. Scoped to this route. */
+.navLink { color: var(--muted-foreground); }
+.navLink:hover { background: color-mix(in oklch,var(--primary) 9%,transparent); color: var(--primary); }
+.navLink[data-active="true"] { color: var(--primary); background: color-mix(in oklch,var(--primary) 13%,var(--card)); box-shadow: inset 0 0 0 1px color-mix(in oklch,var(--primary) 25%,transparent); }
+.messageTab { color: var(--muted-foreground); background: var(--background); }
+.messageTab:hover { border-color: var(--primary); color: var(--primary); }
+.messageTab[data-active="true"] { color: var(--primary); border-color: color-mix(in oklch,var(--primary) 50%,var(--border)); background: color-mix(in oklch,var(--primary) 10%,var(--card)); }
+.reader { transition: border-color .25s ease, box-shadow .25s ease; }
+.reader:hover { border-color: color-mix(in oklch,var(--primary) 30%,var(--border)); box-shadow: 0 16px 35px -32px var(--primary); }
+.readerAction { background: var(--background); color: var(--muted-foreground); transition: color .2s ease, border-color .2s ease, background-color .2s ease; }
+.readerAction:hover { border-color: var(--primary); color: var(--primary); background: color-mix(in oklch,var(--primary) 6%,var(--background)); }
+.settingsChevron { transition: transform .28s ease; }
+.settingsChevron[data-open="true"] { transform: rotate(180deg); }
+.settingsPanel { display: grid; grid-template-rows: 0fr; visibility: hidden; opacity: 0; transition: grid-template-rows .38s cubic-bezier(.22,1,.36,1), opacity .25s ease, visibility 0s linear .38s; }
+.settingsPanel[data-open="true"] { grid-template-rows: 1fr; visibility: visible; opacity: 1; transition: grid-template-rows .38s cubic-bezier(.22,1,.36,1), opacity .25s ease, visibility 0s; }
+.readerBody { animation: readerEnter .35s cubic-bezier(.22,1,.36,1) both; }
+@keyframes readerEnter { from { opacity: .55; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.heroArt::before { content: ""; pointer-events: none; position: absolute; z-index: 1; inset: 0; background: linear-gradient(160deg,transparent 45%,color-mix(in oklch,var(--primary) 12%,transparent)); }
+.heroArt:hover .heroImage { filter: drop-shadow(0 16px 24px color-mix(in oklch,var(--primary) 20%,transparent)); }
+.heroImage { filter: drop-shadow(0 12px 18px color-mix(in oklch,var(--primary) 10%,transparent)); transition: transform .7s cubic-bezier(.2,.75,.25,1),filter .4s ease; }
+@media (max-width: 639px) {
+  .readerAction { flex: 0 0 auto; }
+  .readerBody { overflow-wrap: anywhere; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reader,.readerAction,.readerBody,.settingsPanel,.settingsChevron,.messageTab,.navLink,.heroImage { animation: none !important; transition: none !important; }
+}
+
+.readingProgress { position: absolute; left: 0; bottom: 0; height: 2px; pointer-events: none; background: var(--primary); border-radius: 99px; transition: width 100ms linear; }
+@media (prefers-reduced-motion: reduce) { .readingProgress { transition: none; } }
+
+/* v5: local-only reader controls, safe artwork affordance and small-screen polish. */
+.artworkTrigger { min-height: 16rem; }
+.artworkHint { opacity: .92; transition: transform .22s ease, background-color .22s ease; }
+.artworkTrigger:hover .artworkHint { transform: translateY(-2px); background-color: rgb(0 0 0 / .82); }
+.artworkTrigger:focus-visible .artworkHint { outline: 2px solid var(--primary); }
+.readingSettings { display: grid; grid-template-rows: 0fr; visibility: hidden; opacity: 0; transition: grid-template-rows .34s cubic-bezier(.22,1,.36,1), opacity .24s ease, visibility 0s linear .34s; }
+.readingSettings[data-open="true"] { grid-template-rows: 1fr; visibility: visible; opacity: 1; transition: grid-template-rows .34s cubic-bezier(.22,1,.36,1), opacity .24s ease, visibility 0s; }
+.preferenceButton { color: var(--muted-foreground); transition: color .18s ease, background-color .18s ease; }
+.preferenceButton:hover, .preferenceButton[data-active="true"] { color: var(--primary); background: color-mix(in oklch, var(--primary) 12%, var(--card)); }
+.readingText { max-width: none; width: 100%; }
+.readingLarge { font-size: 1.05rem; line-height: 1.95; }
+.readingLarge :is(p, li, blockquote, td) { font-size: inherit; line-height: inherit; }
+.readingFocused { max-width: 85ch; margin-inline: auto; }
+.backToTop { animation: rise .25s ease both; }
+@media (max-width: 639px) {
+ /* Give portrait and landscape artwork a bounded, responsive viewport.
+    The old 26rem max-height clipped portrait images inside overflow:hidden. */
+ .artworkTrigger {
+   height: clamp(18rem, min(138vw, 70dvh), 38rem);
+   min-height: 0;
+   max-height: none;
+ }
+ .artworkTrigger .heroImage {
+   display: block;
+   width: 100%;
+   height: 100%;
+   max-width: 100%;
+   max-height: 100%;
+   object-fit: contain;
+   transform: none;
+ }
+ /* No slight zoom/crop on mobile hover or touch emulation. */
+ .hero:hover .heroImage { transform: none; }
+ .readingLarge { font-size: 1rem; line-height: 1.85; }
+ .readingFocused { max-width: 100%; }
+ .readingSettings button { white-space: nowrap; }
+}
+@media (prefers-reduced-motion: reduce) {
+ .artworkHint,.readingSettings,.preferenceButton,.backToTop { animation: none !important; transition: none !important; }
+}
+/* Cinematic art stays behind the original, uncropped image. */
+.heroArt { background: radial-gradient(ellipse at 48% 38%, color-mix(in oklch,var(--primary) 21%,transparent),transparent 70%), linear-gradient(145deg,color-mix(in oklch,var(--primary) 11%,var(--muted)),color-mix(in oklch,var(--accent) 10%,var(--card))); }
+.heroArt::after { border-color: color-mix(in oklch,var(--primary) 20%,transparent); background: radial-gradient(ellipse at 80% 0%,color-mix(in oklch,var(--accent) 13%,transparent),transparent 58%); }
+.readingText.readingLarge { font-size: 1.05rem; line-height: 1.95; }
+@media(max-width:639px) { .readingText.readingLarge { font-size: 1rem; line-height: 1.85; } }
+
+/* v5 finish — progress lives INSIDE the nav instead of cutting across its rounded corners. */
+.sectionNav { padding-bottom: 1.25rem; }
+.readingProgressTrack {
+  position: absolute;
+  left: .85rem;
+  right: .85rem;
+  bottom: .48rem;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  pointer-events: none;
+  background: color-mix(in oklch, var(--primary) 12%, var(--muted));
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / .12);
+}
+.readingProgress {
+  position: relative;
+  display: block;
+  inset: auto;
+  left: auto;
+  bottom: auto;
+  height: 100%;
+  max-width: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--primary), color-mix(in oklch, var(--accent) 65%, var(--primary)));
+  box-shadow: 0 0 12px color-mix(in oklch, var(--primary) 35%, transparent);
+  transition: width 120ms linear;
+}
+.readingProgress::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgb(255 255 255 / .27), transparent);
+}
+.sectionCopy { transition: color .2s ease, background-color .2s ease, border-color .2s ease, transform .2s ease; }
+.sectionCopy:hover { color: var(--primary); background: color-mix(in oklch, var(--primary) 9%, var(--card)); border-color: color-mix(in oklch, var(--primary) 45%, var(--border)); transform: translateY(-1px); }
+.readerAction[data-active="true"] { color: var(--primary); border-color: color-mix(in oklch, var(--primary) 45%, var(--border)); background: color-mix(in oklch, var(--primary) 9%, var(--card)); }
+@media (max-width: 639px) {
+  .sectionNav { padding-bottom: 1.15rem; }
+  .readingProgressTrack { left: .65rem; right: .65rem; bottom: .42rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .readingProgress, .sectionCopy { transition: none !important; }
+}
+
+/* v5 next — the entire heading row, including the independent copy action,
+   shares one continuous hover/focus surface. Parent section clips to radius. */
+.sectionHeader {
+  transition: background-color 220ms ease;
+}
+.sectionHeader:hover,
+.sectionHeader:focus-within {
+  background: color-mix(in oklch, var(--primary) 6%, var(--card));
+}
+.sectionHeader:has(> h2 > button:focus-visible) {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+/* Spotlight cards are intentionally lightweight, rather than duplicating hero. */
+.creatorSpotlight {
+  background: radial-gradient(ellipse at 100% 0%, color-mix(in oklch, var(--primary) 10%, transparent), transparent 68%), var(--card);
+}
+.creatorSpotlightCard {
+  transition: border-color 220ms ease, transform 220ms ease, box-shadow 220ms ease;
+}
+.creatorSpotlightCard:hover {
+  border-color: color-mix(in oklch, var(--primary) 45%, var(--border));
+  transform: translateY(-3px);
+  box-shadow: 0 18px 36px -28px color-mix(in oklch, var(--primary) 40%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .sectionHeader, .creatorSpotlightCard { transition: none !important; }
+  .creatorSpotlightCard:hover { transform: none; }
+}
+
+/* Responsive controls + sticky preferences — all changes are scoped to Bot Page. */
+.readingSettings {
+  flex: 0 0 100%;
+  width: 100%;
+  min-width: 0;
+  order: 5;
+}
+.navControls { min-width: 0; }
+.navControlsInner { min-width: 0; }
+@media (max-width: 639px) {
+  .sectionNav { gap: .45rem; }
+  .navControls {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    visibility: hidden;
+    transition: grid-template-rows .32s cubic-bezier(.22,1,.36,1), opacity .22s ease, visibility 0s linear .32s;
+  }
+  .navControls[data-open="true"] {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    visibility: visible;
+    transition: grid-template-rows .32s cubic-bezier(.22,1,.36,1), opacity .22s ease, visibility 0s;
+  }
+  .navControlsInner { min-height: 0; overflow: hidden; }
+  .sectionNav[data-mobile-open="false"] .readingSettings { grid-template-rows: 0fr; opacity: 0; visibility: hidden; }
+  .sectionNav[data-mobile-open="true"] .readingSettings { visibility: visible; }
+}
+@media (min-width: 640px) {
+  .navControls, .navControlsInner { display: contents; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .navControls { transition: none !important; }
+}

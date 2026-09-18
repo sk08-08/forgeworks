@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { CreatorNumberControl } from "@/features/creator-pages/components/shared/creator-number-control";
 import { normalizeCreatorPageHttpUrl } from "@/features/creator-pages/lib/creator-page-links";
+import { MediaPicker } from "@/features/media/components/media-picker";
 import { cn } from "@/lib/utils";
 
 import type { CreatorInspectorBaseProps } from "@/features/creator-pages/types/creator-page-types";
@@ -183,7 +184,15 @@ export function ImageInspector({
           </p>
 
           <div className="space-y-2">
-            <Label className="text-xs">Image URL</Label>
+            <MediaPicker
+                  label="Choose / upload from My Media"
+                  selectedUrls={sectionConfigEdit.imageUrl ? [sectionConfigEdit.imageUrl] : []}
+                  onSelect={(images) => {
+                    if (!images[0]) return;
+                    setSectionConfigEdit((current) => ({ ...current, imageUrl: images[0].url }));
+                  }}
+                />
+                <Label className="text-xs">Image URL</Label>
             <Input
               value={sectionConfigEdit.imageUrl || ""}
               onChange={(event) =>

@@ -181,7 +181,6 @@ export function extractManagedMarkdownAssetPaths(markdown: string) {
 
 export async function commitMarkdownImages({
   draftMarkdown,
-  previousMarkdown,
   pendingImages,
   uploadContext,
   save,
@@ -285,38 +284,11 @@ export async function commitMarkdownImages({
       };
     }
 
-    // ----------------------------------------------------------------------
-    // 3. DB success → old assets may now be cleaned
-    // ----------------------------------------------------------------------
-
-    const previousPaths = new Set(
-      extractManagedMarkdownAssetPaths(previousMarkdown),
-    );
-
-    const newPaths = new Set(extractManagedMarkdownAssetPaths(finalMarkdown));
-
-    const obsoletePaths = Array.from(previousPaths).filter(
-      (path) => !newPaths.has(path),
-    );
-
-    let cleanupWarning: string | undefined;
-
-    if (obsoletePaths.length > 0) {
-      const cleanup = await removeMarkdownAssetsAction(obsoletePaths);
-
-      if (!cleanup.success) {
-        /*
-         * Important:
-         *
-         * The DB save already succeeded.
-         * Do NOT roll back the valid new state.
-         *
-         * At worst an old orphan remains.
-         */
-        cleanupWarning =
-          cleanup.error || "Old Markdown images could not be cleaned up.";
-      }
-    }
+    // Previously saved image URLs may now be reused in other Forgeworks
+    // resources. Do not delete old images just because they disappeared from
+    // this one Markdown document. Only pending uploads created in a failed
+    // transaction are rolled back above.
+    const cleanupWarning: string | undefined = undefined;
 
     return {
       success: true,

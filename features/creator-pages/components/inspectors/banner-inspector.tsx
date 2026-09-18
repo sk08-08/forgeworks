@@ -15,6 +15,7 @@ import { CreatorLinkActionField } from "@/features/creator-pages/components/shar
 import { CreatorNumberControl } from "@/features/creator-pages/components/shared/creator-number-control";
 import { MarkdownField } from "@/features/markdown/components/markdown-field";
 import { normalizeCreatorPageHttpUrl } from "@/features/creator-pages/lib/creator-page-links";
+import { MediaPicker } from "@/features/media/components/media-picker";
 import { cn } from "@/lib/utils";
 
 import type {
@@ -242,6 +243,14 @@ export function BannerInspector({
           {sectionConfigEdit.backgroundType === "image" && (
             <div className="space-y-4">
               <div className="space-y-2">
+                <MediaPicker
+                  label="Choose / upload from My Media"
+                  selectedUrls={sectionConfigEdit.backgroundImage ? [sectionConfigEdit.backgroundImage] : []}
+                  onSelect={(images) => {
+                    if (!images[0]) return;
+                    setSectionConfigEdit((current) => ({ ...current, backgroundImage: images[0].url }));
+                  }}
+                />
                 <Label className="text-xs">Background image URL</Label>
                 <Input
                   value={sectionConfigEdit.backgroundImage || ""}

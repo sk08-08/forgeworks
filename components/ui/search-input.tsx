@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface SearchInputProps {
+  id?: string;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
@@ -27,6 +28,7 @@ interface SearchInputProps {
 }
 
 export function SearchInput({
+  id,
   value,
   onChange,
   placeholder = "Search...",
@@ -39,9 +41,13 @@ export function SearchInput({
   const [localValue, setLocalValue] = useState(value);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onChangeRef = useRef(onChange);
+  useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
 
   // Sync local value when external value changes (e.g. clear)
   useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = null;
     setLocalValue(value);
   }, [value]);
 
@@ -52,13 +58,14 @@ export function SearchInput({
       if (debounce > 0) {
         if (debounceRef.current) clearTimeout(debounceRef.current);
         debounceRef.current = setTimeout(() => {
-          onChange(newValue);
+          debounceRef.current = null;
+          onChangeRef.current(newValue);
         }, debounce);
       } else {
-        onChange(newValue);
+        onChangeRef.current(newValue);
       }
     },
-    [onChange, debounce],
+    [debounce],
   );
 
   // Cleanup debounce on unmount
@@ -77,8 +84,11 @@ export function SearchInput({
         !e.ctrlKey &&
         !e.metaKey &&
         !e.altKey &&
-        document.activeElement?.tagName !== "INPUT" &&
-        document.activeElement?.tagName !== "TEXTAREA"
+        !e.repeat &&
+        !e.defaultPrevented &&
+        !(document.activeElement instanceof HTMLElement &&
+          (document.activeElement.matches("input,textarea,select,[role=combobox]") ||
+           document.activeElement.isContentEditable))
       ) {
         e.preventDefault();
         inputRef.current?.focus();
@@ -89,15 +99,18 @@ export function SearchInput({
   }, [shortcutKey]);
 
   const handleClear = useCallback(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = null;
     setLocalValue("");
-    onChange("");
+    onChangeRef.current("");
     inputRef.current?.focus();
-  }, [onChange]);
+  }, []);
 
   return (
     <div className={cn("relative", className)}>
       <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
       <Input
+        id={id}
         ref={inputRef}
         value={localValue}
         onChange={(e) => handleChange(e.target.value)}
@@ -112,7 +125,7 @@ export function SearchInput({
           size="icon"
           className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-foreground cursor-pointer"
           onClick={handleClear}
-          tabIndex={-1}
+          aria-label="Clear search"
           type="button"
         >
           <X className="h-3.5 w-3.5" />

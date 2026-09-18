@@ -9,7 +9,6 @@ import { z } from "zod";
 import {
   FORM_ASSETS_BUCKET,
   FORM_BANNERS_BUCKET,
-  extractFormAssetPathsFromSections,
   getFormBannerPublicUrl,
   getFormAssetPublicUrl,
 } from "@/features/forms/lib/form-assets";
@@ -423,24 +422,11 @@ export async function getFormTemplateForBuilderAction(templateId: string) {
   };
 }
 
-async function removeFormAssetsByPath(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  paths: string[],
-) {
-  const deduped = Array.from(
-    new Set(paths.map((p) => String(p || "").trim()).filter(Boolean)),
-  );
-
-  if (deduped.length === 0) return;
-  await supabase.storage.from(FORM_ASSETS_BUCKET).remove(deduped);
-}
-
 export async function uploadFormSectionImageAction(formData: FormData) {
   const { supabase, userId } = await resolveUserIdForActions();
   if (!userId) return { success: false, error: "Unauthenticated" };
 
   const file = formData.get("file");
-  const existingPath = String(formData.get("existingPath") || "").trim();
 
   if (!(file instanceof File)) {
     return { success: false, error: "No image file provided" };
@@ -476,13 +462,8 @@ export async function uploadFormSectionImageAction(formData: FormData) {
     };
   }
 
-  if (
-    existingPath &&
-    existingPath.startsWith(`${userId}/`) &&
-    existingPath !== path
-  ) {
-    await removeFormAssetsByPath(supabase, [existingPath]);
-  }
+  // Do not remove existingPath here. The editor has not saved the new
+  // reference yet, and another resource might still use the previous URL.
 
   return {
     success: true,
@@ -707,7 +688,7 @@ export async function updateFormAction(id: string, data: Partial<RequestForm>) {
 
   const { data: existingForm, error: existingError } = await supabase
     .from("request_forms")
-    .select("id, user_id, sections, banner_asset_path")
+    .select("id, user_id")
     .eq("id", id)
     .eq("user_id", userId)
     .is("deleted_at", null)
@@ -849,32 +830,9 @@ export async function updateFormAction(id: string, data: Partial<RequestForm>) {
     };
   }
 
-  if (data.sections !== undefined) {
-    const beforePaths = extractFormAssetPathsFromSections(
-      existingForm.sections,
-    );
-    const afterPaths = extractFormAssetPathsFromSections(
-      validatedSections ?? data.sections,
-    );
-    const removedPaths = beforePaths.filter((p) => !afterPaths.includes(p));
-    await removeFormAssetsByPath(supabase, removedPaths);
-  }
-
-  if (data.bannerAssetPath !== undefined) {
-    const beforeBannerPath = String(
-      (existingForm as any).banner_asset_path || "",
-    );
-    const nextBannerPath = String(data.bannerAssetPath || "");
-    if (
-      beforeBannerPath &&
-      beforeBannerPath.startsWith(`${userId}/`) &&
-      beforeBannerPath !== nextBannerPath
-    ) {
-      await supabase.storage
-        .from(FORM_BANNERS_BUCKET)
-        .remove([beforeBannerPath]);
-    }
-  }
+  // Keep historical assets: form images are URL-addressable and may be reused
+  // in My Media consumers or other documents. Replacement only clears references.
+  // A future reference-aware garbage collector may remove proven orphans.
 
   return { success: true, form: updated };
 }
@@ -886,7 +844,7 @@ export async function deleteFormAction(id: string) {
   // Verify ownership before deleting
   const { data: form, error: fetchError } = await supabase
     .from("request_forms")
-    .select("user_id, sections, banner_asset_path, shareable_link")
+    .select("user_id, shareable_link")
     .eq("id", id)
     .is("deleted_at", null)
     .single();
@@ -901,15 +859,8 @@ export async function deleteFormAction(id: string) {
     };
   }
 
-  const assetPaths = extractFormAssetPathsFromSections((form as any).sections);
-  if (assetPaths.length > 0) {
-    await removeFormAssetsByPath(supabase, assetPaths);
-  }
-
-  const bannerPath = String((form as any).banner_asset_path || "").trim();
-  if (bannerPath && bannerPath.startsWith(`${userId}/`)) {
-    await supabase.storage.from(FORM_BANNERS_BUCKET).remove([bannerPath]);
-  }
+  // Soft deletion must not remove physical files. Existing direct URLs,
+  // exports and eventual restored forms may still reference these assets.
 
   const deletedSuffix = `-deleted-${Date.now()}`;
   const { error } = await supabase

@@ -22,6 +22,7 @@ import {
   Shield,
   Menu,
   AppWindow,
+  Images,
   ShieldAlert,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -154,6 +155,14 @@ const forgeNavItems: NavItem[] = [
     color: "text-yellow-500",
     activeBg: "bg-yellow-500/10",
     description: "Design and manage public creator pages",
+  },
+  {
+    id: "media",
+    label: "My Media",
+    icon: Images,
+    color: "text-violet-500",
+    activeBg: "bg-violet-500/10",
+    description: "Manage images reused across your creator tools",
   },
 ];
 

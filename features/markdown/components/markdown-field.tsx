@@ -87,6 +87,8 @@ import {
 } from "@/features/markdown/config/markdown-editor-config";
 import { MarkdownColor } from "@/features/markdown/extensions/markdown-color-extension";
 import { MarkdownImage } from "@/features/markdown/extensions/markdown-image-extension";
+import { MediaPicker } from "@/features/media/components/media-picker";
+import type { MediaSelection } from "@/features/media/types/media";
 import { normalizeMarkdownLinkUrl } from "@/features/markdown/lib/markdown-link-utils";
 
 export type {
@@ -279,6 +281,7 @@ export const MarkdownField = React.forwardRef<
   const pendingImagesRef = useRef<MarkdownPendingImage[]>([]);
 
   const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
 
   const editorContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -317,7 +320,7 @@ export const MarkdownField = React.forwardRef<
         onReplaceRequest: (position) => {
           imageReplaceTargetPosRef.current = position;
 
-          imageInputRef.current?.click();
+          setMediaPickerOpen(true);
         },
       }),
     [],
@@ -335,7 +338,7 @@ export const MarkdownField = React.forwardRef<
         onImageRequest: () => {
           imageReplaceTargetPosRef.current = null;
 
-          imageInputRef.current?.click();
+          setMediaPickerOpen(true);
         },
       }),
     [imagesEnabled, slashMenuContainer, enabledFeatures],
@@ -1062,6 +1065,40 @@ export const MarkdownField = React.forwardRef<
     ],
   );
 
+  const handleMediaSelection = useCallback(
+    (images: MediaSelection[]) => {
+      if (!editor || !imagesEnabled || disabled || images.length === 0) return;
+      const replacePosition = imageReplaceTargetPosRef.current;
+      imageReplaceTargetPosRef.current = null;
+
+      if (typeof replacePosition === "number") {
+        const node = editor.state.doc.nodeAt(replacePosition);
+        if (!node || node.type.name !== "markdownImage") {
+          toast.error("The image could not be replaced. Please try again.");
+          return;
+        }
+        const image = images[0];
+        const transaction = editor.state.tr.setNodeMarkup(replacePosition, undefined, {
+          ...node.attrs,
+          src: image.url,
+          alt: image.name || String(node.attrs.alt || "Image"),
+        });
+        editor.view.dispatch(transaction);
+        editor.chain().focus().setNodeSelection(replacePosition).run();
+        return;
+      }
+
+      // An insertion yields stable Markdown immediately: no blob URL or
+      // document-specific upload transaction is necessary for My Media URLs.
+      const nodes = images.map((image) => ({
+        type: "paragraph",
+        content: [{ type: "markdownImage", attrs: { src: image.url, alt: image.name || "Image" } }],
+      }));
+      editor.chain().focus().insertContent(nodes).run();
+    },
+    [editor, imagesEnabled, disabled],
+  );
+
   if (!editor) return null;
 
   const isFocused = toolbarState.isFocused;
@@ -1145,6 +1182,20 @@ export const MarkdownField = React.forwardRef<
           className,
         )}
       >
+        {imagesEnabled && (
+          <MediaPicker
+            hideTrigger
+            open={mediaPickerOpen}
+            onOpenChange={(next) => {
+              setMediaPickerOpen(next);
+              if (!next) imageReplaceTargetPosRef.current = null;
+            }}
+            multiple={imageReplaceTargetPosRef.current === null}
+            maxSelection={imageMaxImages}
+            disabled={disabled}
+            onSelect={handleMediaSelection}
+          />
+        )}
         <input
           ref={imageInputRef}
           type="file"
@@ -2009,13 +2060,20 @@ export const MarkdownField = React.forwardRef<
                         onSelect={() => {
                           imageReplaceTargetPosRef.current = null;
 
-                          requestAnimationFrame(() =>
-                            imageInputRef.current?.click(),
-                          );
+                          setMediaPickerOpen(true);
                         }}
                       >
                         <ImagePlus className="mr-2 h-4 w-4" />
-                        Upload image
+                        Add image from My Media
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="cursor-pointer text-muted-foreground"
+                        onSelect={() => {
+                          imageReplaceTargetPosRef.current = null;
+                          requestAnimationFrame(() => imageInputRef.current?.click());
+                        }}
+                      >
+                        Upload to document (legacy)
                       </DropdownMenuItem>
                     </>
                   )}

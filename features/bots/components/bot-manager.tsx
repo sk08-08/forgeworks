@@ -208,6 +208,7 @@ interface BotCardProps {
   onDelete: () => void;
   onExport: () => void;
   onWorkspace: () => void;
+  onView: () => void;
   onFork: () => void;
 }
 
@@ -215,6 +216,7 @@ interface CollaborativeBotCardProps {
   bot: CollaborativeBot;
   viewMode: ViewMode;
   onWorkspace: () => void;
+  onView: () => void;
   onExport?: () => void;
 }
 
@@ -222,6 +224,7 @@ function CollaborativeBotCard({
   bot,
   viewMode,
   onWorkspace,
+  onView,
   onExport,
 }: CollaborativeBotCardProps) {
   const roleConf = roleConfig[bot.collaborator_role];
@@ -285,6 +288,10 @@ function CollaborativeBotCard({
                   Export Card V2
                 </DropdownMenuItem>
               )}
+              <DropdownMenuItem onClick={onView}>
+                <BotIcon className="mr-2 h-4 w-4 text-primary" />
+                View Bot
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={onWorkspace}>
                 <Zap className="mr-2 h-4 w-4" />
                 Open Workspace
@@ -351,6 +358,10 @@ function CollaborativeBotCard({
                   Export Card V2
                 </DropdownMenuItem>
               )}
+              <DropdownMenuItem onClick={onView}>
+                <BotIcon className="mr-2 h-4 w-4 text-primary" />
+                View Bot
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={onWorkspace}>
                 <Zap className="mr-2 h-4 w-4" />
                 Open Workspace
@@ -388,6 +399,7 @@ function BotCard({
   onDelete,
   onExport,
   onWorkspace,
+  onView,
   onFork,
 }: BotCardProps) {
   const tokenCount = useMemo(() => countBotTokens(bot), [bot]);
@@ -461,6 +473,10 @@ function BotCard({
                 <Download className="mr-2 h-4 w-4 text-primary" />
                 Export Card V2
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={onView}>
+                <BotIcon className="mr-2 h-4 w-4 text-primary" />
+                View Bot
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={onWorkspace}>
                 <Zap className="mr-2 h-4 w-4 text-primary" />
                 Open Workspace
@@ -528,6 +544,10 @@ function BotCard({
               <DropdownMenuItem onClick={onExport}>
                 <Download className="mr-2 h-4 w-4 text-primary" />
                 Export Card V2
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onView}>
+                <BotIcon className="mr-2 h-4 w-4 text-primary" />
+                View Bot
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onWorkspace}>
                 <Zap className="mr-2 h-4 w-4 text-primary" />
@@ -804,9 +824,9 @@ export function BotManager() {
   const openBotEditor = useCallback(async (bot: Bot) => {
     try {
       const supabase = createClient();
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("bots")
-        .select("visibility")
+        .select("visibility, hide_sensitive_fields, external_links")
         .eq("id", bot.id)
         .is("deleted_at", null)
         .maybeSingle();
@@ -818,6 +838,11 @@ export function BotManager() {
         visibility: normalizeResourceVisibility(
           data?.visibility ?? bot.visibility,
         ),
+        // Resolve privacy from the authoritative row, not a possibly stale
+        // dashboard snapshot (the store may omit this field after save).
+        hideSensitiveFields:
+          data?.hide_sensitive_fields ?? bot.hideSensitiveFields ?? false,
+        externalLinks: (data as { external_links?: Bot["externalLinks"] } | null)?.external_links ?? [],
       });
     } catch (error) {
       console.error("Failed to resolve bot visibility before editing:", error);
@@ -867,6 +892,8 @@ export function BotManager() {
       tags: Array.isArray(r.tags) ? r.tags : [],
       rating: r.rating === "NSFW" ? "NSFW" : "SFW",
       imageUrl: r.image_url || undefined,
+      externalLinks: (r as { external_links?: Bot["externalLinks"] }).external_links || [],
+      hideSensitiveFields: r.hide_sensitive_fields === true,
       visibility: normalizeResourceVisibility(r.visibility),
       createdAt: r.created_at ? new Date(r.created_at) : new Date(),
       updatedAt: r.updated_at ? new Date(r.updated_at) : new Date(),
@@ -899,6 +926,8 @@ export function BotManager() {
       tags: Array.isArray(r.tags) ? r.tags : [],
       rating: r.rating === "NSFW" ? "NSFW" : "SFW",
       imageUrl: r.image_url || undefined,
+      externalLinks: (r as { external_links?: Bot["externalLinks"] }).external_links || [],
+      hideSensitiveFields: r.hide_sensitive_fields === true,
       visibility: normalizeResourceVisibility(r.visibility),
       createdAt: r.created_at ? new Date(r.created_at) : new Date(),
       updatedAt: r.updated_at ? new Date(r.updated_at) : new Date(),
@@ -1154,6 +1183,7 @@ export function BotManager() {
                 onWorkspace={() => {
                   router.push(`/workspace/bots/${bot.id}`);
                 }}
+                onView={() => router.push(`/bots/${bot.id}`)}
                 onFork={async () => {
                   setForking(true);
                   const result = await forkBot(bot.id);
@@ -1190,6 +1220,8 @@ export function BotManager() {
                           rating:
                             forkedBotData.rating === "NSFW" ? "NSFW" : "SFW",
                           imageUrl: forkedBotData.image_url || undefined,
+                          externalLinks: (forkedBotData as { external_links?: Bot["externalLinks"] }).external_links || [],
+                          hideSensitiveFields: forkedBotData.hide_sensitive_fields === true,
                           visibility: normalizeResourceVisibility(
                             forkedBotData.visibility,
                           ),
@@ -1221,6 +1253,7 @@ export function BotManager() {
                 onWorkspace={() => {
                   router.push(`/workspace/bots/${collabBot.id}`);
                 }}
+                onView={() => router.push(`/bots/${collabBot.id}`)}
                 onExport={() => {
                   // Export using the bot data from collaborative bot
                   const botForExport: Bot = {
@@ -1301,6 +1334,7 @@ export function BotManager() {
             </SheetHeader>
             <div className="min-w-0">
               <BotForm
+                key={editingBot ? `edit:${editingBot.id}` : "create"}
                 initialData={editingBot || undefined}
                 onSubmit={editingBot ? handleUpdateBot : handleCreateBot}
                 onCancel={() => {

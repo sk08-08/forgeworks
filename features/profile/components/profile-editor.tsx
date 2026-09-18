@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ImageCropDialog } from "@/components/ui/image-crop-dialog";
+import { MediaPicker } from "@/features/media/components/media-picker";
 import { IMAGE_PRESETS } from "@/lib/image-presets";
 import {
   Share2,
@@ -1341,6 +1342,32 @@ export function ProfileEditor({
                       }
                     />
 
+                    <MediaPicker
+                      label="Choose banner from My Media"
+                      selectedUrls={bannerUrl ? [bannerUrl] : []}
+                      disabled={uploadingBanner || saving}
+                      className="w-full cursor-pointer"
+                      onSelect={(images) => {
+                        const next = images[0];
+                        if (!next) return;
+                        // A legacy cropped upload is still temporary until saved.
+                        // Only its own temporary object may be cleaned up;
+                        // My Media resources must never be deleted on cancel.
+                        if (temporaryBannerPath) {
+                          // Remove only an unsaved legacy crop; never delete
+                          // library media or a previously saved profile image.
+                          void removeTemporaryProfileAssetAction(temporaryBannerPath).then(
+                            (result) => {
+                              if (!result.success) {
+                                toast.warning(result.error || "Could not clean up the old temporary image.");
+                              }
+                            },
+                          );
+                          setTemporaryBannerPath(null);
+                        }
+                        setBannerUrl(next.url);
+                      }}
+                    />
                     <div className="flex flex-col gap-2 sm:flex-row">
                       <Button
                         type="button"
@@ -1360,7 +1387,7 @@ export function ProfileEditor({
                           <Upload className="mr-2 h-3.5 w-3.5" />
                         )}
 
-                        {bannerUrl ? "Replace banner" : "Upload banner"}
+                        {bannerUrl ? "Upload & crop new banner" : "Upload & crop banner"}
                       </Button>
 
                       {bannerUrl && (
@@ -1412,6 +1439,28 @@ export function ProfileEditor({
                         your profile.
                       </p>
 
+                      <MediaPicker
+                        label="Choose avatar from My Media"
+                        selectedUrls={avatarUrl ? [avatarUrl] : []}
+                        disabled={uploadingAvatar || saving}
+                        className="w-full cursor-pointer"
+                        onSelect={(images) => {
+                          const next = images[0];
+                          if (!next) return;
+                          if (temporaryAvatarPath) {
+                            // Only clean an unsaved legacy crop, never My Media.
+                            void removeTemporaryProfileAssetAction(temporaryAvatarPath).then(
+                              (result) => {
+                                if (!result.success) {
+                                  toast.warning(result.error || "Could not clean up the old temporary image.");
+                                }
+                              },
+                            );
+                            setTemporaryAvatarPath(null);
+                          }
+                          setAvatarUrl(next.url);
+                        }}
+                      />
                       <div className="flex flex-wrap gap-2">
                         <Button
                           type="button"
@@ -1431,7 +1480,7 @@ export function ProfileEditor({
                             <Upload className="mr-2 h-3.5 w-3.5" />
                           )}
 
-                          {avatarUrl ? "Replace avatar" : "Upload avatar"}
+                          {avatarUrl ? "Upload & crop new avatar" : "Upload & crop avatar"}
                         </Button>
 
                         {avatarUrl && (

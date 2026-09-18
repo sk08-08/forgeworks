@@ -11,6 +11,7 @@ import { ImageCropDialog } from "@/components/ui/image-crop-dialog";
 import { MarkdownField } from "@/features/markdown/components/markdown-field";
 import { getFormBannerPublicUrl } from "@/features/forms/lib/form-assets";
 import { IMAGE_PRESETS } from "@/lib/image-presets";
+import { MediaPicker } from "@/features/media/components/media-picker";
 
 import type { FormBuilderDraft } from "../../components/builder/form-builder-types";
 
@@ -28,6 +29,7 @@ export function FormGeneralInspector({
   const [pendingCropFile, setPendingCropFile] = useState<File | null>(null);
 
   const [bannerCropOpen, setBannerCropOpen] = useState(false);
+  const [mediaOpen, setMediaOpen] = useState(false);
 
   const uploadedBannerUrl = draft.bannerAssetPath
     ? getFormBannerPublicUrl(draft.bannerAssetPath)
@@ -68,6 +70,16 @@ export function FormGeneralInspector({
 
     setPendingCropFile(null);
     setBannerCropOpen(false);
+  };
+
+  const handleMediaBanner = (url: string) => {
+    onDraftChange({
+      ...draft,
+      bannerAssetPath: "",
+      bannerUrl: url,
+      pendingBannerFile: null,
+      pendingBannerPreviewUrl: null,
+    });
   };
 
   const handleRemoveBanner = () => {
@@ -172,7 +184,7 @@ export function FormGeneralInspector({
           ) : (
             <button
               type="button"
-              onClick={() => bannerInputRef.current?.click()}
+              onClick={() => setMediaOpen(true)}
               className="flex w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/70 bg-muted/[0.12] px-4 py-7 text-center transition-colors hover:bg-muted/30"
             >
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted">
@@ -194,16 +206,37 @@ export function FormGeneralInspector({
             larger images before using them.
           </p>
 
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,9rem),1fr))] gap-2">
+          <MediaPicker
+            open={mediaOpen}
+            onOpenChange={setMediaOpen}
+            hideTrigger
+            selectedUrls={bannerPreviewUrl ? [bannerPreviewUrl] : []}
+            onSelect={(images) => {
+              if (images[0]) handleMediaBanner(images[0].url);
+            }}
+          />
+
+          <div className="grid grid-cols-1 gap-2">
             <Button
               type="button"
               variant="outline"
               size="sm"
-              className="cursor-pointer"
+              className="w-full cursor-pointer"
+              onClick={() => setMediaOpen(true)}
+            >
+              <ImageIcon className="mr-2 h-3.5 w-3.5" />
+              Choose from My Media
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full cursor-pointer"
               onClick={() => bannerInputRef.current?.click()}
             >
               <Upload className="mr-2 h-3.5 w-3.5" />
-              {hasBanner ? "Replace banner" : "Upload banner"}
+              Upload & crop
             </Button>
 
             {hasBanner && (
@@ -211,7 +244,7 @@ export function FormGeneralInspector({
                 type="button"
                 variant="outline"
                 size="sm"
-                className="cursor-pointer text-destructive hover:text-destructive"
+                className="w-full cursor-pointer text-destructive hover:text-destructive"
                 onClick={handleRemoveBanner}
               >
                 <Trash2 className="mr-2 h-3.5 w-3.5" />
